@@ -75,7 +75,7 @@ mod test {
     use crate::{
         ast::{
             identifier::Identifier, let_statement::LetStatement, program::Program, AstNode,
-            StatementNode,
+            ExpressionNode, StatementNode,
         },
         tokens::token::Token,
     };
@@ -89,6 +89,10 @@ mod test {
                     token: Token::IDENT("myVar".into()),
                     value: "myVar".into(),
                 },
+                value: Some(ExpressionNode::Identifier(Identifier {
+                    token: Token::IDENT("anotherVar".into()),
+                    value: "anotherVar".into(),
+                })),
             })],
         };
 

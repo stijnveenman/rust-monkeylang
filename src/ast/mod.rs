@@ -52,3 +52,19 @@ impl AstNode for StatementNode {
         }
     }
 }
+
+impl AstNode for ExpressionNode {
+    fn token(&self) -> &Token {
+        match self {
+            ExpressionNode::Identifier(i) => i.token(),
+            ExpressionNode::Placeolder => todo!(),
+        }
+    }
+
+    fn string(&self) -> String {
+        match self {
+            ExpressionNode::Identifier(i) => i.string(),
+            ExpressionNode::Placeolder => todo!(),
+        }
+    }
+}

@@ -1,12 +1,14 @@
 use crate::tokens::token::Token;
 
-use super::{identifier::Identifier, AstNode, ParsableResult, ParseStatement, StatementNode};
+use super::{
+    identifier::Identifier, AstNode, ExpressionNode, ParsableResult, ParseStatement, StatementNode,
+};
 
 #[derive(Debug)]
 pub struct LetStatement {
     pub token: Token,
     pub identifier: Identifier,
-    //pub value: ExpressionNode,
+    pub value: Option<ExpressionNode>,
 }
 
 impl AstNode for LetStatement {
@@ -15,7 +17,11 @@ impl AstNode for LetStatement {
     }
 
     fn string(&self) -> String {
-        format!("let {} = ;", self.identifier.string())
+        format!(
+            "let {} = {};",
+            self.identifier.string(),
+            self.value.as_ref().map(|v| v.string()).unwrap_or("".into())
+        )
     }
 }
 
@@ -42,6 +48,7 @@ impl ParseStatement for LetStatement {
                 token: Token::IDENT(ident.clone()),
                 value: ident,
             },
+            value: None,
         }))
     }
 }
