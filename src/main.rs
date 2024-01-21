@@ -1,3 +1,5 @@
+use rust_monkeylang::repl;
+
 fn main() {
-    println!("Hello, world!");
+    repl::start();
 }
