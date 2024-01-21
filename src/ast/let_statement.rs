@@ -1,6 +1,6 @@
 use crate::tokens::token::Token;
 
-use super::{identifier::Identifier, ParsableResult, ParseStatement, Statement, StatementNode};
+use super::{identifier::Identifier, AstNode, ParsableResult, ParseStatement, StatementNode};
 
 #[derive(Debug)]
 pub struct LetStatement {
@@ -9,7 +9,7 @@ pub struct LetStatement {
     //pub value: ExpressionNode,
 }
 
-impl Statement for LetStatement {
+impl AstNode for LetStatement {
     fn token(&self) -> &Token {
         &self.token
     }
@@ -45,7 +45,7 @@ impl ParseStatement for LetStatement {
 #[cfg(test)]
 mod test {
     use crate::{
-        ast::{Expression, Statement, StatementNode},
+        ast::{AstNode, StatementNode},
         parser::Parser,
         tokens::token::Token,
     };

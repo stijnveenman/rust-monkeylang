@@ -1,6 +1,6 @@
 use crate::tokens::token::Token;
 
-use super::{ParseStatement, Statement};
+use super::{AstNode, ParseStatement};
 
 #[derive(Debug)]
 pub struct ReturnStatement {
@@ -8,7 +8,7 @@ pub struct ReturnStatement {
     //pub return_value: ExpressionNode,
 }
 
-impl Statement for ReturnStatement {
+impl AstNode for ReturnStatement {
     fn token(&self) -> &Token {
         &self.token
     }
@@ -31,7 +31,7 @@ impl ParseStatement for ReturnStatement {
 #[cfg(test)]
 mod test {
     use crate::{
-        ast::{Statement, StatementNode},
+        ast::{AstNode, StatementNode},
         parser::Parser,
         tokens::token::Token,
     };

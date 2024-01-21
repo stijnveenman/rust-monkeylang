@@ -1,13 +1,13 @@
 use crate::tokens::token::Token;
 
-use super::Statement;
+use super::AstNode;
 
 #[derive(Debug)]
 pub struct ExpressionStatement {
     pub token: Token,
 }
 
-impl Statement for ExpressionStatement {
+impl AstNode for ExpressionStatement {
     fn token(&self) -> &Token {
         &self.token
     }

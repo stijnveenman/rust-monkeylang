@@ -1,6 +1,6 @@
 use crate::tokens::token::Token;
 
-use super::Expression;
+use super::AstNode;
 
 #[derive(Debug)]
 pub struct Identifier {
@@ -8,7 +8,7 @@ pub struct Identifier {
     pub value: String,
 }
 
-impl Expression for Identifier {
+impl AstNode for Identifier {
     fn token(&self) -> &Token {
         &self.token
     }
