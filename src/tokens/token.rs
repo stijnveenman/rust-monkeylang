@@ -20,3 +20,13 @@ pub enum Token {
     FUNCTION,
     LET,
 }
+
+impl Token {
+    pub fn from_ident(ident: String) -> Token {
+        match ident.as_str() {
+            "let" => Token::LET,
+            "fn" => Token::FUNCTION,
+            _ => Token::IDENT(ident),
+        }
+    }
+}

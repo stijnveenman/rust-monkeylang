@@ -30,7 +30,23 @@ impl Lexer {
         self.read_position += 1;
     }
 
+    fn skip_whitespace(&mut self) {
+        while self.ch.is_ascii_whitespace() {
+            self.read_char()
+        }
+    }
+
+    fn read_identifier(&mut self) -> String {
+        let start = self.position;
+        while self.ch.is_ascii_alphanumeric() || self.ch as char == '_' {
+            self.read_char();
+        }
+        self.input[start..self.position].into()
+    }
+
     pub fn next_token(&mut self) -> Token {
+        self.skip_whitespace();
+
         let token = match self.ch as char {
             '=' => Token::ASSIGN,
             ';' => Token::SEMICOLON,
@@ -41,6 +57,7 @@ impl Lexer {
             '{' => Token::LBRACE,
             '}' => Token::RBRACE,
             '\0' => Token::EOF,
+            c if c.is_ascii_alphabetic() => return Token::from_ident(self.read_identifier()),
             _ => Token::ILLEGAL,
         };
 
