@@ -2,9 +2,10 @@ use crate::tokens::token::Token;
 
 use super::Expression;
 
+#[derive(Debug)]
 pub struct Identifier {
-    token: Token,
-    value: String,
+    pub token: Token,
+    pub value: String,
 }
 
 impl Expression for Identifier {

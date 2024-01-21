@@ -1,11 +1,12 @@
 use crate::tokens::token::Token;
 
-use super::{Expression, Statement};
+use super::{identifier::Identifier, ExpressionNode, Statement};
 
+#[derive(Debug)]
 pub struct LetStatement {
-    token: Token,
-    identifier: Box<dyn Expression>,
-    value: Box<dyn Expression>,
+    pub token: Token,
+    pub identifier: Identifier,
+    pub value: ExpressionNode,
 }
 
 impl Statement for LetStatement {

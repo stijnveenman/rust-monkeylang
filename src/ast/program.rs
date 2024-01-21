@@ -1,5 +1,5 @@
-use super::Statement;
+use super::StatementNode;
 
 pub struct Program {
-    pub statements: Vec<Box<dyn Statement>>,
+    pub statements: Vec<StatementNode>,
 }
