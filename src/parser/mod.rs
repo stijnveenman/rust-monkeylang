@@ -97,9 +97,9 @@ mod test {
     #[test]
     fn test_basic_parser() {
         let input = "
-let x  5;
-let  = 10;
-let  838383;
+let x = 5;
+let y = 10;
+let foobar = 838383;
 ";
         let mut parser = Parser::new(input.into());
 
@@ -113,5 +113,19 @@ let  838383;
         assert_let(nodes.next().unwrap(), "x");
         assert_let(nodes.next().unwrap(), "y");
         assert_let(nodes.next().unwrap(), "foobar");
+    }
+
+    #[test]
+    fn test_parser_errors() {
+        let input = "
+let x 5;
+let = 10;
+let 838383;
+";
+        let mut parser = Parser::new(input.into());
+
+        let (_program, errors) = parser.parse_program();
+
+        assert_eq!(errors.len(), 3);
     }
 }
