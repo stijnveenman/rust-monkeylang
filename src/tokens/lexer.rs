@@ -30,6 +30,14 @@ impl Lexer {
         self.read_position += 1;
     }
 
+    fn peek_char(&mut self) -> u8 {
+        if self.read_position > self.input.len() {
+            0
+        } else {
+            self.input.as_bytes()[self.read_position]
+        }
+    }
+
     fn skip_whitespace(&mut self) {
         while self.ch.is_ascii_whitespace() {
             self.read_char()
@@ -59,10 +67,22 @@ impl Lexer {
 
         let token = match self.ch as char {
             // operators
-            '=' => Token::ASSIGN,
+            '=' => match self.peek_char() as char {
+                '=' => {
+                    self.read_char();
+                    Token::EQ
+                }
+                _ => Token::ASSIGN,
+            },
+            '!' => match self.peek_char() as char {
+                '=' => {
+                    self.read_char();
+                    Token::NOT_EQ
+                }
+                _ => Token::BANG,
+            },
             '+' => Token::PLUS,
             '-' => Token::MINUS,
-            '!' => Token::BANG,
             '*' => Token::ASTERISK,
             '/' => Token::SLASH,
 
