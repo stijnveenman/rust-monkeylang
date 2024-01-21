@@ -1,4 +1,4 @@
-use std::mem::{self, discriminant};
+use std::mem::{self};
 
 #[derive(PartialEq, Eq, Debug, Clone)]
 #[allow(non_camel_case_types)]

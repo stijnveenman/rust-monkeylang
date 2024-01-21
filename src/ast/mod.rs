@@ -1,10 +1,13 @@
 use crate::{parser::Parser, tokens::token::Token};
 
-use self::{identifier::Identifier, let_statement::LetStatement};
+use self::{
+    identifier::Identifier, let_statement::LetStatement, return_statement::ReturnStatement,
+};
 
 pub mod identifier;
 pub mod let_statement;
 pub mod program;
+pub mod return_statement;
 
 pub trait Statement {
     fn token(&self) -> &Token;
@@ -23,7 +26,7 @@ pub enum ExpressionNode {
 #[derive(Debug)]
 pub enum StatementNode {
     LetStatement(LetStatement),
-    Placeolder,
+    ReturnStatement(ReturnStatement),
 }
 
 pub type ParsableResult<T> = Result<T, String>;

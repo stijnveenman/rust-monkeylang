@@ -1,7 +1,7 @@
 use crate::{
     ast::{
-        let_statement::LetStatement, program::Program, ParsableResult, ParseStatement,
-        StatementNode,
+        let_statement::LetStatement, program::Program, return_statement::ReturnStatement,
+        ParsableResult, ParseStatement, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -47,6 +47,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<ParsableResult<StatementNode>> {
         match self.current_token {
             Token::LET => Some(LetStatement::parse(self)),
+            Token::RETURN => Some(ReturnStatement::parse(self)),
             _ => None,
         }
     }
