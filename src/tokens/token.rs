@@ -18,5 +18,5 @@ pub enum Token {
     RBRACE,
 
     FUNCTION,
-    LEYT,
+    LET,
 }
