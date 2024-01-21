@@ -1,3 +1,4 @@
+#[derive(PartialEq, Eq, Debug)]
 pub enum Token {
     ILLEGAL,
     EOF,
@@ -17,5 +18,5 @@ pub enum Token {
     RBRACE,
 
     FUNCTION,
-    LET,
+    LEYT,
 }
