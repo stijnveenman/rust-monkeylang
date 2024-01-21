@@ -1,10 +1,11 @@
 use crate::tokens::token::Token;
 
-use super::AstNode;
+use super::{AstNode, ExpressionNode};
 
 #[derive(Debug)]
 pub struct ExpressionStatement {
     pub token: Token,
+    pub expression: ExpressionNode,
 }
 
 impl AstNode for ExpressionStatement {
@@ -13,6 +14,6 @@ impl AstNode for ExpressionStatement {
     }
 
     fn string(&self) -> String {
-        format!("")
+        self.expression.string()
     }
 }
