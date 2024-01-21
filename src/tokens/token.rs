@@ -1,3 +1,5 @@
+use std::mem::{self, discriminant};
+
 #[derive(PartialEq, Eq, Debug, Clone)]
 #[allow(non_camel_case_types)]
 pub enum Token {
@@ -54,5 +56,9 @@ impl Token {
 
             _ => Token::IDENT(ident),
         }
+    }
+
+    pub fn is(&self, other: &Token) -> bool {
+        mem::discriminant(self) == mem::discriminant(other)
     }
 }

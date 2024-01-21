@@ -26,9 +26,22 @@ impl Parser {
         }
     }
 
-    fn next_token(&mut self) {
+    fn next_token(&mut self) -> Token {
+        let current = self.current_token.clone();
         self.current_token = self.peek_token.clone();
         self.peek_token = self.lexer.next_token();
+        current
+    }
+
+    pub fn expect_token(&mut self, token: Token) -> Result<Token, String> {
+        if self.peek_token.is(&token) {
+            Ok(self.next_token())
+        } else {
+            Err(format!(
+                "invalid next token, expected '{:?}' got '{:?}'",
+                token, self.peek_token,
+            ))
+        }
     }
 
     fn parse_statement(&mut self) -> ParsableResult<StatementNode> {
@@ -47,7 +60,7 @@ impl Parser {
                 Ok(statement) => program.statements.push(statement),
                 Err(e) => errors.push(e),
             }
-            self.next_token()
+            self.next_token();
         }
 
         (program, errors)

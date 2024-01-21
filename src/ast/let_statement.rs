@@ -20,6 +20,7 @@ impl Statement for LetStatement {
 
 impl ParseStatement for LetStatement {
     fn parse(parser: &mut crate::parser::Parser) -> ParsableResult<StatementNode> {
+        parser.expect_token(Token::IDENT("".into()))?;
         todo!()
     }
 }
