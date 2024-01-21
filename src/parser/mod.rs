@@ -1,11 +1,13 @@
 use crate::{
-    ast::program::Program,
+    ast::{
+        let_statement::LetStatement, program::Program, ParsableResult, ParseStatement,
+        StatementNode,
+    },
     tokens::{lexer::Lexer, token::Token},
 };
 
-struct Parser {
+pub struct Parser {
     lexer: Lexer,
-    statements: Vec<()>,
     current_token: Token,
     peek_token: Token,
 }
@@ -19,7 +21,6 @@ impl Parser {
 
         Parser {
             lexer,
-            statements: vec![],
             current_token,
             peek_token: next_token,
         }
@@ -30,8 +31,26 @@ impl Parser {
         self.peek_token = self.lexer.next_token();
     }
 
-    fn parse_program(&mut self) -> Program {
-        todo!()
+    fn parse_statement(&mut self) -> ParsableResult<StatementNode> {
+        match self.current_token {
+            Token::LET => LetStatement::parse(self),
+            _ => Err(format!("invalid current token {:?}", self.current_token)),
+        }
+    }
+
+    fn parse_program(&mut self) -> (Program, Vec<String>) {
+        let mut program = Program { statements: vec![] };
+        let mut errors = vec![];
+
+        while self.current_token != Token::EOF {
+            match self.parse_statement() {
+                Ok(statement) => program.statements.push(statement),
+                Err(e) => errors.push(e),
+            }
+            self.next_token()
+        }
+
+        (program, errors)
     }
 }
 
@@ -69,8 +88,10 @@ let foobar = 838383;
 ";
         let mut parser = Parser::new(input.into());
 
-        let program = parser.parse_program();
+        let (program, errors) = parser.parse_program();
+        let empty: Vec<String> = vec![];
 
+        assert_eq!(errors, empty);
         assert_eq!(program.statements.len(), 3);
 
         let mut nodes = program.statements.into_iter();
