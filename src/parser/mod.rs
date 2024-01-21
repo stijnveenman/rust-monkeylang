@@ -1,10 +1,15 @@
 use crate::{
     ast::{
-        let_statement::LetStatement, program::Program, return_statement::ReturnStatement,
-        ParsableResult, ParseStatement, StatementNode,
+        expression_statement::ExpressionStatement, let_statement::LetStatement, program::Program,
+        return_statement::ReturnStatement, ExpressionNode, ParsableResult, ParseStatement,
+        StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
+
+use self::precedence::Precedence;
+
+pub mod precedence;
 
 pub struct Parser {
     lexer: Lexer,
@@ -48,8 +53,12 @@ impl Parser {
         match self.current_token {
             Token::LET => Some(LetStatement::parse(self)),
             Token::RETURN => Some(ReturnStatement::parse(self)),
-            _ => None,
+            _ => Some(ExpressionStatement::parse(self)),
         }
+    }
+
+    pub fn parse_expression(&mut self, precedence: Precedence) -> ParsableResult<ExpressionNode> {
+        todo!()
     }
 
     pub fn parse_program(&mut self) -> (Program, Vec<String>) {
