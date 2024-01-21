@@ -13,6 +13,10 @@ impl AstNode for LetStatement {
     fn token(&self) -> &Token {
         &self.token
     }
+
+    fn string(&self) -> String {
+        format!("let {} = ;", self.identifier.string())
+    }
 }
 
 impl ParseStatement for LetStatement {

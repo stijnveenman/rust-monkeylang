@@ -12,4 +12,8 @@ impl AstNode for Identifier {
     fn token(&self) -> &Token {
         &self.token
     }
+
+    fn string(&self) -> String {
+        self.value.clone()
+    }
 }

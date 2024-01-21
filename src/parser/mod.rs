@@ -69,3 +69,29 @@ impl Parser {
         (program, errors)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::{
+        ast::{
+            identifier::Identifier, let_statement::LetStatement, program::Program, AstNode,
+            StatementNode,
+        },
+        tokens::token::Token,
+    };
+
+    #[test]
+    fn ast_to_string() {
+        let program = Program {
+            statements: vec![StatementNode::LetStatement(LetStatement {
+                token: Token::LET,
+                identifier: Identifier {
+                    token: Token::IDENT("myVar".into()),
+                    value: "myVar".into(),
+                },
+            })],
+        };
+
+        assert_eq!(program.string(), "let myVar = anotherVar;")
+    }
+}

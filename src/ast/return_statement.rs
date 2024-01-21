@@ -12,6 +12,10 @@ impl AstNode for ReturnStatement {
     fn token(&self) -> &Token {
         &self.token
     }
+
+    fn string(&self) -> String {
+        format!("return ;")
+    }
 }
 
 impl ParseStatement for ReturnStatement {

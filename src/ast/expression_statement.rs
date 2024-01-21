@@ -11,4 +11,8 @@ impl AstNode for ExpressionStatement {
     fn token(&self) -> &Token {
         &self.token
     }
+
+    fn string(&self) -> String {
+        format!("")
+    }
 }
