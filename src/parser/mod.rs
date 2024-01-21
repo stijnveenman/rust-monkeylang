@@ -1,8 +1,9 @@
 use crate::{
     ast::{
         expression_statement::ExpressionStatement, identifier::Identifier,
-        let_statement::LetStatement, program::Program, return_statement::ReturnStatement,
-        ExpressionNode, ParsableResult, ParsePrefix, ParseStatement, StatementNode,
+        integer_literal::IntegerLiteral, let_statement::LetStatement, program::Program,
+        return_statement::ReturnStatement, ExpressionNode, ParsableResult, ParsePrefix,
+        ParseStatement, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -60,6 +61,7 @@ impl Parser {
     pub fn parse_prefix(&mut self) -> ParsableResult<ExpressionNode> {
         match self.current_token.clone() {
             Token::IDENT(_) => Identifier::parse_prefix(self),
+            Token::INT(_) => IntegerLiteral::parse_prefix(self),
             e => Err(format!("Invalid token {:?}", e)),
         }
     }

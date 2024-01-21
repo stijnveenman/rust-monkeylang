@@ -1,12 +1,14 @@
 use crate::{parser::Parser, tokens::token::Token};
 
 use self::{
-    expression_statement::ExpressionStatement, identifier::Identifier, let_statement::LetStatement,
+    expression_statement::ExpressionStatement, identifier::Identifier,
+    integer_literal::IntegerLiteral, let_statement::LetStatement,
     return_statement::ReturnStatement,
 };
 
 pub mod expression_statement;
 pub mod identifier;
+pub mod integer_literal;
 pub mod let_statement;
 pub mod program;
 pub mod return_statement;
@@ -19,7 +21,7 @@ pub trait AstNode {
 #[derive(Debug)]
 pub enum ExpressionNode {
     Identifier(Identifier),
-    Placeolder,
+    IntegerLiteral(IntegerLiteral),
 }
 
 #[derive(Debug)]
@@ -61,14 +63,14 @@ impl AstNode for ExpressionNode {
     fn token(&self) -> &Token {
         match self {
             ExpressionNode::Identifier(i) => i.token(),
-            ExpressionNode::Placeolder => todo!(),
+            ExpressionNode::IntegerLiteral(i) => i.token(),
         }
     }
 
     fn string(&self) -> String {
         match self {
             ExpressionNode::Identifier(i) => i.string(),
-            ExpressionNode::Placeolder => todo!(),
+            ExpressionNode::IntegerLiteral(i) => i.string(),
         }
     }
 }
