@@ -8,8 +8,8 @@ use crate::{
 
 pub struct Parser {
     lexer: Lexer,
-    current_token: Token,
-    peek_token: Token,
+    pub current_token: Token,
+    pub peek_token: Token,
 }
 
 impl Parser {
@@ -26,7 +26,7 @@ impl Parser {
         }
     }
 
-    fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token {
         let current = self.current_token.clone();
         self.current_token = self.peek_token.clone();
         self.peek_token = self.lexer.next_token();
