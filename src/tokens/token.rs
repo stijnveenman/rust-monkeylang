@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 #[allow(non_camel_case_types)]
 pub enum Token {
     ILLEGAL,
@@ -10,9 +10,9 @@ pub enum Token {
 
     // operators
     ASSIGN,
+    BANG,
     PLUS,
     MINUS,
-    BANG,
     ASTERISK,
     SLASH,
 
