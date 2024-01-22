@@ -2,12 +2,14 @@ use crate::{parser::Parser, tokens::token::Token};
 
 use self::{
     expression_statement::ExpressionStatement, identifier::Identifier,
-    integer_literal::IntegerLiteral, let_statement::LetStatement,
-    prefix_expression::PrefixExpression, return_statement::ReturnStatement,
+    infix_expression::InfixExpression, integer_literal::IntegerLiteral,
+    let_statement::LetStatement, prefix_expression::PrefixExpression,
+    return_statement::ReturnStatement,
 };
 
 pub mod expression_statement;
 pub mod identifier;
+pub mod infix_expression;
 pub mod integer_literal;
 pub mod let_statement;
 pub mod prefix_expression;
@@ -24,6 +26,7 @@ pub enum ExpressionNode {
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
     PrefixExpression(PrefixExpression),
+    InfixExpression(InfixExpression),
 }
 
 #[derive(Debug)]
@@ -67,6 +70,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::Identifier(i) => i.token(),
             ExpressionNode::IntegerLiteral(i) => i.token(),
             ExpressionNode::PrefixExpression(i) => i.token(),
+            ExpressionNode::InfixExpression(i) => i.token(),
         }
     }
 
@@ -75,6 +79,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::Identifier(i) => i.string(),
             ExpressionNode::IntegerLiteral(i) => i.string(),
             ExpressionNode::PrefixExpression(i) => i.string(),
+            ExpressionNode::InfixExpression(i) => i.string(),
         }
     }
 }
