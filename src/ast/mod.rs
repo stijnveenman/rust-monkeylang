@@ -46,6 +46,10 @@ pub trait ParsePrefix {
     fn parse_prefix(parser: &mut Parser) -> ParsableResult<ExpressionNode>;
 }
 
+pub trait ParseInfix {
+    fn parse_infix(parser: &mut Parser, left: ExpressionNode) -> ParsableResult<ExpressionNode>;
+}
+
 impl AstNode for StatementNode {
     fn token(&self) -> &Token {
         match self {

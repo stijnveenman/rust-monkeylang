@@ -1,14 +1,15 @@
 use crate::{
     ast::{
         expression_statement::ExpressionStatement, identifier::Identifier,
-        integer_literal::IntegerLiteral, let_statement::LetStatement,
-        prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
-        AstNode, ExpressionNode, ParsableResult, ParsePrefix, ParseStatement, StatementNode,
+        infix_expression::InfixExpression, integer_literal::IntegerLiteral,
+        let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
+        return_statement::ReturnStatement, AstNode, ExpressionNode, ParsableResult, ParseInfix,
+        ParsePrefix, ParseStatement, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
 
-use self::precedence::Precedence;
+use self::precedence::{IntoPrecedence, Precedence};
 
 pub mod precedence;
 
@@ -61,12 +62,40 @@ impl Parser {
             Token::IDENT(_) => Identifier::parse_prefix(self),
             Token::INT(_) => IntegerLiteral::parse_prefix(self),
             Token::BANG | Token::MINUS => PrefixExpression::parse_prefix(self),
-            e => Err(format!("Invalid token {:?}", e)),
+            e => Err(format!("Invalid prefix token {:?}", e)),
         }
     }
 
+    fn is_infix(&mut self) -> bool {
+        matches!(
+            self.current_token.clone(),
+            Token::PLUS
+                | Token::MINUS
+                | Token::SLASH
+                | Token::ASTERISK
+                | Token::EQ
+                | Token::NOT_EQ
+                | Token::LT
+                | Token::GT
+        )
+    }
+
+    fn parse_infix(&mut self, left: ExpressionNode) -> ParsableResult<ExpressionNode> {
+        InfixExpression::parse_infix(self, left)
+    }
+
     pub fn parse_expression(&mut self, precedence: Precedence) -> ParsableResult<ExpressionNode> {
-        let left = self.parse_prefix()?;
+        let mut left = self.parse_prefix()?;
+
+        while !self.peek_token.is(&Token::SEMICOLON) && precedence < self.peek_token.precedence() {
+            if !self.is_infix() {
+                return Ok(left);
+            }
+
+            self.next_token();
+
+            left = self.parse_infix(left)?;
+        }
 
         Ok(left)
     }

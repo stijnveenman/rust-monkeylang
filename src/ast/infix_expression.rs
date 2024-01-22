@@ -1,6 +1,9 @@
-use crate::tokens::token::Token;
+use crate::{
+    parser::{precedence::IntoPrecedence, Parser},
+    tokens::token::Token,
+};
 
-use super::{AstNode, ExpressionNode};
+use super::{AstNode, ExpressionNode, ParsableResult, ParseInfix};
 
 #[derive(Debug)]
 pub struct InfixExpression {
@@ -36,6 +39,24 @@ impl AstNode for InfixExpression {
             operator,
             self.right.string()
         )
+    }
+}
+
+impl ParseInfix for InfixExpression {
+    fn parse_infix(parser: &mut Parser, left: ExpressionNode) -> ParsableResult<ExpressionNode> {
+        let token = parser.current_token.clone();
+        let operator = parser.current_token.clone();
+
+        parser.next_token();
+
+        let right = parser.parse_expression(operator.precedence())?;
+
+        Ok(ExpressionNode::InfixExpression(InfixExpression {
+            token,
+            left: left.into(),
+            operator,
+            right: right.into(),
+        }))
     }
 }
 
