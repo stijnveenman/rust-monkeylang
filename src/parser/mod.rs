@@ -68,7 +68,7 @@ impl Parser {
 
     fn is_infix(&mut self) -> bool {
         matches!(
-            self.current_token.clone(),
+            self.peek_token.clone(),
             Token::PLUS
                 | Token::MINUS
                 | Token::SLASH
