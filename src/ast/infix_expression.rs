@@ -65,7 +65,9 @@ mod test {
     use rstest::rstest;
 
     use crate::{
-        ast::{integer_literal::test::assert_integer_literal, ExpressionNode, StatementNode},
+        ast::{
+            integer_literal::test::assert_integer_literal, AstNode, ExpressionNode, StatementNode,
+        },
         parser::Parser,
         tokens::token::Token,
     };
@@ -81,7 +83,7 @@ mod test {
     #[case("5 != 5;", 5, Token::NOT_EQ, 5)]
     // sadly rstest does not work with rust-test
     // https://github.com/rouge8/neotest-rust/pull/57
-    fn test_prefix_expression(
+    fn test_infix_expression(
         #[case] input: &str,
         #[case] left: u64,
         #[case] token: Token,
@@ -112,5 +114,29 @@ mod test {
         assert_eq!(infix.operator, token);
         assert_integer_literal(&infix.left, left);
         assert_integer_literal(&infix.right, right);
+    }
+
+    #[rstest]
+    #[case("-a * b", "((-a) * b)")]
+    #[case("!-a", "(!(-a))")]
+    #[case("a + b + c", "((a + b) + c)")]
+    #[case("a + b - c", "((a + b) - c)")]
+    #[case("a * b * c", "((a * b) * c)")]
+    #[case("a * b / c", "((a * b) / c)")]
+    #[case("a + b / c", "(a + (b / c))")]
+    #[case("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)")]
+    #[case("3 + 4; -5 * 5", "(3 + 4)((-5) * 5)")]
+    #[case("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))")]
+    #[case("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))")]
+    #[case("3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))")]
+    fn test_operator_precedence_parsing(#[case] input: &str, #[case] expected: &str) {
+        let mut parser = Parser::new(input.into());
+        let (program, errors) = parser.parse_program();
+
+        let empty: Vec<String> = vec![];
+
+        assert_eq!(errors, empty);
+
+        assert_eq!(expected, &program.string())
     }
 }

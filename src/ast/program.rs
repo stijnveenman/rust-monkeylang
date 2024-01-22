@@ -17,6 +17,6 @@ impl AstNode for Program {
             .iter()
             .map(|i| i.string())
             .collect::<Vec<_>>()
-            .join("\n")
+            .join("")
     }
 }
