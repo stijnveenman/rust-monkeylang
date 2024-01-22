@@ -1,8 +1,11 @@
 use core::panic;
 
-use crate::tokens::token::Token;
+use crate::{
+    parser::{precedence::Precedence, Parser},
+    tokens::token::Token,
+};
 
-use super::{AstNode, ExpressionNode};
+use super::{AstNode, ExpressionNode, ParsableResult, ParsePrefix};
 
 #[derive(Debug)]
 pub struct PrefixExpression {
@@ -26,6 +29,23 @@ impl AstNode for PrefixExpression {
     }
 }
 
+impl ParsePrefix for PrefixExpression {
+    fn parse_prefix(parser: &mut Parser) -> ParsableResult<ExpressionNode> {
+        let token = parser.current_token.clone();
+        let operator = parser.current_token.clone();
+
+        parser.next_token();
+
+        let expression = parser.parse_expression(Precedence::PREFIX)?;
+
+        Ok(ExpressionNode::PrefixExpression(PrefixExpression {
+            token,
+            operator,
+            right: Box::new(expression),
+        }))
+    }
+}
+
 #[cfg(test)]
 mod test {
     use rstest::rstest;
@@ -39,6 +59,8 @@ mod test {
     #[rstest]
     #[case("!5;", Token::BANG, 5)]
     #[case("-15;", Token::MINUS, 15)]
+    // sadly rstest does not work with rust-test
+    // https://github.com/rouge8/neotest-rust/pull/57
     fn test_prefix_expression(#[case] input: &str, #[case] token: Token, #[case] value: u64) {
         let mut parser = Parser::new(input.into());
 
