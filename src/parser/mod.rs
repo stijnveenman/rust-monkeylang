@@ -3,7 +3,7 @@ use crate::{
         expression_statement::ExpressionStatement, identifier::Identifier,
         integer_literal::IntegerLiteral, let_statement::LetStatement,
         prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
-        ExpressionNode, ParsableResult, ParsePrefix, ParseStatement, StatementNode,
+        AstNode, ExpressionNode, ParsableResult, ParsePrefix, ParseStatement, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -32,16 +32,14 @@ impl Parser {
         }
     }
 
-    pub fn next_token(&mut self) -> Token {
-        let current = self.current_token.clone();
+    pub fn next_token(&mut self) {
         self.current_token = self.peek_token.clone();
         self.peek_token = self.lexer.next_token();
-        current
     }
 
-    pub fn expect_token(&mut self, token: Token) -> Result<Token, String> {
+    pub fn expect_token(&mut self, token: Token) -> Result<(), String> {
         if self.peek_token.is(&token) {
-            Ok(self.next_token())
+            Ok(())
         } else {
             Err(format!(
                 "invalid token, expected '{:?}' got '{:?}'",

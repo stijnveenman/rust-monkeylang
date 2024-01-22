@@ -24,7 +24,7 @@ impl ParseStatement for ExpressionStatement {
 
         let expression = parser.parse_expression(Precedence::LOWEST)?;
 
-        if parser.next_token().is(&Token::SEMICOLON) {
+        if parser.peek_token.is(&Token::SEMICOLON) {
             parser.next_token();
         }
 
