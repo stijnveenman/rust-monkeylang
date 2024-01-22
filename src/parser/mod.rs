@@ -62,8 +62,7 @@ impl Parser {
         match self.current_token.clone() {
             Token::IDENT(_) => Identifier::parse_prefix(self),
             Token::INT(_) => IntegerLiteral::parse_prefix(self),
-            Token::BANG => PrefixExpression::parse_prefix(self),
-            Token::MINUS => PrefixExpression::parse_prefix(self),
+            Token::BANG | Token::MINUS => PrefixExpression::parse_prefix(self),
             e => Err(format!("Invalid token {:?}", e)),
         }
     }
