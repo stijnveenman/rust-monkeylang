@@ -34,13 +34,24 @@ impl ParsePrefix for IntegerLiteral {
 }
 
 #[cfg(test)]
-mod test {
+pub mod test {
     use core::panic;
 
     use crate::{
         ast::{ExpressionNode, StatementNode},
         parser::Parser,
     };
+
+    pub fn assert_integer_literal(expression: &ExpressionNode, value: u64) {
+        let ExpressionNode::IntegerLiteral(integer) = expression else {
+            panic!(
+                "expected IntegerLiteral for expression, got {:?}",
+                expression
+            );
+        };
+
+        assert_eq!(integer.value, value);
+    }
 
     #[test]
     fn test_expression_statement() {
@@ -60,13 +71,6 @@ mod test {
             panic!("expected ExpressionStatement for node, got {:?}", node);
         };
 
-        let ExpressionNode::IntegerLiteral(integer) = expression.expression else {
-            panic!(
-                "expected IntegerLiteral for expression, got {:?}",
-                expression.expression
-            );
-        };
-
-        assert_eq!(integer.value, 5);
+        assert_integer_literal(&expression.expression, 5);
     }
 }
