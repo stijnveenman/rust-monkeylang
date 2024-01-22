@@ -28,15 +28,18 @@ impl AstNode for PrefixExpression {
 
 #[cfg(test)]
 mod test {
+    use rstest::rstest;
+
     use crate::{
         ast::{integer_literal::test::assert_integer_literal, ExpressionNode, StatementNode},
         parser::Parser,
         tokens::token::Token,
     };
 
-    #[test]
-    fn test_prefix_expression() {
-        let input = "!5;";
+    #[rstest]
+    #[case("!5;", Token::BANG, 5)]
+    #[case("-15;", Token::MINUS, 15)]
+    fn test_prefix_expression(#[case] input: &str, #[case] token: Token, #[case] value: u64) {
         let mut parser = Parser::new(input.into());
 
         let (program, errors) = parser.parse_program();
@@ -59,7 +62,7 @@ mod test {
             );
         };
 
-        assert_eq!(prefix.operator, Token::BANG);
-        assert_integer_literal(&prefix.right, 5);
+        assert_eq!(prefix.operator, token);
+        assert_integer_literal(&prefix.right, value);
     }
 }
