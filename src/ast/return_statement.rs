@@ -1,11 +1,11 @@
-use crate::tokens::token::Token;
+use crate::{parser::precedence::Precedence, tokens::token::Token};
 
-use super::{AstNode, ParseStatement};
+use super::{AstNode, ExpressionNode, ParseStatement};
 
 #[derive(Debug)]
 pub struct ReturnStatement {
     pub token: Token,
-    //pub return_value: ExpressionNode,
+    pub return_value: ExpressionNode,
 }
 
 impl AstNode for ReturnStatement {
@@ -14,7 +14,7 @@ impl AstNode for ReturnStatement {
     }
 
     fn string(&self) -> String {
-        format!("return ;")
+        format!("return {};", self.return_value.string())
     }
 }
 
@@ -22,12 +22,15 @@ impl ParseStatement for ReturnStatement {
     fn parse(parser: &mut crate::parser::Parser) -> super::ParsableResult<super::StatementNode> {
         let token = parser.current_token.clone();
 
+        let expression = parser.parse_expression(Precedence::LOWEST)?;
+
         while !parser.current_token.is(&Token::SEMICOLON) {
             parser.next_token();
         }
 
         Ok(super::StatementNode::ReturnStatement(ReturnStatement {
             token,
+            return_value: expression,
         }))
     }
 }
