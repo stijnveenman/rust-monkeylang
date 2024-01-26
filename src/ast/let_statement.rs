@@ -1,4 +1,4 @@
-use crate::tokens::token::Token;
+use crate::{parser::precedence::Precedence, tokens::token::Token};
 
 use super::{
     identifier::Identifier, AstNode, ExpressionNode, ParsableResult, ParseStatement, StatementNode,
@@ -8,7 +8,7 @@ use super::{
 pub struct LetStatement {
     pub token: Token,
     pub identifier: Identifier,
-    pub value: Option<ExpressionNode>,
+    pub value: ExpressionNode,
 }
 
 impl AstNode for LetStatement {
@@ -20,7 +20,7 @@ impl AstNode for LetStatement {
         format!(
             "let {} = {};",
             self.identifier.string(),
-            self.value.as_ref().map(|v| v.string()).unwrap_or("".into())
+            self.value.string()
         )
     }
 }
@@ -38,7 +38,11 @@ impl ParseStatement for LetStatement {
 
         parser.expect_token(Token::ASSIGN)?;
 
-        while !parser.current_token.is(&Token::SEMICOLON) {
+        parser.next_token();
+
+        let expression = parser.parse_expression(Precedence::LOWEST)?;
+
+        if parser.peek_token.is(&Token::SEMICOLON) {
             parser.next_token();
         }
 
@@ -48,20 +52,24 @@ impl ParseStatement for LetStatement {
                 token: Token::IDENT(ident.clone()),
                 value: ident,
             },
-            value: None,
+            value: expression,
         }))
     }
 }
 
 #[cfg(test)]
 mod test {
+    use std::any::Any;
+
+    use rstest::rstest;
+
     use crate::{
-        ast::{AstNode, StatementNode},
+        ast::{test::test_expression, AstNode, StatementNode},
         parser::Parser,
         tokens::token::Token,
     };
 
-    fn assert_let(node: StatementNode, name: &str) {
+    fn assert_let<T: std::fmt::Debug + Any>(node: StatementNode, name: &str, value: &T) {
         let StatementNode::LetStatement(statement) = node else {
             panic!("invalid node, expected 'let' got {:?}", node);
         };
@@ -76,26 +84,28 @@ mod test {
             );
         };
         assert_eq!(literal, &name);
+
+        test_expression(&statement.value, value)
     }
 
-    #[test]
-    fn test_basic_parser() {
-        let input = "
-let x = 5;
-let y = 10;
-let foobar = 838383;
-";
+    #[rstest]
+    #[case("let x = 5;", "x", 5u64)]
+    #[case("let y = true;", "y", true)]
+    #[case("let foobar = y;", "foobar", "y")]
+    fn test_let_expression<T: std::fmt::Debug + 'static>(
+        #[case] input: &str,
+        #[case] name: &str,
+        #[case] value: T,
+    ) {
         let mut parser = Parser::new(input.into());
 
         let (program, errors) = parser.parse_program();
         let empty: Vec<String> = vec![];
 
         assert_eq!(errors, empty);
-        assert_eq!(program.statements.len(), 3);
+        assert_eq!(program.statements.len(), 1);
 
         let mut nodes = program.statements.into_iter();
-        assert_let(nodes.next().unwrap(), "x");
-        assert_let(nodes.next().unwrap(), "y");
-        assert_let(nodes.next().unwrap(), "foobar");
+        assert_let(nodes.next().unwrap(), name, &value);
     }
 }

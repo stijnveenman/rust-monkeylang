@@ -40,6 +40,7 @@ impl Parser {
 
     pub fn expect_token(&mut self, token: Token) -> Result<(), String> {
         if self.peek_token.is(&token) {
+            self.next_token();
             Ok(())
         } else {
             Err(format!(
@@ -138,10 +139,10 @@ mod test {
                     token: Token::IDENT("myVar".into()),
                     value: "myVar".into(),
                 },
-                value: Some(ExpressionNode::Identifier(Identifier {
+                value: ExpressionNode::Identifier(Identifier {
                     token: Token::IDENT("anotherVar".into()),
                     value: "anotherVar".into(),
-                })),
+                }),
             })],
         };
 
