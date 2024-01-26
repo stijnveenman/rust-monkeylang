@@ -21,10 +21,11 @@ impl AstNode for ReturnStatement {
 impl ParseStatement for ReturnStatement {
     fn parse(parser: &mut crate::parser::Parser) -> super::ParsableResult<super::StatementNode> {
         let token = parser.current_token.clone();
+        parser.next_token();
 
         let expression = parser.parse_expression(Precedence::LOWEST)?;
 
-        while !parser.current_token.is(&Token::SEMICOLON) {
+        if parser.peek_token.is(&Token::SEMICOLON) {
             parser.next_token();
         }
 
