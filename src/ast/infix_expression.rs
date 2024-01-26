@@ -62,32 +62,35 @@ impl ParseInfix for InfixExpression {
 
 #[cfg(test)]
 mod test {
+    use std::any::Any;
+
     use rstest::rstest;
 
     use crate::{
         ast::{
-            integer_literal::test::assert_integer_literal, AstNode, ExpressionNode, StatementNode,
+            integer_literal::test::assert_integer_literal, test::test_expression, AstNode,
+            ExpressionNode, StatementNode,
         },
         parser::Parser,
         tokens::token::Token,
     };
 
     #[rstest]
-    #[case("5 + 5;", 5, Token::PLUS, 5)]
-    #[case("5 - 5;", 5, Token::MINUS, 5)]
-    #[case("5 * 5;", 5, Token::ASTERISK, 5)]
-    #[case("5 / 5;", 5, Token::SLASH, 5)]
-    #[case("5 > 5;", 5, Token::GT, 5)]
-    #[case("5 < 5;", 5, Token::LT, 5)]
-    #[case("5 == 5;", 5, Token::EQ, 5)]
-    #[case("5 != 5;", 5, Token::NOT_EQ, 5)]
+    #[case("5 + 5;", 5u64, Token::PLUS, 5u64)]
+    #[case("5 - 5;", 5u64, Token::MINUS, 5u64)]
+    #[case("5 * 5;", 5u64, Token::ASTERISK, 5u64)]
+    #[case("5 / 5;", 5u64, Token::SLASH, 5u64)]
+    #[case("5 > 5;", 5u64, Token::GT, 5u64)]
+    #[case("5 < 5;", 5u64, Token::LT, 5u64)]
+    #[case("5 == 5;", 5u64, Token::EQ, 5u64)]
+    #[case("5 != 5;", 5u64, Token::NOT_EQ, 5u64)]
     // sadly rstest does not work with rust-test
     // https://github.com/rouge8/neotest-rust/pull/57
-    fn test_infix_expression(
+    fn test_infix_expression<T: std::fmt::Debug + Any>(
         #[case] input: &str,
-        #[case] left: u64,
+        #[case] left: T,
         #[case] token: Token,
-        #[case] right: u64,
+        #[case] right: T,
     ) {
         let mut parser = Parser::new(input.into());
 
@@ -112,8 +115,8 @@ mod test {
         };
 
         assert_eq!(infix.operator, token);
-        assert_integer_literal(&infix.left, left);
-        assert_integer_literal(&infix.right, right);
+        test_expression(&infix.left, &left);
+        test_expression(&infix.right, &right);
     }
 
     #[rstest]
