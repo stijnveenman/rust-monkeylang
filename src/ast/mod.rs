@@ -9,6 +9,7 @@ use self::{
 
 pub mod boolean_literal;
 pub mod expression_statement;
+pub mod grouped_expression;
 pub mod identifier;
 pub mod infix_expression;
 pub mod integer_literal;
