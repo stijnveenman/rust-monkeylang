@@ -7,10 +7,12 @@ use self::{
     return_statement::ReturnStatement,
 };
 
+pub mod block_statement;
 pub mod boolean_literal;
 pub mod expression_statement;
 pub mod grouped_expression;
 pub mod identifier;
+pub mod if_expression;
 pub mod infix_expression;
 pub mod integer_literal;
 pub mod let_statement;
