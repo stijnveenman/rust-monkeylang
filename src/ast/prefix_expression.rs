@@ -48,20 +48,30 @@ impl ParsePrefix for PrefixExpression {
 
 #[cfg(test)]
 mod test {
+    use std::any::Any;
+
     use rstest::rstest;
 
     use crate::{
-        ast::{integer_literal::test::assert_integer_literal, ExpressionNode, StatementNode},
+        ast::{ExpressionNode, StatementNode},
         parser::Parser,
         tokens::token::Token,
     };
 
+    use super::PrefixExpression;
+
     #[rstest]
-    #[case("!5;", Token::BANG, 5)]
-    #[case("-15;", Token::MINUS, 15)]
+    #[case("!5;", Token::BANG, 5u64)]
+    #[case("-15;", Token::MINUS, 15u64)]
+    #[case("!true;", Token::BANG, true)]
+    #[case("!false;", Token::BANG, false)]
     // sadly rstest does not work with rust-test
     // https://github.com/rouge8/neotest-rust/pull/57
-    fn test_prefix_expression(#[case] input: &str, #[case] token: Token, #[case] value: u64) {
+    fn test_prefix_expression<T: std::fmt::Debug + Any>(
+        #[case] input: &str,
+        #[case] token: Token,
+        #[case] value: T,
+    ) {
         let mut parser = Parser::new(input.into());
 
         let (program, errors) = parser.parse_program();
@@ -84,7 +94,23 @@ mod test {
             );
         };
 
-        assert_eq!(prefix.operator, token);
-        assert_integer_literal(&prefix.right, value);
+        test_prefx(prefix, token, &value)
+    }
+
+    fn test_prefx<T: std::fmt::Debug + Any>(expression: PrefixExpression, token: Token, value: &T) {
+        assert_eq!(expression.token, token);
+        let value_any = value as &dyn Any;
+
+        match *expression.right {
+            ExpressionNode::Identifier(_) => todo!(),
+            ExpressionNode::IntegerLiteral(v) => {
+                assert_eq!(&v.value, value_any.downcast_ref().unwrap())
+            }
+            ExpressionNode::BooleanLiteral(v) => {
+                assert_eq!(&v.value, value_any.downcast_ref().unwrap())
+            }
+            ExpressionNode::PrefixExpression(_) => todo!(),
+            ExpressionNode::InfixExpression(_) => todo!(),
+        }
     }
 }
