@@ -63,6 +63,8 @@ mod test {
     #[rstest]
     #[case("!5;", Token::BANG, 5u64)]
     #[case("-15;", Token::MINUS, 15u64)]
+    #[case("!foobar;", Token::BANG, "foobar")]
+    #[case("-foobar;", Token::MINUS, "foobar")]
     #[case("!true;", Token::BANG, true)]
     #[case("!false;", Token::BANG, false)]
     // sadly rstest does not work with rust-test
@@ -102,7 +104,12 @@ mod test {
         let value_any = value as &dyn Any;
 
         match *expression.right {
-            ExpressionNode::Identifier(_) => todo!(),
+            ExpressionNode::Identifier(v) => {
+                assert_eq!(
+                    v.value,
+                    value_any.downcast_ref::<&str>().unwrap().to_string()
+                )
+            }
             ExpressionNode::IntegerLiteral(v) => {
                 assert_eq!(&v.value, value_any.downcast_ref().unwrap())
             }
