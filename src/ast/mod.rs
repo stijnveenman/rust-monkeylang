@@ -91,3 +91,31 @@ impl AstNode for ExpressionNode {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::any::Any;
+
+    use super::ExpressionNode;
+
+    pub fn test_expression<T: std::fmt::Debug + Any>(expression: &ExpressionNode, value: &T) {
+        let value_any = value as &dyn Any;
+
+        match expression {
+            ExpressionNode::Identifier(v) => {
+                assert_eq!(
+                    v.value,
+                    value_any.downcast_ref::<&str>().unwrap().to_string()
+                )
+            }
+            ExpressionNode::IntegerLiteral(v) => {
+                assert_eq!(&v.value, value_any.downcast_ref().unwrap())
+            }
+            ExpressionNode::BooleanLiteral(v) => {
+                assert_eq!(&v.value, value_any.downcast_ref().unwrap())
+            }
+            ExpressionNode::PrefixExpression(_) => todo!(),
+            ExpressionNode::InfixExpression(_) => todo!(),
+        }
+    }
+}

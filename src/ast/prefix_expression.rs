@@ -53,7 +53,7 @@ mod test {
     use rstest::rstest;
 
     use crate::{
-        ast::{ExpressionNode, StatementNode},
+        ast::{test::test_expression, ExpressionNode, StatementNode},
         parser::Parser,
         tokens::token::Token,
     };
@@ -101,23 +101,6 @@ mod test {
 
     fn test_prefx<T: std::fmt::Debug + Any>(expression: PrefixExpression, token: Token, value: &T) {
         assert_eq!(expression.token, token);
-        let value_any = value as &dyn Any;
-
-        match *expression.right {
-            ExpressionNode::Identifier(v) => {
-                assert_eq!(
-                    v.value,
-                    value_any.downcast_ref::<&str>().unwrap().to_string()
-                )
-            }
-            ExpressionNode::IntegerLiteral(v) => {
-                assert_eq!(&v.value, value_any.downcast_ref().unwrap())
-            }
-            ExpressionNode::BooleanLiteral(v) => {
-                assert_eq!(&v.value, value_any.downcast_ref().unwrap())
-            }
-            ExpressionNode::PrefixExpression(_) => todo!(),
-            ExpressionNode::InfixExpression(_) => todo!(),
-        }
+        test_expression(&expression.right, value);
     }
 }
