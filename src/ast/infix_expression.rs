@@ -67,10 +67,7 @@ mod test {
     use rstest::rstest;
 
     use crate::{
-        ast::{
-            integer_literal::test::assert_integer_literal, test::test_expression, AstNode,
-            ExpressionNode, StatementNode,
-        },
+        ast::{test::test_expression, AstNode, ExpressionNode, StatementNode},
         parser::Parser,
         tokens::token::Token,
     };
@@ -84,6 +81,17 @@ mod test {
     #[case("5 < 5;", 5u64, Token::LT, 5u64)]
     #[case("5 == 5;", 5u64, Token::EQ, 5u64)]
     #[case("5 != 5;", 5u64, Token::NOT_EQ, 5u64)]
+    #[case("foobar + barfoo;", "foobar", Token::PLUS, "barfoo")]
+    #[case("foobar - barfoo;", "foobar", Token::MINUS, "barfoo")]
+    #[case("foobar * barfoo;", "foobar", Token::ASTERISK, "barfoo")]
+    #[case("foobar / barfoo;", "foobar", Token::SLASH, "barfoo")]
+    #[case("foobar > barfoo;", "foobar", Token::GT, "barfoo")]
+    #[case("foobar < barfoo;", "foobar", Token::LT, "barfoo")]
+    #[case("foobar == barfoo;", "foobar", Token::EQ, "barfoo")]
+    #[case("foobar != barfoo;", "foobar", Token::NOT_EQ, "barfoo")]
+    #[case("true == true", true, Token::EQ, true)]
+    #[case("true != false", true, Token::NOT_EQ, false)]
+    #[case("false == false", false, Token::EQ, false)]
     // sadly rstest does not work with rust-test
     // https://github.com/rouge8/neotest-rust/pull/57
     fn test_infix_expression<T: std::fmt::Debug + Any>(
