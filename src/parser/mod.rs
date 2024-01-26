@@ -1,7 +1,7 @@
 use crate::{
     ast::{
-        expression_statement::ExpressionStatement, identifier::Identifier,
-        infix_expression::InfixExpression, integer_literal::IntegerLiteral,
+        boolean_literal::BooleanLiteral, expression_statement::ExpressionStatement,
+        identifier::Identifier, infix_expression::InfixExpression, integer_literal::IntegerLiteral,
         let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
         return_statement::ReturnStatement, AstNode, ExpressionNode, ParsableResult, ParseInfix,
         ParsePrefix, ParseStatement, StatementNode,
@@ -61,6 +61,7 @@ impl Parser {
         match self.current_token.clone() {
             Token::IDENT(_) => Identifier::parse_prefix(self),
             Token::INT(_) => IntegerLiteral::parse_prefix(self),
+            Token::TRUE | Token::FALSE => BooleanLiteral::parse_prefix(self),
             Token::BANG | Token::MINUS => PrefixExpression::parse_prefix(self),
             e => Err(format!("Invalid prefix token {:?}", e)),
         }
