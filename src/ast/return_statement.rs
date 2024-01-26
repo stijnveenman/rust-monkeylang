@@ -38,38 +38,42 @@ impl ParseStatement for ReturnStatement {
 
 #[cfg(test)]
 mod test {
+    use core::fmt;
+    use std::any::Any;
+
+    use rstest::rstest;
+
     use crate::{
-        ast::{AstNode, StatementNode},
+        ast::{test::test_expression, AstNode, StatementNode},
         parser::Parser,
         tokens::token::Token,
     };
 
-    fn assert_return(node: StatementNode) {
+    fn assert_return<T: fmt::Debug + Any>(node: StatementNode, value: &T) {
         let StatementNode::ReturnStatement(statement) = node else {
             panic!("invalid node, expected 'ReturnStatement' got {:?}", node);
         };
 
         assert_eq!(statement.token(), &Token::RETURN);
+        test_expression(&statement.return_value, value)
     }
 
-    #[test]
-    fn test_basic_parser() {
-        let input = "
-return 5;
-return 10;
-return 993322;
-";
+    #[rstest]
+    #[case("return 5;", 5u64)]
+    #[case("return true;", true)]
+    #[case("return foobar;", "foobar")]
+    fn test_basic_parser<T: std::fmt::Debug + Any>(#[case] input: &str, #[case] value: T) {
         let mut parser = Parser::new(input.into());
 
         let (program, errors) = parser.parse_program();
         let empty: Vec<String> = vec![];
 
         assert_eq!(errors, empty);
-        assert_eq!(program.statements.len(), 3);
+        assert_eq!(program.statements.len(), 1);
 
         let mut nodes = program.statements.into_iter();
-        assert_return(nodes.next().unwrap());
-        assert_return(nodes.next().unwrap());
-        assert_return(nodes.next().unwrap());
+        let node = nodes.next().unwrap();
+
+        assert_return(node, &value)
     }
 }
