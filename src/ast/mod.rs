@@ -2,9 +2,9 @@ use crate::{parser::Parser, tokens::token::Token};
 
 use self::{
     boolean_literal::BooleanLiteral, expression_statement::ExpressionStatement,
-    identifier::Identifier, infix_expression::InfixExpression, integer_literal::IntegerLiteral,
-    let_statement::LetStatement, prefix_expression::PrefixExpression,
-    return_statement::ReturnStatement,
+    identifier::Identifier, if_expression::IfExpression, infix_expression::InfixExpression,
+    integer_literal::IntegerLiteral, let_statement::LetStatement,
+    prefix_expression::PrefixExpression, return_statement::ReturnStatement,
 };
 
 pub mod block_statement;
@@ -32,6 +32,7 @@ pub enum ExpressionNode {
     BooleanLiteral(BooleanLiteral),
     PrefixExpression(PrefixExpression),
     InfixExpression(InfixExpression),
+    IfExpression(IfExpression),
 }
 
 #[derive(Debug)]
@@ -81,6 +82,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::PrefixExpression(i) => i.token(),
             ExpressionNode::InfixExpression(i) => i.token(),
             ExpressionNode::BooleanLiteral(i) => i.token(),
+            ExpressionNode::IfExpression(i) => i.token(),
         }
     }
 
@@ -91,6 +93,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::PrefixExpression(i) => i.string(),
             ExpressionNode::InfixExpression(i) => i.string(),
             ExpressionNode::BooleanLiteral(i) => i.string(),
+            ExpressionNode::IfExpression(i) => i.string(),
         }
     }
 }
@@ -119,6 +122,7 @@ mod test {
             }
             ExpressionNode::PrefixExpression(_) => todo!(),
             ExpressionNode::InfixExpression(_) => todo!(),
+            ExpressionNode::IfExpression(_) => todo!(),
         }
     }
 }

@@ -61,7 +61,7 @@ impl ParseInfix for InfixExpression {
 }
 
 #[cfg(test)]
-mod test {
+pub mod test {
     use std::any::Any;
 
     use rstest::rstest;
@@ -94,7 +94,7 @@ mod test {
     #[case("false == false", false, Token::EQ, false)]
     // sadly rstest does not work with rust-test
     // https://github.com/rouge8/neotest-rust/pull/57
-    fn test_infix_expression<T: std::fmt::Debug + Any>(
+    fn test_infix<T: std::fmt::Debug + Any>(
         #[case] input: &str,
         #[case] left: T,
         #[case] token: Token,
@@ -115,10 +115,19 @@ mod test {
             panic!("expected ExpressionStatement for node, got {:?}", node);
         };
 
-        let ExpressionNode::InfixExpression(infix) = expression.expression else {
+        test_infix_expression(&expression.expression, left, token, right)
+    }
+
+    pub fn test_infix_expression<T: std::fmt::Debug + Any>(
+        expression: &ExpressionNode,
+        left: T,
+        token: Token,
+        right: T,
+    ) {
+        let ExpressionNode::InfixExpression(infix) = expression else {
             panic!(
                 "expected PrefixExpression for expression, got {:?}",
-                expression.expression
+                expression
             );
         };
 
