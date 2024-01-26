@@ -129,6 +129,10 @@ mod test {
     #[case("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))")]
     #[case("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))")]
     #[case("3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))")]
+    #[case("true", "true")]
+    #[case("false", "false")]
+    #[case("3 > 5 == false", "((3 > 5) == false)")]
+    #[case("3 < 5 == true", "((3 < 5) == true)")]
     fn test_operator_precedence_parsing(#[case] input: &str, #[case] expected: &str) {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
