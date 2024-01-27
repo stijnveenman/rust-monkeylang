@@ -6,6 +6,18 @@ pub enum Object {
     Null,
 }
 
+impl From<u64> for Object {
+    fn from(val: u64) -> Self {
+        Object::Integer(val)
+    }
+}
+
+impl From<bool> for Object {
+    fn from(val: bool) -> Self {
+        Object::Boolean(val)
+    }
+}
+
 impl Display for Object {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

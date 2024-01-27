@@ -1,7 +1,45 @@
-use crate::{ast::Node, object::Object};
+use crate::{
+    ast::{ExpressionNode, Node, StatementNode},
+    object::Object,
+};
 
 pub fn eval(node: Node) -> Object {
-    todo!()
+    match node {
+        Node::Statement(statement) => eval_statement(statement),
+        Node::Expression(expression) => eval_expression(expression),
+        Node::Program(program) => eval_statements(program.statements),
+    }
+}
+
+fn eval_expression(expression: ExpressionNode) -> Object {
+    match expression {
+        ExpressionNode::Identifier(_) => todo!(),
+        ExpressionNode::IntegerLiteral(i) => i.value.into(),
+        ExpressionNode::BooleanLiteral(_) => todo!(),
+        ExpressionNode::PrefixExpression(_) => todo!(),
+        ExpressionNode::InfixExpression(_) => todo!(),
+        ExpressionNode::IfExpression(_) => todo!(),
+        ExpressionNode::FunctionExpression(_) => todo!(),
+        ExpressionNode::CallExpression(_) => todo!(),
+    }
+}
+
+fn eval_statement(statement: StatementNode) -> Object {
+    match statement {
+        StatementNode::LetStatement(_) => todo!(),
+        StatementNode::ReturnStatement(_) => todo!(),
+        StatementNode::ExpressionStatement(expression) => eval_expression(expression.expression),
+    }
+}
+
+fn eval_statements(statements: Vec<StatementNode>) -> Object {
+    let mut result = Object::Null;
+
+    for statement in statements {
+        result = eval_statement(statement);
+    }
+
+    result
 }
 
 #[cfg(test)]
