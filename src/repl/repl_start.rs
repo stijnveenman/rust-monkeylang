@@ -1,10 +1,6 @@
 use std::io::{self, stdout, BufRead, Write};
 
-use crate::{
-    ast::AstNode,
-    parser::Parser,
-    tokens::{lexer::Lexer, token::Token},
-};
+use crate::{ast::AstNode, parser::Parser};
 
 const PROMPT: &str = ">>";
 
