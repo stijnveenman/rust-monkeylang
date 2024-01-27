@@ -20,7 +20,7 @@ pub fn start() {
         if !errors.is_empty() {
             println!("{}", errors.join("\n"));
         } else {
-            let result = eval(program.into());
+            let result = eval(&program.into());
             println!("{}", result);
         }
 

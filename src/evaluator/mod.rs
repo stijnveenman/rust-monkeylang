@@ -3,15 +3,15 @@ use crate::{
     object::Object,
 };
 
-pub fn eval(node: Node) -> Object {
+pub fn eval(node: &Node) -> Object {
     match node {
         Node::Statement(statement) => eval_statement(statement),
         Node::Expression(expression) => eval_expression(expression),
-        Node::Program(program) => eval_statements(program.statements),
+        Node::Program(program) => eval_statements(&program.statements),
     }
 }
 
-fn eval_expression(expression: ExpressionNode) -> Object {
+fn eval_expression(expression: &ExpressionNode) -> Object {
     match expression {
         ExpressionNode::Identifier(_) => todo!(),
         ExpressionNode::IntegerLiteral(i) => i.value.into(),
@@ -24,15 +24,15 @@ fn eval_expression(expression: ExpressionNode) -> Object {
     }
 }
 
-fn eval_statement(statement: StatementNode) -> Object {
+fn eval_statement(statement: &StatementNode) -> Object {
     match statement {
         StatementNode::LetStatement(_) => todo!(),
         StatementNode::ReturnStatement(_) => todo!(),
-        StatementNode::ExpressionStatement(expression) => eval_expression(expression.expression),
+        StatementNode::ExpressionStatement(expression) => eval_expression(&expression.expression),
     }
 }
 
-fn eval_statements(statements: Vec<StatementNode>) -> Object {
+fn eval_statements(statements: &Vec<StatementNode>) -> Object {
     let mut result = Object::Null;
 
     for statement in statements {
@@ -62,7 +62,7 @@ mod test {
         let empty: Vec<String> = vec![];
         assert_eq!(errors, empty);
 
-        eval(program.into())
+        eval(&program.into())
     }
 
     #[rstest]
