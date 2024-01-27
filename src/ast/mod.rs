@@ -1,15 +1,16 @@
 use crate::{parser::Parser, tokens::token::Token};
 
 use self::{
-    boolean_literal::BooleanLiteral, expression_statement::ExpressionStatement,
-    function_expression::FunctionExpression, identifier::Identifier, if_expression::IfExpression,
-    infix_expression::InfixExpression, integer_literal::IntegerLiteral,
-    let_statement::LetStatement, prefix_expression::PrefixExpression,
-    return_statement::ReturnStatement,
+    boolean_literal::BooleanLiteral, call_expression::CallExpression,
+    expression_statement::ExpressionStatement, function_expression::FunctionExpression,
+    identifier::Identifier, if_expression::IfExpression, infix_expression::InfixExpression,
+    integer_literal::IntegerLiteral, let_statement::LetStatement,
+    prefix_expression::PrefixExpression, return_statement::ReturnStatement,
 };
 
 pub mod block_statement;
 pub mod boolean_literal;
+pub mod call_expression;
 pub mod expression_statement;
 pub mod function_expression;
 pub mod grouped_expression;
@@ -36,6 +37,7 @@ pub enum ExpressionNode {
     InfixExpression(InfixExpression),
     IfExpression(IfExpression),
     FunctionExpression(FunctionExpression),
+    CallExpression(CallExpression),
 }
 
 #[derive(Debug)]
@@ -87,6 +89,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::BooleanLiteral(i) => i.token(),
             ExpressionNode::IfExpression(i) => i.token(),
             ExpressionNode::FunctionExpression(i) => i.token(),
+            ExpressionNode::CallExpression(i) => i.token(),
         }
     }
 
@@ -99,6 +102,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::BooleanLiteral(i) => i.string(),
             ExpressionNode::IfExpression(i) => i.string(),
             ExpressionNode::FunctionExpression(i) => i.string(),
+            ExpressionNode::CallExpression(i) => i.string(),
         }
     }
 }
@@ -129,6 +133,7 @@ mod test {
             ExpressionNode::InfixExpression(_) => todo!(),
             ExpressionNode::IfExpression(_) => todo!(),
             ExpressionNode::FunctionExpression(_) => todo!(),
+            ExpressionNode::CallExpression(_) => todo!(),
         }
     }
 }
