@@ -47,6 +47,24 @@ pub enum StatementNode {
     ExpressionStatement(ExpressionStatement),
 }
 
+#[derive(Debug)]
+pub enum Node {
+    Statement(StatementNode),
+    Expression(ExpressionNode),
+}
+
+impl From<ExpressionNode> for Node {
+    fn from(val: ExpressionNode) -> Self {
+        Node::Expression(val)
+    }
+}
+
+impl From<StatementNode> for Node {
+    fn from(val: StatementNode) -> Self {
+        Node::Statement(val)
+    }
+}
+
 pub type ParsableResult<T> = Result<T, String>;
 
 pub trait ParseStatement {
