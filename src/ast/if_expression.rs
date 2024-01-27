@@ -45,11 +45,22 @@ impl ParsePrefix for IfExpression {
 
         let concequence = parser.parse_block()?;
 
+        let alternative = match parser.peek_token.is(&Token::ELSE) {
+            true => {
+                parser.next_token();
+
+                parser.expect_token(Token::LBRACE)?;
+
+                Some(parser.parse_block()?)
+            }
+            false => None,
+        };
+
         Ok(ExpressionNode::IfExpression(IfExpression {
             token,
             condition: Box::new(condition),
             concequence,
-            alternative: None,
+            alternative,
         }))
     }
 }
