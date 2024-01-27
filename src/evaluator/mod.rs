@@ -15,7 +15,7 @@ fn eval_expression(expression: ExpressionNode) -> Object {
     match expression {
         ExpressionNode::Identifier(_) => todo!(),
         ExpressionNode::IntegerLiteral(i) => i.value.into(),
-        ExpressionNode::BooleanLiteral(_) => todo!(),
+        ExpressionNode::BooleanLiteral(i) => i.value.into(),
         ExpressionNode::PrefixExpression(_) => todo!(),
         ExpressionNode::InfixExpression(_) => todo!(),
         ExpressionNode::IfExpression(_) => todo!(),
