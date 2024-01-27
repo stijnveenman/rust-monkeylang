@@ -32,6 +32,14 @@ fn eval_expression(expression: &ExpressionNode) -> Object {
 fn eval_prefix(operator: &Token, right: Object) -> Object {
     match operator {
         Token::BANG => eval_bang(right),
+        Token::MINUS => eval_minus(right),
+        _ => Object::Null,
+    }
+}
+
+fn eval_minus(right: Object) -> Object {
+    match right {
+        Object::Integer(i) => (-i).into(),
         _ => Object::Null,
     }
 }
@@ -86,12 +94,15 @@ mod test {
     }
 
     #[rstest]
+    // simple Integer tests
     #[case("5", 5i64)]
     #[case("10", 10i64)]
     #[case("-5", -5i64)]
     #[case("-10", -10i64)]
+    // simple Boolean tests
     #[case("true", true)]
     #[case("false", false)]
+    // Bang tests
     #[case("!true", false)]
     #[case("!false", true)]
     #[case("!5", false)]
