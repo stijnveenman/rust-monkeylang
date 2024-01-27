@@ -1,6 +1,9 @@
-use crate::tokens::token::Token;
+use crate::{parser::Parser, tokens::token::Token};
 
-use super::{block_statement::BlockStatement, identifier::Identifier, AstNode};
+use super::{
+    block_statement::BlockStatement, identifier::Identifier, AstNode, ExpressionNode,
+    ParsableResult, ParsePrefix,
+};
 
 #[derive(Debug)]
 pub struct FunctionExpression {
@@ -24,6 +27,63 @@ impl AstNode for FunctionExpression {
                 .join(","),
             self.body.string()
         )
+    }
+}
+
+impl FunctionExpression {
+    fn parse_parameters(parser: &mut Parser) -> ParsableResult<Vec<Identifier>> {
+        let mut idents = vec![];
+
+        if parser.peek_token.is(&Token::RPAREN) {
+            parser.next_token();
+            return Ok(idents);
+        }
+
+        parser.next_token();
+
+        loop {
+            let node = Identifier::parse_prefix(parser)?;
+            let ExpressionNode::Identifier(ident) = node else {
+                return Err(format!(
+                    "Identifier::parse_prefix returned invalid type, got {:?}",
+                    node
+                ));
+            };
+
+            idents.push(ident);
+
+            if !parser.peek_token.is(&Token::COMMA) {
+                break;
+            }
+
+            parser.next_token();
+            parser.next_token();
+        }
+
+        parser.expect_token(Token::RPAREN)?;
+
+        Ok(idents)
+    }
+}
+
+impl ParsePrefix for FunctionExpression {
+    fn parse_prefix(
+        parser: &mut crate::parser::Parser,
+    ) -> super::ParsableResult<super::ExpressionNode> {
+        let token = parser.current_token.clone();
+        parser.expect_token(Token::LPAREN)?;
+
+        let parameters = FunctionExpression::parse_parameters(parser)?;
+
+        parser.expect_token(Token::LBRACE)?;
+
+        let body = parser.parse_block()?;
+
+        Ok(ExpressionNode::FunctionExpression(FunctionExpression {
+            token,
+            parameters,
+            body,
+        }))
     }
 }
 

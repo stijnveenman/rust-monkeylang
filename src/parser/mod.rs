@@ -1,11 +1,12 @@
 use crate::{
     ast::{
         block_statement::BlockStatement, boolean_literal::BooleanLiteral,
-        expression_statement::ExpressionStatement, grouped_expression::GroupedExpression,
-        identifier::Identifier, if_expression::IfExpression, infix_expression::InfixExpression,
-        integer_literal::IntegerLiteral, let_statement::LetStatement,
-        prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
-        ExpressionNode, ParsableResult, ParseInfix, ParsePrefix, ParseStatement, StatementNode,
+        expression_statement::ExpressionStatement, function_expression::FunctionExpression,
+        grouped_expression::GroupedExpression, identifier::Identifier, if_expression::IfExpression,
+        infix_expression::InfixExpression, integer_literal::IntegerLiteral,
+        let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
+        return_statement::ReturnStatement, ExpressionNode, ParsableResult, ParseInfix, ParsePrefix,
+        ParseStatement, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -67,6 +68,7 @@ impl Parser {
             Token::BANG | Token::MINUS => PrefixExpression::parse_prefix(self),
             Token::LPAREN => GroupedExpression::parse_prefix(self),
             Token::IF => IfExpression::parse_prefix(self),
+            Token::FUNCTION => FunctionExpression::parse_prefix(self),
             e => Err(format!("Invalid prefix token {:?}", e)),
         }
     }
