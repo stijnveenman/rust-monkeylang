@@ -90,15 +90,19 @@ impl ParsePrefix for FunctionExpression {
 #[cfg(test)]
 mod test {
 
+    use rstest::rstest;
+
     use crate::{
         ast::{infix_expression::test::test_infix_expression, ExpressionNode, StatementNode},
         parser::Parser,
         tokens::token::Token,
     };
 
-    #[test]
-    fn test_if_statement() {
-        let input = "fn(x, y) { x + y }";
+    #[rstest]
+    #[case("fn() { x + y }", vec![])]
+    #[case("fn(x) { x + y }", vec!["x"])]
+    #[case("fn(x, y, z) { x + y }", vec!["x", "y", "z"])]
+    fn test_if_statement(#[case] input: &str, #[case] params: Vec<&str>) {
         let mut parser = Parser::new(input.into());
 
         let (program, errors) = parser.parse_program();
@@ -116,10 +120,15 @@ mod test {
             panic!("expected FunctionExpression for node, got {:?}", node);
         };
 
-        assert_eq!(fn_expression.parameters.len(), 2);
-
-        assert_eq!(&fn_expression.parameters.first().unwrap().value, &"x");
-        assert_eq!(&fn_expression.parameters.get(1).unwrap().value, &"y");
+        assert_eq!(fn_expression.parameters.len(), params.len());
+        assert_eq!(
+            fn_expression
+                .parameters
+                .iter()
+                .map(|p| &p.value)
+                .collect::<Vec<_>>(),
+            params
+        );
 
         assert_eq!(fn_expression.body.statements.len(), 1);
 
