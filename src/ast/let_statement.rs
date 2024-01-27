@@ -89,7 +89,7 @@ mod test {
     }
 
     #[rstest]
-    #[case("let x = 5;", "x", 5u64)]
+    #[case("let x = 5;", "x", 5i64)]
     #[case("let y = true;", "y", true)]
     #[case("let foobar = y;", "foobar", "y")]
     fn test_let_expression<T: std::fmt::Debug + 'static>(

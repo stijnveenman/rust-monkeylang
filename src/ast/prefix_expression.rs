@@ -61,8 +61,8 @@ mod test {
     use super::PrefixExpression;
 
     #[rstest]
-    #[case("!5;", Token::BANG, 5u64)]
-    #[case("-15;", Token::MINUS, 15u64)]
+    #[case("!5;", Token::BANG, 5i64)]
+    #[case("-15;", Token::MINUS, 15i64)]
     #[case("!foobar;", Token::BANG, "foobar")]
     #[case("-foobar;", Token::MINUS, "foobar")]
     #[case("!true;", Token::BANG, true)]

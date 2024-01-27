@@ -5,7 +5,7 @@ use super::{AstNode, ParsePrefix};
 #[derive(Debug)]
 pub struct IntegerLiteral {
     pub token: Token,
-    pub value: u64,
+    pub value: i64,
 }
 
 impl AstNode for IntegerLiteral {
@@ -42,7 +42,7 @@ pub mod test {
         parser::Parser,
     };
 
-    pub fn assert_integer_literal(expression: &ExpressionNode, value: u64) {
+    pub fn assert_integer_literal(expression: &ExpressionNode, value: i64) {
         let ExpressionNode::IntegerLiteral(integer) = expression else {
             panic!(
                 "expected IntegerLiteral for expression, got {:?}",

@@ -1,13 +1,13 @@
 use std::fmt::Display;
 
 pub enum Object {
-    Integer(u64),
+    Integer(i64),
     Boolean(bool),
     Null,
 }
 
-impl From<u64> for Object {
-    fn from(val: u64) -> Self {
+impl From<i64> for Object {
+    fn from(val: i64) -> Self {
         Object::Integer(val)
     }
 }
@@ -40,7 +40,7 @@ pub mod test {
 
         match object {
             Object::Integer(i) => {
-                assert_eq!(value_any.downcast_ref::<u64>().unwrap(), i)
+                assert_eq!(value_any.downcast_ref::<i64>().unwrap(), i)
             }
             Object::Boolean(i) => {
                 assert_eq!(value_any.downcast_ref::<bool>().unwrap(), i)

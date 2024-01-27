@@ -59,7 +59,7 @@ mod test {
     }
 
     #[rstest]
-    #[case("return 5;", 5u64)]
+    #[case("return 5;", 5i64)]
     #[case("return true;", true)]
     #[case("return foobar;", "foobar")]
     fn test_basic_parser<T: std::fmt::Debug + Any>(#[case] input: &str, #[case] value: T) {

@@ -86,8 +86,10 @@ mod test {
     }
 
     #[rstest]
-    #[case("5", 5u64)]
-    #[case("10", 10u64)]
+    #[case("5", 5i64)]
+    #[case("10", 10i64)]
+    #[case("-5", -5i64)]
+    #[case("-10", -10i64)]
     #[case("true", true)]
     #[case("false", false)]
     #[case("!true", false)]

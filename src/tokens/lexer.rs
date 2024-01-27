@@ -52,7 +52,7 @@ impl Lexer {
         self.input[start..self.position].into()
     }
 
-    fn read_number(&mut self) -> u64 {
+    fn read_number(&mut self) -> i64 {
         let start = self.position;
         while (self.ch as char).is_numeric() {
             self.read_char();

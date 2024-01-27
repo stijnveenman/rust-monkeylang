@@ -108,18 +108,18 @@ mod test {
 
         test_expression(&expression.function, &"add");
 
-        test_expression(expression.arguments.first().unwrap(), &1u64);
+        test_expression(expression.arguments.first().unwrap(), &1i64);
         test_infix_expression(
             expression.arguments.get(1).unwrap(),
-            2u64,
+            2i64,
             Token::ASTERISK,
-            3u64,
+            3i64,
         );
         test_infix_expression(
             expression.arguments.get(2).unwrap(),
-            4u64,
+            4i64,
             Token::PLUS,
-            5u64,
+            5i64,
         );
     }
 
