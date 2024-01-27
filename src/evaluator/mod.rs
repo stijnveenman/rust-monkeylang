@@ -44,6 +44,8 @@ fn eval_statements(statements: Vec<StatementNode>) -> Object {
 
 #[cfg(test)]
 mod test {
+    use std::any::Any;
+
     use rstest::rstest;
 
     use crate::{
@@ -51,14 +53,6 @@ mod test {
         object::{test::test_object, Object},
         parser::Parser,
     };
-
-    #[rstest]
-    #[case("5", 5)]
-    #[case("10", 10)]
-    fn test_eval_integer(#[case] input: &str, #[case] value: u64) {
-        let result = test_eval(input);
-        test_object(&result, &value);
-    }
 
     fn test_eval(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
@@ -69,5 +63,15 @@ mod test {
         assert_eq!(errors, empty);
 
         eval(program.into())
+    }
+
+    #[rstest]
+    #[case("5", 5u64)]
+    #[case("10", 10u64)]
+    #[case("true", true)]
+    #[case("false", false)]
+    fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
+        let result = test_eval(input);
+        test_object(&result, &value);
     }
 }
