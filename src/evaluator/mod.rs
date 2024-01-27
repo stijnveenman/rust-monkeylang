@@ -1,9 +1,10 @@
 use crate::{
     ast::{ExpressionNode, Node, StatementNode},
     object::Object,
+    tokens::token::Token,
 };
 
-pub fn eval(node: &Node) -> Object {
+pub fn eval(node: Node) -> Object {
     match node {
         Node::Statement(statement) => eval_statement(statement),
         Node::Expression(expression) => eval_expression(expression),
@@ -16,11 +17,30 @@ fn eval_expression(expression: &ExpressionNode) -> Object {
         ExpressionNode::Identifier(_) => todo!(),
         ExpressionNode::IntegerLiteral(i) => i.value.into(),
         ExpressionNode::BooleanLiteral(i) => i.value.into(),
-        ExpressionNode::PrefixExpression(_) => todo!(),
+        ExpressionNode::PrefixExpression(i) => {
+            let right = eval(i.right.as_ref().into());
+
+            eval_prefix(&i.operator, right)
+        }
         ExpressionNode::InfixExpression(_) => todo!(),
         ExpressionNode::IfExpression(_) => todo!(),
         ExpressionNode::FunctionExpression(_) => todo!(),
         ExpressionNode::CallExpression(_) => todo!(),
+    }
+}
+
+fn eval_prefix(operator: &Token, right: Object) -> Object {
+    match operator {
+        Token::BANG => eval_bang(right),
+        _ => Object::Null,
+    }
+}
+
+fn eval_bang(right: Object) -> Object {
+    match right {
+        Object::Boolean(b) => (!b).into(),
+        Object::Null => true.into(),
+        _ => false.into(),
     }
 }
 
@@ -62,7 +82,7 @@ mod test {
         let empty: Vec<String> = vec![];
         assert_eq!(errors, empty);
 
-        eval(&program.into())
+        eval((&program).into())
     }
 
     #[rstest]

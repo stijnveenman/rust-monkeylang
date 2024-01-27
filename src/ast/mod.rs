@@ -48,26 +48,26 @@ pub enum StatementNode {
 }
 
 #[derive(Debug)]
-pub enum Node {
-    Statement(StatementNode),
-    Expression(ExpressionNode),
-    Program(Program),
+pub enum Node<'a> {
+    Statement(&'a StatementNode),
+    Expression(&'a ExpressionNode),
+    Program(&'a Program),
 }
 
-impl From<ExpressionNode> for Node {
-    fn from(val: ExpressionNode) -> Self {
+impl<'a> From<&'a ExpressionNode> for Node<'a> {
+    fn from(val: &'a ExpressionNode) -> Self {
         Node::Expression(val)
     }
 }
 
-impl From<StatementNode> for Node {
-    fn from(val: StatementNode) -> Self {
+impl<'a> From<&'a StatementNode> for Node<'a> {
+    fn from(val: &'a StatementNode) -> Self {
         Node::Statement(val)
     }
 }
 
-impl From<Program> for Node {
-    fn from(val: Program) -> Self {
+impl<'a> From<&'a Program> for Node<'a> {
+    fn from(val: &'a Program) -> Self {
         Node::Program(val)
     }
 }
