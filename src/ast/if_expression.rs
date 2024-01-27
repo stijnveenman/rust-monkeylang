@@ -1,6 +1,6 @@
-use crate::tokens::token::Token;
+use crate::{parser::precedence::Precedence, tokens::token::Token};
 
-use super::{block_statement::BlockStatement, AstNode, ExpressionNode};
+use super::{block_statement::BlockStatement, AstNode, ExpressionNode, ParsePrefix};
 
 #[derive(Debug)]
 pub struct IfExpression {
@@ -26,6 +26,31 @@ impl AstNode for IfExpression {
             self.concequence.string(),
             else_s
         )
+    }
+}
+
+impl ParsePrefix for IfExpression {
+    fn parse_prefix(parser: &mut crate::parser::Parser) -> super::ParsableResult<ExpressionNode> {
+        let token = parser.current_token.clone();
+
+        parser.expect_token(Token::LPAREN)?;
+
+        parser.next_token();
+
+        let condition = parser.parse_expression(Precedence::LOWEST)?;
+
+        parser.expect_token(Token::RPAREN)?;
+
+        parser.expect_token(Token::LBRACE)?;
+
+        let concequence = parser.parse_block()?;
+
+        Ok(ExpressionNode::IfExpression(IfExpression {
+            token,
+            condition: Box::new(condition),
+            concequence,
+            alternative: None,
+        }))
     }
 }
 

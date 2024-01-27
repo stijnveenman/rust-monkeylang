@@ -1,11 +1,11 @@
 use crate::{
     ast::{
-        boolean_literal::BooleanLiteral, expression_statement::ExpressionStatement,
-        grouped_expression::GroupedExpression, identifier::Identifier,
-        infix_expression::InfixExpression, integer_literal::IntegerLiteral,
-        let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
-        return_statement::ReturnStatement, ExpressionNode, ParsableResult, ParseInfix, ParsePrefix,
-        ParseStatement, StatementNode,
+        block_statement::BlockStatement, boolean_literal::BooleanLiteral,
+        expression_statement::ExpressionStatement, grouped_expression::GroupedExpression,
+        identifier::Identifier, if_expression::IfExpression, infix_expression::InfixExpression,
+        integer_literal::IntegerLiteral, let_statement::LetStatement,
+        prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
+        ExpressionNode, ParsableResult, ParseInfix, ParsePrefix, ParseStatement, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -66,6 +66,7 @@ impl Parser {
             Token::TRUE | Token::FALSE => BooleanLiteral::parse_prefix(self),
             Token::BANG | Token::MINUS => PrefixExpression::parse_prefix(self),
             Token::LPAREN => GroupedExpression::parse_prefix(self),
+            Token::IF => IfExpression::parse_prefix(self),
             e => Err(format!("Invalid prefix token {:?}", e)),
         }
     }
@@ -119,6 +120,31 @@ impl Parser {
         }
 
         (program, errors)
+    }
+
+    pub fn parse_block(&mut self) -> ParsableResult<BlockStatement> {
+        let mut block = BlockStatement {
+            token: self.current_token.clone(),
+            statements: vec![],
+        };
+        let mut errors = vec![];
+        self.next_token();
+
+        while !self.current_token.is(&Token::EOF) && !self.current_token.is(&Token::RBRACE) {
+            if let Some(result) = self.parse_statement() {
+                match result {
+                    Ok(statement) => block.statements.push(statement),
+                    Err(e) => errors.push(e),
+                }
+            }
+            self.next_token();
+        }
+
+        if let Some(error) = errors.into_iter().next() {
+            Err(error)
+        } else {
+            Ok(block)
+        }
     }
 }
 
