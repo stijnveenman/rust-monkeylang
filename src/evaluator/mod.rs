@@ -70,6 +70,12 @@ mod test {
     #[case("10", 10u64)]
     #[case("true", true)]
     #[case("false", false)]
+    #[case("!true", false)]
+    #[case("!false", true)]
+    #[case("!5", false)]
+    #[case("!!true", true)]
+    #[case("!!false", false)]
+    #[case("!!5", true)]
     fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
         let result = test_eval(input);
         test_object(&result, &value);
