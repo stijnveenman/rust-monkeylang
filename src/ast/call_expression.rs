@@ -1,6 +1,9 @@
-use crate::tokens::token::Token;
+use crate::{
+    parser::{precedence::Precedence, Parser},
+    tokens::token::Token,
+};
 
-use super::{AstNode, ExpressionNode};
+use super::{AstNode, ExpressionNode, ParsableResult, ParseInfix};
 
 #[derive(Debug)]
 pub struct CallExpression {
@@ -8,6 +11,7 @@ pub struct CallExpression {
     pub function: Box<ExpressionNode>,
     pub arguments: Vec<ExpressionNode>,
 }
+
 impl AstNode for CallExpression {
     fn token(&self) -> &Token {
         &self.token
@@ -23,6 +27,48 @@ impl AstNode for CallExpression {
                 .collect::<Vec<_>>()
                 .join(",")
         )
+    }
+}
+
+impl CallExpression {
+    fn parse_arguments(parser: &mut Parser) -> ParsableResult<Vec<ExpressionNode>> {
+        let mut arguments = vec![];
+        if parser.peek_token.is(&Token::RPAREN) {
+            parser.next_token();
+            return Ok(arguments);
+        }
+
+        parser.next_token();
+
+        loop {
+            let expression = parser.parse_expression(Precedence::LOWEST)?;
+            arguments.push(expression);
+
+            if !parser.peek_token.is(&Token::COMMA) {
+                break;
+            }
+
+            parser.next_token();
+            parser.next_token();
+        }
+
+        parser.expect_token(Token::RPAREN)?;
+
+        Ok(arguments)
+    }
+}
+
+impl ParseInfix for CallExpression {
+    fn parse_infix(parser: &mut Parser, left: ExpressionNode) -> ParsableResult<ExpressionNode> {
+        let token = parser.current_token.clone();
+
+        let arguments = CallExpression::parse_arguments(parser)?;
+
+        Ok(ExpressionNode::CallExpression(CallExpression {
+            token,
+            function: Box::new(left),
+            arguments,
+        }))
     }
 }
 
@@ -81,7 +127,11 @@ mod test {
     #[case("add();", "add", vec![])]
     #[case("add(1);", "add", vec!["1"])]
     #[case("add(1, 2 * 3, 4 + 5);", "add", vec!["1", "(2 * 3)", "(4 + 5)"])]
-    fn tesst_call_arguments(#[case] input: &str, #[case] name: &str, #[case] arguments: Vec<&str>) {
+    fn test_call_arguments(
+        #[case] input: &str,
+        #[case] name: &'static str,
+        #[case] arguments: Vec<&str>,
+    ) {
         let mut parser = Parser::new(input.into());
 
         let (program, errors) = parser.parse_program();
@@ -99,7 +149,7 @@ mod test {
             panic!("expected CallExpression for node, got {:?}", node);
         };
 
-        test_expression(&expression.function, &name.to_string());
+        test_expression(&expression.function, &name);
 
         assert_eq!(
             expression

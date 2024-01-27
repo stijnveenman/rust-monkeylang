@@ -1,12 +1,13 @@
 use crate::{
     ast::{
         block_statement::BlockStatement, boolean_literal::BooleanLiteral,
-        expression_statement::ExpressionStatement, function_expression::FunctionExpression,
-        grouped_expression::GroupedExpression, identifier::Identifier, if_expression::IfExpression,
-        infix_expression::InfixExpression, integer_literal::IntegerLiteral,
-        let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
-        return_statement::ReturnStatement, ExpressionNode, ParsableResult, ParseInfix, ParsePrefix,
-        ParseStatement, PrefixParser, StatementNode,
+        call_expression::CallExpression, expression_statement::ExpressionStatement,
+        function_expression::FunctionExpression, grouped_expression::GroupedExpression,
+        identifier::Identifier, if_expression::IfExpression, infix_expression::InfixExpression,
+        integer_literal::IntegerLiteral, let_statement::LetStatement,
+        prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
+        ExpressionNode, ParsableResult, ParseInfix, ParsePrefix, ParseStatement, PrefixParser,
+        StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -83,6 +84,7 @@ impl Parser {
             | Token::NOT_EQ
             | Token::LT
             | Token::GT => Some(InfixExpression::parse_infix),
+            Token::LPAREN => Some(CallExpression::parse_infix),
             _ => None,
         }
     }
