@@ -5,7 +5,7 @@ use self::{
     expression_statement::ExpressionStatement, function_expression::FunctionExpression,
     identifier::Identifier, if_expression::IfExpression, infix_expression::InfixExpression,
     integer_literal::IntegerLiteral, let_statement::LetStatement,
-    prefix_expression::PrefixExpression, return_statement::ReturnStatement,
+    prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
 };
 
 pub mod block_statement;
@@ -51,6 +51,7 @@ pub enum StatementNode {
 pub enum Node {
     Statement(StatementNode),
     Expression(ExpressionNode),
+    Program(Program),
 }
 
 impl From<ExpressionNode> for Node {
@@ -62,6 +63,12 @@ impl From<ExpressionNode> for Node {
 impl From<StatementNode> for Node {
     fn from(val: StatementNode) -> Self {
         Node::Statement(val)
+    }
+}
+
+impl From<Program> for Node {
+    fn from(val: Program) -> Self {
+        Node::Program(val)
     }
 }
 

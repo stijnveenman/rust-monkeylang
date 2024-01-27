@@ -1,5 +1,6 @@
 use super::{AstNode, StatementNode};
 
+#[derive(Debug)]
 pub struct Program {
     pub statements: Vec<StatementNode>,
 }

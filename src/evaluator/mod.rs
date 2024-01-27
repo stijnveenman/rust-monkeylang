@@ -8,12 +8,19 @@ pub fn eval(node: Node) -> Object {
 mod test {
     use rstest::rstest;
 
-    use crate::{evaluator::eval, object::Object, parser::Parser};
+    use crate::{
+        evaluator::eval,
+        object::{test::test_object, Object},
+        parser::Parser,
+    };
 
     #[rstest]
     #[case("5", 5)]
     #[case("10", 10)]
-    fn test_eval_integer(#[case] input: &str, #[case] value: u64) {}
+    fn test_eval_integer(#[case] input: &str, #[case] value: u64) {
+        let result = test_eval(input);
+        test_object(&result, &value);
+    }
 
     fn test_eval(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
@@ -23,7 +30,6 @@ mod test {
         let empty: Vec<String> = vec![];
         assert_eq!(errors, empty);
 
-        let node = program.statements.into_iter().next().unwrap();
-        eval(node.into())
+        eval(program.into())
     }
 }
