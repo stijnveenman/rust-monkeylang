@@ -1,6 +1,6 @@
 use std::io::{self, stdout, BufRead, Write};
 
-use crate::{ast::AstNode, parser::Parser};
+use crate::{evaluator::eval, parser::Parser};
 
 const PROMPT: &str = ">>";
 
@@ -20,7 +20,8 @@ pub fn start() {
         if !errors.is_empty() {
             println!("{}", errors.join("\n"));
         } else {
-            println!("{}", program.string());
+            let result = eval(program.into());
+            println!("{}", result);
         }
 
         print!("{}", PROMPT);
