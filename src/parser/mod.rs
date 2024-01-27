@@ -6,7 +6,7 @@ use crate::{
         infix_expression::InfixExpression, integer_literal::IntegerLiteral,
         let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
         return_statement::ReturnStatement, ExpressionNode, ParsableResult, ParseInfix, ParsePrefix,
-        ParseStatement, StatementNode,
+        ParseStatement, PrefixParser, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -73,35 +73,31 @@ impl Parser {
         }
     }
 
-    fn is_infix(&mut self) -> bool {
-        matches!(
-            self.peek_token.clone(),
+    fn get_parse_infix(&mut self) -> Option<PrefixParser> {
+        match self.peek_token.clone() {
             Token::PLUS
-                | Token::MINUS
-                | Token::SLASH
-                | Token::ASTERISK
-                | Token::EQ
-                | Token::NOT_EQ
-                | Token::LT
-                | Token::GT
-        )
-    }
-
-    fn parse_infix(&mut self, left: ExpressionNode) -> ParsableResult<ExpressionNode> {
-        InfixExpression::parse_infix(self, left)
+            | Token::MINUS
+            | Token::SLASH
+            | Token::ASTERISK
+            | Token::EQ
+            | Token::NOT_EQ
+            | Token::LT
+            | Token::GT => Some(InfixExpression::parse_infix),
+            _ => None,
+        }
     }
 
     pub fn parse_expression(&mut self, precedence: Precedence) -> ParsableResult<ExpressionNode> {
         let mut left = self.parse_prefix()?;
 
         while !self.peek_token.is(&Token::SEMICOLON) && precedence < self.peek_token.precedence() {
-            if !self.is_infix() {
+            let Some(parser) = self.get_parse_infix() else {
                 return Ok(left);
-            }
+            };
 
             self.next_token();
 
-            left = self.parse_infix(left)?;
+            left = parser(self, left)?;
         }
 
         Ok(left)

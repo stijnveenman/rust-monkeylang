@@ -57,6 +57,7 @@ pub trait ParsePrefix {
     fn parse_prefix(parser: &mut Parser) -> ParsableResult<ExpressionNode>;
 }
 
+pub type PrefixParser = fn(&mut Parser, ExpressionNode) -> ParsableResult<ExpressionNode>;
 pub trait ParseInfix {
     fn parse_infix(parser: &mut Parser, left: ExpressionNode) -> ParsableResult<ExpressionNode>;
 }
