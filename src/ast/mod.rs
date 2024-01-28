@@ -1,11 +1,12 @@
 use crate::{parser::Parser, tokens::token::Token};
 
 use self::{
-    boolean_literal::BooleanLiteral, call_expression::CallExpression,
-    expression_statement::ExpressionStatement, function_expression::FunctionExpression,
-    identifier::Identifier, if_expression::IfExpression, infix_expression::InfixExpression,
-    integer_literal::IntegerLiteral, let_statement::LetStatement,
-    prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
+    block_statement::BlockStatement, boolean_literal::BooleanLiteral,
+    call_expression::CallExpression, expression_statement::ExpressionStatement,
+    function_expression::FunctionExpression, identifier::Identifier, if_expression::IfExpression,
+    infix_expression::InfixExpression, integer_literal::IntegerLiteral,
+    let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
+    return_statement::ReturnStatement,
 };
 
 pub mod block_statement;
@@ -44,6 +45,7 @@ pub enum ExpressionNode {
 pub enum StatementNode {
     LetStatement(LetStatement),
     ReturnStatement(ReturnStatement),
+    BlockStatement(BlockStatement),
     ExpressionStatement(ExpressionStatement),
 }
 
@@ -93,6 +95,7 @@ impl AstNode for StatementNode {
             StatementNode::LetStatement(i) => i.token(),
             StatementNode::ReturnStatement(i) => i.token(),
             StatementNode::ExpressionStatement(i) => i.token(),
+            StatementNode::BlockStatement(i) => i.token(),
         }
     }
 
@@ -101,6 +104,7 @@ impl AstNode for StatementNode {
             StatementNode::LetStatement(i) => i.string(),
             StatementNode::ReturnStatement(i) => i.string(),
             StatementNode::ExpressionStatement(i) => i.string(),
+            StatementNode::BlockStatement(i) => i.string(),
         }
     }
 }

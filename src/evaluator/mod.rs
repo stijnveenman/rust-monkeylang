@@ -89,6 +89,7 @@ fn eval_statement(statement: &StatementNode) -> Object {
         StatementNode::LetStatement(_) => todo!(),
         StatementNode::ReturnStatement(_) => todo!(),
         StatementNode::ExpressionStatement(expression) => eval_expression(&expression.expression),
+        StatementNode::BlockStatement(_) => todo!(),
     }
 }
 
