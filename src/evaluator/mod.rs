@@ -52,6 +52,11 @@ fn eval_infix(operator: &Token, left: Object, right: Object) -> Object {
         (Object::Integer(left), Object::Integer(right)) => {
             eval_infix_integer(operator, left, right)
         }
+        (Object::Boolean(left), Object::Boolean(right)) => match operator {
+            Token::EQ => (left == right).into(),
+            Token::NOT_EQ => (left != right).into(),
+            _ => Object::Null,
+        },
         _ => Object::Null,
     }
 }
