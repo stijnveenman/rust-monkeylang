@@ -1,5 +1,5 @@
 use crate::{
-    ast::{ExpressionNode, Node, StatementNode},
+    ast::{if_expression::IfExpression, ExpressionNode, Node, StatementNode},
     object::Object,
     tokens::token::Token,
 };
@@ -27,10 +27,24 @@ fn eval_expression(expression: &ExpressionNode) -> Object {
             let right = eval(i.right.as_ref().into());
             eval_infix(&i.operator, left, right)
         }
-        ExpressionNode::IfExpression(_) => todo!(),
+        ExpressionNode::IfExpression(expression) => eval_if_expression(expression),
         ExpressionNode::FunctionExpression(_) => todo!(),
         ExpressionNode::CallExpression(_) => todo!(),
     }
+}
+
+fn eval_if_expression(if_expression: &IfExpression) -> Object {
+    let condition = eval(if_expression.condition.as_ref().into());
+
+    if is_truthy(&condition) {
+        return eval_statements(&if_expression.concequence.statements);
+    }
+
+    if let Some(alternative) = &if_expression.alternative {
+        return eval_statements(&alternative.statements);
+    }
+
+    Object::Null
 }
 
 fn eval_infix_integer(operator: &Token, left: i64, right: i64) -> Object {
@@ -76,6 +90,14 @@ fn eval_minus(right: Object) -> Object {
     }
 }
 
+fn is_truthy(object: &Object) -> bool {
+    match object {
+        Object::Integer(_) => true,
+        Object::Boolean(b) => *b,
+        Object::Null => false,
+    }
+}
+
 fn eval_bang(right: Object) -> Object {
     match right {
         Object::Boolean(b) => (!b).into(),
@@ -89,7 +111,7 @@ fn eval_statement(statement: &StatementNode) -> Object {
         StatementNode::LetStatement(_) => todo!(),
         StatementNode::ReturnStatement(_) => todo!(),
         StatementNode::ExpressionStatement(expression) => eval_expression(&expression.expression),
-        StatementNode::BlockStatement(_) => todo!(),
+        StatementNode::BlockStatement(block) => eval_statements(&block.statements),
     }
 }
 
