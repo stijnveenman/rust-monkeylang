@@ -19,12 +19,23 @@ fn eval_expression(expression: &ExpressionNode) -> Object {
         ExpressionNode::BooleanLiteral(i) => i.value.into(),
         ExpressionNode::PrefixExpression(i) => {
             let right = eval(i.right.as_ref().into());
+            if right.is_error() {
+                return right;
+            }
 
             eval_prefix(&i.operator, right)
         }
         ExpressionNode::InfixExpression(i) => {
             let left = eval(i.left.as_ref().into());
+            if left.is_error() {
+                return left;
+            }
+
             let right = eval(i.right.as_ref().into());
+            if right.is_error() {
+                return right;
+            }
+
             eval_infix(&i.operator, left, right)
         }
         ExpressionNode::IfExpression(expression) => eval_if_expression(expression),
@@ -35,6 +46,9 @@ fn eval_expression(expression: &ExpressionNode) -> Object {
 
 fn eval_if_expression(if_expression: &IfExpression) -> Object {
     let condition = eval(if_expression.condition.as_ref().into());
+    if condition.is_error() {
+        return condition;
+    }
 
     if is_truthy(&condition) {
         return eval_statements(&if_expression.concequence.statements);
@@ -121,6 +135,10 @@ fn eval_statement(statement: &StatementNode) -> Object {
         StatementNode::LetStatement(_) => todo!(),
         StatementNode::ReturnStatement(statement) => {
             let value = eval((&statement.return_value).into());
+            if value.is_error() {
+                return value;
+            }
+
             Object::Return(Box::new(value))
         }
         StatementNode::ExpressionStatement(expression) => eval_expression(&expression.expression),
