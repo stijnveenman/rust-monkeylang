@@ -47,7 +47,7 @@ fn eval_if_expression(if_expression: &IfExpression) -> Object {
     Object::Null
 }
 
-fn eval_infix_integer(operator: &Token, left: i64, right: i64) -> Object {
+fn eval_integer_infix(operator: &Token, left: i64, right: i64) -> Object {
     match operator {
         Token::PLUS => (left + right).into(),
         Token::MINUS => (left - right).into(),
@@ -57,14 +57,14 @@ fn eval_infix_integer(operator: &Token, left: i64, right: i64) -> Object {
         Token::LT => (left < right).into(),
         Token::EQ => (left == right).into(),
         Token::NOT_EQ => (left != right).into(),
-        _ => Object::Null,
+        _ => Object::Error(format!("unknown operator: INTEGER {:?} INTEGER", operator)),
     }
 }
 
 fn eval_infix(operator: &Token, left: Object, right: Object) -> Object {
     match (left, operator, right) {
         (Object::Integer(left), _, Object::Integer(right)) => {
-            eval_infix_integer(operator, left, right)
+            eval_integer_infix(operator, left, right)
         }
         (Object::Boolean(left), Token::EQ, Object::Boolean(right)) => (left == right).into(),
         (Object::Boolean(left), Token::NOT_EQ, Object::Boolean(right)) => (left != right).into(),
@@ -87,7 +87,7 @@ fn eval_prefix(operator: &Token, right: Object) -> Object {
     match operator {
         Token::BANG => eval_bang(right),
         Token::MINUS => eval_minus(right),
-        _ => Object::Error(format!("Unknown operator {:?}", operator)),
+        _ => Object::Error(format!("Unknown operator: {:?}", operator)),
     }
 }
 
