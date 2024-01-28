@@ -8,7 +8,7 @@ pub fn eval(node: Node) -> Object {
     match node {
         Node::Statement(statement) => eval_statement(statement),
         Node::Expression(expression) => eval_expression(expression),
-        Node::Program(program) => eval_statements(&program.statements),
+        Node::Program(program) => eval_statements(&program.statements).unwrap(),
     }
 }
 
@@ -95,6 +95,7 @@ fn is_truthy(object: &Object) -> bool {
         Object::Integer(_) => true,
         Object::Boolean(b) => *b,
         Object::Null => false,
+        Object::Return(i) => is_truthy(i),
     }
 }
 
@@ -109,7 +110,10 @@ fn eval_bang(right: Object) -> Object {
 fn eval_statement(statement: &StatementNode) -> Object {
     match statement {
         StatementNode::LetStatement(_) => todo!(),
-        StatementNode::ReturnStatement(_) => todo!(),
+        StatementNode::ReturnStatement(statement) => {
+            let value = eval((&statement.return_value).into());
+            Object::Return(Box::new(value))
+        }
         StatementNode::ExpressionStatement(expression) => eval_expression(&expression.expression),
         StatementNode::BlockStatement(block) => eval_statements(&block.statements),
     }
@@ -120,6 +124,9 @@ fn eval_statements(statements: &Vec<StatementNode>) -> Object {
 
     for statement in statements {
         result = eval_statement(statement);
+        if result.is_return() {
+            return result;
+        }
     }
 
     result
@@ -206,6 +213,21 @@ mod test {
     #[case("if (1 < 2) { 10 }", 10)]
     #[case("if (1 > 2) { 10 } else { 20 }", 20)]
     #[case("if (1 < 2) { 10 } else { 20 }", 10)]
+    // return statements
+    #[case("return 10;", 10)]
+    #[case("return 10; 9;", 10)]
+    #[case("return 2 * 5; 9;", 10)]
+    #[case("9; return 2 * 5; 9;", 10)]
+    #[case(
+        "if (10 > 1) {
+  if (10 > 1) {
+    return 10;
+  }
+
+  return 1;
+}",
+        10
+    )]
     fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
         println!("{}", input);
         let result = test_eval(input);

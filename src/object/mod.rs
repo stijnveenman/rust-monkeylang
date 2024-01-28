@@ -5,6 +5,20 @@ pub enum Object {
     Integer(i64),
     Boolean(bool),
     Null,
+    Return(Box<Object>),
+}
+
+impl Object {
+    pub fn is_return(&self) -> bool {
+        matches!(self, Object::Return(_))
+    }
+
+    pub fn unwrap(self) -> Object {
+        if let Object::Return(value) = self {
+            return *value;
+        }
+        self
+    }
 }
 
 impl From<i64> for Object {
@@ -25,6 +39,7 @@ impl Display for Object {
             Object::Integer(i) => write!(f, "{}", i),
             Object::Boolean(b) => write!(f, "{}", b),
             Object::Null => write!(f, "null"),
+            Object::Return(i) => write!(f, "{}", i),
         }
     }
 }
@@ -52,6 +67,7 @@ pub mod test {
                 assert_eq!(value_any.downcast_ref::<bool>().unwrap(), i)
             }
             Object::Null => panic!("called test_object on null object, use test_null if expected"),
+            Object::Return(_) => todo!(),
         }
     }
 
