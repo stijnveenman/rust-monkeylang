@@ -110,7 +110,10 @@ mod test {
 
     use crate::{
         evaluator::eval,
-        object::{test::test_object, Object},
+        object::{
+            test::{test_null, test_object},
+            Object,
+        },
         parser::Parser,
     };
 
@@ -174,9 +177,26 @@ mod test {
     #[case("(1 < 2) == false", false)]
     #[case("(1 > 2) == true", false)]
     #[case("(1 > 2) == false", true)]
+    // test if return statements
+    #[case("if (true) { 10 }", 10)]
+    #[case("if (1) { 10 }", 10)]
+    #[case("if (1 < 2) { 10 }", 10)]
+    #[case("if (1 > 2) { 10 } else { 20 }", 20)]
+    #[case("if (1 < 2) { 10 } else { 20 }", 10)]
     fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
+        println!("{}", input);
         let result = test_eval(input);
-        println!("{} -> {:?}", input, result);
+        println!(" -> {:?}", result);
         test_object(&result, &value);
+    }
+
+    #[rstest]
+    #[case("if (1 > 2) { 10 }")]
+    #[case("if (false) { 10 }")]
+    fn test_nullable(#[case] input: &str) {
+        println!("{}", input);
+        let result = test_eval(input);
+        println!(" -> {:?}", result);
+        test_null(&result);
     }
 }

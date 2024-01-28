@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Object {
     Integer(i64),
     Boolean(bool),
@@ -53,5 +53,9 @@ pub mod test {
             }
             Object::Null => panic!("called test_object on null object, use test_null if expected"),
         }
+    }
+
+    pub fn test_null(object: &Object) {
+        assert_eq!(object, &Object::Null)
     }
 }
