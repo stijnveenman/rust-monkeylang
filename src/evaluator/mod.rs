@@ -62,16 +62,24 @@ fn eval_infix_integer(operator: &Token, left: i64, right: i64) -> Object {
 }
 
 fn eval_infix(operator: &Token, left: Object, right: Object) -> Object {
-    match (left, right) {
-        (Object::Integer(left), Object::Integer(right)) => {
+    match (left, operator, right) {
+        (Object::Integer(left), _, Object::Integer(right)) => {
             eval_infix_integer(operator, left, right)
         }
-        (Object::Boolean(left), Object::Boolean(right)) => match operator {
-            Token::EQ => (left == right).into(),
-            Token::NOT_EQ => (left != right).into(),
-            _ => Object::Null,
-        },
-        _ => Object::Null,
+        (Object::Boolean(left), Token::EQ, Object::Boolean(right)) => (left == right).into(),
+        (Object::Boolean(left), Token::NOT_EQ, Object::Boolean(right)) => (left != right).into(),
+        (left, operator, right) if !left.is(&right) => Object::Error(format!(
+            "type mismatch {} {:?} {}",
+            left.type_str(),
+            operator,
+            right.type_str()
+        )),
+        (left, operator, right) => Object::Error(format!(
+            "unknown operator: {} {:?} {}",
+            left.type_str(),
+            operator,
+            right.type_str()
+        )),
     }
 }
 
@@ -79,7 +87,7 @@ fn eval_prefix(operator: &Token, right: Object) -> Object {
     match operator {
         Token::BANG => eval_bang(right),
         Token::MINUS => eval_minus(right),
-        _ => Object::Null,
+        _ => Object::Error(format!("Unknown operator {:?}", operator)),
     }
 }
 
@@ -247,12 +255,15 @@ mod test {
     }
 
     #[rstest]
-    #[case("5 + true;", "type mismatch: INTEGER + BOOLEAN")]
-    #[case("5 + true; 5;", "type mismatch: INTEGER + BOOLEAN")]
-    #[case("-true", "unknown operator: -BOOLEAN")]
-    #[case("true + false;", "unknown operator: BOOLEAN + BOOLEAN")]
-    #[case("5; true + false; 5", "unknown operator: BOOLEAN + BOOLEAN")]
-    #[case("if (10 > 1) { true + false; }", "unknown operator: BOOLEAN + BOOLEAN")]
+    #[case("5 + true;", "type mismatch: INTEGER PLUS BOOLEAN")]
+    #[case("5 + true; 5;", "type mismatch: INTEGER PLUS BOOLEAN")]
+    #[case("-true", "unknown operator: MINUS BOOLEAN")]
+    #[case("true + false;", "unknown operator: BOOLEAN PLUS BOOLEAN")]
+    #[case("5; true + false; 5", "unknown operator: BOOLEAN PLUS BOOLEAN")]
+    #[case(
+        "if (10 > 1) { true + false; }",
+        "unknown operator: BOOLEAN PLUS BOOLEAN"
+    )]
     #[case(
         "
 if (10 > 1) {
@@ -263,7 +274,7 @@ if (10 > 1) {
   return 1;
 }
 ",
-        "unknown operator: BOOLEAN + BOOLEAN"
+        "unknown operator: BOOLEAN PLUS BOOLEAN"
     )]
     fn test_errors(#[case] input: &str, #[case] error: &str) {
         println!("{}", input);

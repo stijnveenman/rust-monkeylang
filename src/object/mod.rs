@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, mem};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Object {
@@ -19,6 +19,20 @@ impl Object {
             return *value;
         }
         self
+    }
+
+    pub fn is(&self, other: &Object) -> bool {
+        mem::discriminant(self) == mem::discriminant(other)
+    }
+
+    pub fn type_str(&self) -> &'static str {
+        match self {
+            Object::Integer(_) => "INTEGER",
+            Object::Boolean(_) => "BOOLEAN",
+            Object::Null => "NULL",
+            Object::Return(_) => todo!(),
+            Object::Error(_) => todo!(),
+        }
     }
 }
 
