@@ -22,10 +22,34 @@ fn eval_expression(expression: &ExpressionNode) -> Object {
 
             eval_prefix(&i.operator, right)
         }
-        ExpressionNode::InfixExpression(_) => todo!(),
+        ExpressionNode::InfixExpression(i) => {
+            let left = eval(i.left.as_ref().into());
+            let right = eval(i.left.as_ref().into());
+            eval_infix(&i.operator, left, right)
+        }
         ExpressionNode::IfExpression(_) => todo!(),
         ExpressionNode::FunctionExpression(_) => todo!(),
         ExpressionNode::CallExpression(_) => todo!(),
+    }
+}
+
+fn eval_infix_integer(operator: &Token, left: i64, right: i64) -> Object {
+    match operator {
+        Token::PLUS => left + right,
+        Token::MINUS => left - right,
+        Token::ASTERISK => left * right,
+        Token::SLASH => left / right,
+        _ => return Object::Null,
+    }
+    .into()
+}
+
+fn eval_infix(operator: &Token, left: Object, right: Object) -> Object {
+    match (left, right) {
+        (Object::Integer(left), Object::Integer(right)) => {
+            eval_infix_integer(operator, left, right)
+        }
+        _ => Object::Null,
     }
 }
 
