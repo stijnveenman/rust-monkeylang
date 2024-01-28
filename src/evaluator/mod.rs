@@ -142,7 +142,7 @@ mod test {
     use crate::{
         evaluator::eval,
         object::{
-            test::{test_null, test_object},
+            test::{test_error, test_null, test_object},
             Object,
         },
         parser::Parser,
@@ -244,5 +244,31 @@ mod test {
         let result = test_eval(input);
         println!(" -> {:?}", result);
         test_null(&result);
+    }
+
+    #[rstest]
+    #[case("5 + true;", "type mismatch: INTEGER + BOOLEAN")]
+    #[case("5 + true; 5;", "type mismatch: INTEGER + BOOLEAN")]
+    #[case("-true", "unknown operator: -BOOLEAN")]
+    #[case("true + false;", "unknown operator: BOOLEAN + BOOLEAN")]
+    #[case("5; true + false; 5", "unknown operator: BOOLEAN + BOOLEAN")]
+    #[case("if (10 > 1) { true + false; }", "unknown operator: BOOLEAN + BOOLEAN")]
+    #[case(
+        "
+if (10 > 1) {
+  if (10 > 1) {
+    return true + false;
+  }
+
+  return 1;
+}
+",
+        "unknown operator: BOOLEAN + BOOLEAN"
+    )]
+    fn test_errors(#[case] input: &str, #[case] error: &str) {
+        println!("{}", input);
+        let result = test_eval(input);
+        println!(" -> {:?}", result);
+        test_error(&result, error);
     }
 }
