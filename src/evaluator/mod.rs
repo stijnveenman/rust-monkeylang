@@ -96,6 +96,7 @@ fn is_truthy(object: &Object) -> bool {
         Object::Boolean(b) => *b,
         Object::Null => false,
         Object::Return(i) => is_truthy(i),
+        Object::Error(_) => panic!("called is_truthy on error object"),
     }
 }
 

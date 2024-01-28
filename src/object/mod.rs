@@ -6,6 +6,7 @@ pub enum Object {
     Boolean(bool),
     Null,
     Return(Box<Object>),
+    Error(String),
 }
 
 impl Object {
@@ -40,13 +41,13 @@ impl Display for Object {
             Object::Boolean(b) => write!(f, "{}", b),
             Object::Null => write!(f, "null"),
             Object::Return(i) => write!(f, "{}", i),
+            Object::Error(e) => write!(f, "ERROR: {}", e),
         }
     }
 }
 
 #[cfg(test)]
 pub mod test {
-    use core::panic;
     use std::any::Any;
 
     use super::Object;
@@ -68,10 +69,18 @@ pub mod test {
             }
             Object::Null => panic!("called test_object on null object, use test_null if expected"),
             Object::Return(_) => todo!(),
+            Object::Error(_) => todo!(),
         }
     }
 
     pub fn test_null(object: &Object) {
         assert_eq!(object, &Object::Null)
+    }
+
+    pub fn test_error(object: &Object, error: &str) {
+        let Object::Error(e) = object else {
+            panic!("Expected Object::Error, got {:?}", object);
+        };
+        assert_eq!(e, error)
     }
 }
