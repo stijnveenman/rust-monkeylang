@@ -10,10 +10,13 @@ pub enum Object {
 }
 
 impl Object {
-    pub fn is_stop_eval(&self) -> bool {
-        matches!(self, Object::Return(_) | Object::Error(_))
+    pub fn is_return(&self) -> bool {
+        matches!(self, Object::Return(_))
     }
 
+    pub fn is_error(&self) -> bool {
+        matches!(self, Object::Error(_))
+    }
     pub fn unwrap(self) -> Object {
         if let Object::Return(value) = self {
             return *value;

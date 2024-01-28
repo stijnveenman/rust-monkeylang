@@ -133,7 +133,7 @@ fn eval_statements(statements: &Vec<StatementNode>) -> Object {
 
     for statement in statements {
         result = eval_statement(statement);
-        if result.is_stop_eval() {
+        if result.is_return() || result.is_error() {
             return result;
         }
     }
