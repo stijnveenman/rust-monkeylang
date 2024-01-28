@@ -35,13 +35,16 @@ fn eval_expression(expression: &ExpressionNode) -> Object {
 
 fn eval_infix_integer(operator: &Token, left: i64, right: i64) -> Object {
     match operator {
-        Token::PLUS => left + right,
-        Token::MINUS => left - right,
-        Token::ASTERISK => left * right,
-        Token::SLASH => left / right,
-        _ => return Object::Null,
+        Token::PLUS => (left + right).into(),
+        Token::MINUS => (left - right).into(),
+        Token::ASTERISK => (left * right).into(),
+        Token::SLASH => (left / right).into(),
+        Token::GT => (left > right).into(),
+        Token::LT => (left < right).into(),
+        Token::EQ => (left == right).into(),
+        Token::NOT_EQ => (left != right).into(),
+        _ => Object::Null,
     }
-    .into()
 }
 
 fn eval_infix(operator: &Token, left: Object, right: Object) -> Object {
