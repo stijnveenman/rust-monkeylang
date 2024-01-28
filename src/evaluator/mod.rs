@@ -145,6 +145,17 @@ mod test {
     #[case("3 * 3 * 3 + 10", 37)]
     #[case("3 * (3 * 3) + 10", 37)]
     #[case("(5 + 10 * 2 + 15 / 3) * 2 + -10", 50)]
+    // boolean checks
+    #[case("true", true)]
+    #[case("false", false)]
+    #[case("1 < 2", true)]
+    #[case("1 > 2", false)]
+    #[case("1 < 1", false)]
+    #[case("1 > 1", false)]
+    #[case("1 == 1", true)]
+    #[case("1 != 1", false)]
+    #[case("1 == 2", false)]
+    #[case("1 != 2", true)]
     fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
         let result = test_eval(input);
         test_object(&result, &value);
