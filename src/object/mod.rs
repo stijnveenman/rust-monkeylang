@@ -10,8 +10,8 @@ pub enum Object {
 }
 
 impl Object {
-    pub fn is_return(&self) -> bool {
-        matches!(self, Object::Return(_))
+    pub fn is_stop_eval(&self) -> bool {
+        matches!(self, Object::Return(_) | Object::Error(_))
     }
 
     pub fn unwrap(self) -> Object {

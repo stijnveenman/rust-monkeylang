@@ -69,7 +69,7 @@ fn eval_infix(operator: &Token, left: Object, right: Object) -> Object {
         (Object::Boolean(left), Token::EQ, Object::Boolean(right)) => (left == right).into(),
         (Object::Boolean(left), Token::NOT_EQ, Object::Boolean(right)) => (left != right).into(),
         (left, operator, right) if !left.is(&right) => Object::Error(format!(
-            "type mismatch {} {:?} {}",
+            "type mismatch: {} {:?} {}",
             left.type_str(),
             operator,
             right.type_str()
@@ -133,7 +133,7 @@ fn eval_statements(statements: &Vec<StatementNode>) -> Object {
 
     for statement in statements {
         result = eval_statement(statement);
-        if result.is_return() {
+        if result.is_stop_eval() {
             return result;
         }
     }
