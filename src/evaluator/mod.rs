@@ -94,7 +94,7 @@ fn eval_prefix(operator: &Token, right: Object) -> Object {
 fn eval_minus(right: Object) -> Object {
     match right {
         Object::Integer(i) => (-i).into(),
-        _ => Object::Null,
+        _ => Object::Error(format!("unknown operator: MINUS {}", right.type_str())),
     }
 }
 
