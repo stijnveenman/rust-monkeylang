@@ -24,7 +24,7 @@ fn eval_expression(expression: &ExpressionNode) -> Object {
         }
         ExpressionNode::InfixExpression(i) => {
             let left = eval(i.left.as_ref().into());
-            let right = eval(i.left.as_ref().into());
+            let right = eval(i.right.as_ref().into());
             eval_infix(&i.operator, left, right)
         }
         ExpressionNode::IfExpression(_) => todo!(),
@@ -161,6 +161,7 @@ mod test {
     #[case("1 != 2", true)]
     fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
         let result = test_eval(input);
+        println!("{} -> {:?}", input, result);
         test_object(&result, &value);
     }
 }

@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+#[derive(Debug)]
 pub enum Object {
     Integer(i64),
     Boolean(bool),
@@ -40,7 +41,12 @@ pub mod test {
 
         match object {
             Object::Integer(i) => {
-                assert_eq!(value_any.downcast_ref::<i64>().unwrap(), i)
+                let val = value_any
+                    .downcast_ref::<i64>()
+                    .copied()
+                    .or(value_any.downcast_ref::<i32>().map(|v| i64::from(*v)))
+                    .unwrap();
+                assert_eq!(&val, i)
             }
             Object::Boolean(i) => {
                 assert_eq!(value_any.downcast_ref::<bool>().unwrap(), i)
