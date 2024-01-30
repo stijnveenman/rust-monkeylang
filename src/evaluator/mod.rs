@@ -255,6 +255,11 @@ mod test {
 }",
         10
     )]
+    // test let statements
+    #[case("let a = 5; a;", 5)]
+    #[case("let a = 5 * 5; a;", 25)]
+    #[case("let a = 5; let b = a; b;", 5)]
+    #[case("let a = 5; let b = a; let c = a + b + 5; c;", 15)]
     fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
         println!("{}", input);
         let result = test_eval(input);
@@ -294,6 +299,7 @@ if (10 > 1) {
 ",
         "unknown operator: BOOLEAN PLUS BOOLEAN"
     )]
+    #[case("foobar;", "identifier not found: foobar")]
     fn test_errors(#[case] input: &str, #[case] error: &str) {
         println!("{}", input);
         let result = test_eval(input);
