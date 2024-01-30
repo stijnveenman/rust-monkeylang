@@ -4,21 +4,25 @@ use crate::{
     tokens::token::Token,
 };
 
-pub fn eval(node: Node) -> Object {
+use self::environment::Environment;
+
+pub mod environment;
+
+pub fn eval(env: &mut Environment, node: Node) -> Object {
     match node {
-        Node::Statement(statement) => eval_statement(statement),
-        Node::Expression(expression) => eval_expression(expression),
-        Node::Program(program) => eval_statements(&program.statements).unwrap(),
+        Node::Statement(statement) => eval_statement(env, statement),
+        Node::Expression(expression) => eval_expression(env, expression),
+        Node::Program(program) => eval_statements(env, &program.statements).unwrap(),
     }
 }
 
-fn eval_expression(expression: &ExpressionNode) -> Object {
+fn eval_expression(env: &mut Environment, expression: &ExpressionNode) -> Object {
     match expression {
         ExpressionNode::Identifier(_) => todo!(),
         ExpressionNode::IntegerLiteral(i) => i.value.into(),
         ExpressionNode::BooleanLiteral(i) => i.value.into(),
         ExpressionNode::PrefixExpression(i) => {
-            let right = eval(i.right.as_ref().into());
+            let right = eval(env, i.right.as_ref().into());
             if right.is_error() {
                 return right;
             }
@@ -26,36 +30,36 @@ fn eval_expression(expression: &ExpressionNode) -> Object {
             eval_prefix(&i.operator, right)
         }
         ExpressionNode::InfixExpression(i) => {
-            let left = eval(i.left.as_ref().into());
+            let left = eval(env, i.left.as_ref().into());
             if left.is_error() {
                 return left;
             }
 
-            let right = eval(i.right.as_ref().into());
+            let right = eval(env, i.right.as_ref().into());
             if right.is_error() {
                 return right;
             }
 
             eval_infix(&i.operator, left, right)
         }
-        ExpressionNode::IfExpression(expression) => eval_if_expression(expression),
+        ExpressionNode::IfExpression(expression) => eval_if_expression(env, expression),
         ExpressionNode::FunctionExpression(_) => todo!(),
         ExpressionNode::CallExpression(_) => todo!(),
     }
 }
 
-fn eval_if_expression(if_expression: &IfExpression) -> Object {
-    let condition = eval(if_expression.condition.as_ref().into());
+fn eval_if_expression(env: &mut Environment, if_expression: &IfExpression) -> Object {
+    let condition = eval(env, if_expression.condition.as_ref().into());
     if condition.is_error() {
         return condition;
     }
 
     if is_truthy(&condition) {
-        return eval_statements(&if_expression.concequence.statements);
+        return eval_statements(env, &if_expression.concequence.statements);
     }
 
     if let Some(alternative) = &if_expression.alternative {
-        return eval_statements(&alternative.statements);
+        return eval_statements(env, &alternative.statements);
     }
 
     Object::Null
@@ -130,27 +134,29 @@ fn eval_bang(right: Object) -> Object {
     }
 }
 
-fn eval_statement(statement: &StatementNode) -> Object {
+fn eval_statement(env: &mut Environment, statement: &StatementNode) -> Object {
     match statement {
         StatementNode::LetStatement(_) => todo!(),
         StatementNode::ReturnStatement(statement) => {
-            let value = eval((&statement.return_value).into());
+            let value = eval(env, (&statement.return_value).into());
             if value.is_error() {
                 return value;
             }
 
             Object::Return(Box::new(value))
         }
-        StatementNode::ExpressionStatement(expression) => eval_expression(&expression.expression),
-        StatementNode::BlockStatement(block) => eval_statements(&block.statements),
+        StatementNode::ExpressionStatement(expression) => {
+            eval_expression(env, &expression.expression)
+        }
+        StatementNode::BlockStatement(block) => eval_statements(env, &block.statements),
     }
 }
 
-fn eval_statements(statements: &Vec<StatementNode>) -> Object {
+fn eval_statements(env: &mut Environment, statements: &Vec<StatementNode>) -> Object {
     let mut result = Object::Null;
 
     for statement in statements {
-        result = eval_statement(statement);
+        result = eval_statement(env, statement);
         if result.is_return() || result.is_error() {
             return result;
         }
@@ -166,7 +172,7 @@ mod test {
     use rstest::rstest;
 
     use crate::{
-        evaluator::eval,
+        evaluator::{environment::Environment, eval},
         object::{
             test::{test_error, test_null, test_object},
             Object,
@@ -182,7 +188,7 @@ mod test {
         let empty: Vec<String> = vec![];
         assert_eq!(errors, empty);
 
-        eval((&program).into())
+        eval(&mut Environment::new(), (&program).into())
     }
 
     #[rstest]

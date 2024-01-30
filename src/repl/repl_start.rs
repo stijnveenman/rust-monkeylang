@@ -1,10 +1,14 @@
 use std::io::{self, stdout, BufRead, Write};
 
-use crate::{evaluator::eval, parser::Parser};
+use crate::{
+    evaluator::{environment::Environment, eval},
+    parser::Parser,
+};
 
 const PROMPT: &str = ">>";
 
 pub fn start() {
+    let mut env = Environment::new();
     let stdin = io::stdin();
 
     print!("{}", PROMPT);
@@ -20,7 +24,7 @@ pub fn start() {
         if !errors.is_empty() {
             println!("{}", errors.join("\n"));
         } else {
-            let result = eval((&program).into());
+            let result = eval(&mut env, (&program).into());
             println!("{}", result);
         }
 
