@@ -16,9 +16,40 @@ pub fn eval(env: &mut Environment, node: Node) -> Object {
     }
 }
 
+fn eval_statement(env: &mut Environment, statement: &StatementNode) -> Object {
+    match statement {
+        StatementNode::LetStatement(statement) => {
+            let value = eval(env, (&statement.value).into());
+            if value.is_error() {
+                return value;
+            }
+            env.set(statement.identifier.value.to_string(), value);
+            Object::Null
+        }
+        StatementNode::ReturnStatement(statement) => {
+            let value = eval(env, (&statement.return_value).into());
+            if value.is_error() {
+                return value;
+            }
+
+            Object::Return(Box::new(value))
+        }
+        StatementNode::ExpressionStatement(expression) => {
+            eval_expression(env, &expression.expression)
+        }
+        StatementNode::BlockStatement(block) => eval_statements(env, &block.statements),
+    }
+}
+
 fn eval_expression(env: &mut Environment, expression: &ExpressionNode) -> Object {
     match expression {
-        ExpressionNode::Identifier(_) => todo!(),
+        ExpressionNode::Identifier(i) => {
+            if let Some(value) = env.get(&i.value) {
+                value
+            } else {
+                Object::Error(format!("identifier not found: {}", i.value))
+            }
+        }
         ExpressionNode::IntegerLiteral(i) => i.value.into(),
         ExpressionNode::BooleanLiteral(i) => i.value.into(),
         ExpressionNode::PrefixExpression(i) => {
@@ -131,24 +162,6 @@ fn eval_bang(right: Object) -> Object {
         Object::Boolean(b) => (!b).into(),
         Object::Null => true.into(),
         _ => false.into(),
-    }
-}
-
-fn eval_statement(env: &mut Environment, statement: &StatementNode) -> Object {
-    match statement {
-        StatementNode::LetStatement(_) => todo!(),
-        StatementNode::ReturnStatement(statement) => {
-            let value = eval(env, (&statement.return_value).into());
-            if value.is_error() {
-                return value;
-            }
-
-            Object::Return(Box::new(value))
-        }
-        StatementNode::ExpressionStatement(expression) => {
-            eval_expression(env, &expression.expression)
-        }
-        StatementNode::BlockStatement(block) => eval_statements(env, &block.statements),
     }
 }
 

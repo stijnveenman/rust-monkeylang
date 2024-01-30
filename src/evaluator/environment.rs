@@ -2,21 +2,21 @@ use std::collections::HashMap;
 
 use crate::object::Object;
 
-pub struct Environment<'a> {
-    hm: HashMap<&'a str, Object>,
+pub struct Environment {
+    hm: HashMap<String, Object>,
 }
 
-impl<'a> Environment<'a> {
+impl<'a> Environment {
     #[allow(clippy::new_without_default)]
-    pub fn new() -> Environment<'a> {
+    pub fn new() -> Environment {
         Environment { hm: HashMap::new() }
     }
 
-    pub fn get(&self, name: &'a str) -> Option<&Object> {
-        self.hm.get(name)
+    pub fn get(&self, name: &'a str) -> Option<Object> {
+        self.hm.get(name).cloned()
     }
 
-    pub fn set(&mut self, name: &'a str, value: Object) {
+    pub fn set(&mut self, name: String, value: Object) {
         self.hm.insert(name, value);
     }
 }
