@@ -84,6 +84,8 @@ impl Display for Object {
 pub mod test {
     use std::any::Any;
 
+    use crate::{ast::AstNode, evaluator::test::test_eval};
+
     use super::Object;
 
     pub fn test_object<T: Any>(object: &Object, val: &T) {
@@ -117,5 +119,21 @@ pub mod test {
             panic!("Expected Object::Error, got {:?}", object);
         };
         assert_eq!(e, error)
+    }
+
+    #[test]
+    fn test_function_object() {
+        let input = "fn(x) { x + 2 };";
+        let result = test_eval(input);
+
+        let Object::Function(args, body, _) = result else {
+            panic!("Expected Object::Function, got {:?}", result);
+        };
+
+        assert_eq!(args.len(), 1);
+
+        assert_eq!(args.first().unwrap().string(), "x");
+
+        assert_eq!(body.string(), "(x + 2)");
     }
 }

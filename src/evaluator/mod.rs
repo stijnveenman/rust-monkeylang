@@ -180,7 +180,7 @@ fn eval_statements(env: &mut Environment, statements: &Vec<StatementNode>) -> Ob
 }
 
 #[cfg(test)]
-mod test {
+pub mod test {
     use std::any::Any;
 
     use rstest::rstest;
@@ -194,7 +194,7 @@ mod test {
         parser::Parser,
     };
 
-    fn test_eval(input: &str) -> Object {
+    pub fn test_eval(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
 
         let (program, errors) = parser.parse_program();
