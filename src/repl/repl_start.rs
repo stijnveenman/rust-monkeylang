@@ -8,7 +8,7 @@ use crate::{
 const PROMPT: &str = ">>";
 
 pub fn start() {
-    let mut env = Environment::new();
+    let env = Environment::new();
     let stdin = io::stdin();
 
     print!("{}", PROMPT);
@@ -24,7 +24,7 @@ pub fn start() {
         if !errors.is_empty() {
             println!("{}", errors.join("\n"));
         } else {
-            let result = eval(&mut env, (&program).into());
+            let result = eval(&env, (&program).into());
             println!("{}", result);
         }
 

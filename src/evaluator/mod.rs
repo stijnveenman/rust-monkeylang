@@ -1,3 +1,5 @@
+use std::{rc::Rc, sync::Mutex};
+
 use crate::{
     ast::{if_expression::IfExpression, ExpressionNode, Node, StatementNode},
     object::Object,
@@ -8,7 +10,7 @@ use self::environment::Environment;
 
 pub mod environment;
 
-pub fn eval(env: &mut Environment, node: Node) -> Object {
+pub fn eval(env: &Rc<Mutex<Environment>>, node: Node) -> Object {
     match node {
         Node::Statement(statement) => eval_statement(env, statement),
         Node::Expression(expression) => eval_expression(env, expression),
@@ -16,14 +18,16 @@ pub fn eval(env: &mut Environment, node: Node) -> Object {
     }
 }
 
-fn eval_statement(env: &mut Environment, statement: &StatementNode) -> Object {
+fn eval_statement(env: &Rc<Mutex<Environment>>, statement: &StatementNode) -> Object {
     match statement {
         StatementNode::LetStatement(statement) => {
             let value = eval(env, (&statement.value).into());
             if value.is_error() {
                 return value;
             }
-            env.set(statement.identifier.value.to_string(), value);
+            env.lock()
+                .unwrap()
+                .set(statement.identifier.value.to_string(), value);
             Object::Null
         }
         StatementNode::ReturnStatement(statement) => {
@@ -41,10 +45,10 @@ fn eval_statement(env: &mut Environment, statement: &StatementNode) -> Object {
     }
 }
 
-fn eval_expression(env: &mut Environment, expression: &ExpressionNode) -> Object {
+fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) -> Object {
     match expression {
         ExpressionNode::Identifier(i) => {
-            if let Some(value) = env.get(&i.value) {
+            if let Some(value) = env.lock().unwrap().get(&i.value) {
                 value
             } else {
                 Object::Error(format!("identifier not found: {}", i.value))
@@ -74,12 +78,16 @@ fn eval_expression(env: &mut Environment, expression: &ExpressionNode) -> Object
             eval_infix(&i.operator, left, right)
         }
         ExpressionNode::IfExpression(expression) => eval_if_expression(env, expression),
-        ExpressionNode::FunctionExpression(_) => todo!(),
+        ExpressionNode::FunctionExpression(expression) => Object::Function(
+            expression.parameters.clone(),
+            expression.body.clone(),
+            env.clone(),
+        ),
         ExpressionNode::CallExpression(_) => todo!(),
     }
 }
 
-fn eval_if_expression(env: &mut Environment, if_expression: &IfExpression) -> Object {
+fn eval_if_expression(env: &Rc<Mutex<Environment>>, if_expression: &IfExpression) -> Object {
     let condition = eval(env, if_expression.condition.as_ref().into());
     if condition.is_error() {
         return condition;
@@ -166,7 +174,7 @@ fn eval_bang(right: Object) -> Object {
     }
 }
 
-fn eval_statements(env: &mut Environment, statements: &Vec<StatementNode>) -> Object {
+fn eval_statements(env: &Rc<Mutex<Environment>>, statements: &Vec<StatementNode>) -> Object {
     let mut result = Object::Null;
 
     for statement in statements {
@@ -202,7 +210,8 @@ pub mod test {
         let empty: Vec<String> = vec![];
         assert_eq!(errors, empty);
 
-        eval(&mut Environment::new(), (&program).into())
+        let env = Environment::new();
+        eval(&env, (&program).into())
     }
 
     #[rstest]

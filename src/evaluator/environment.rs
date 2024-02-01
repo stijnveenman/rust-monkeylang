@@ -1,16 +1,16 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc, sync::Mutex};
 
 use crate::object::Object;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Environment {
     hm: HashMap<String, Object>,
 }
 
 impl<'a> Environment {
     #[allow(clippy::new_without_default)]
-    pub fn new() -> Environment {
-        Environment { hm: HashMap::new() }
+    pub fn new() -> Rc<Mutex<Environment>> {
+        Rc::new(Mutex::new(Environment { hm: HashMap::new() }))
     }
 
     pub fn get(&self, name: &'a str) -> Option<Object> {

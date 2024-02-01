@@ -1,4 +1,4 @@
-use std::{fmt::Display, mem};
+use std::{fmt::Display, mem, rc::Rc, sync::Mutex};
 
 use crate::{
     ast::{block_statement::BlockStatement, identifier::Identifier, AstNode},
@@ -9,7 +9,7 @@ use crate::{
 pub enum Object {
     Integer(i64),
     Boolean(bool),
-    Function(Vec<Identifier>, BlockStatement, Environment),
+    Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
     Null,
     Return(Box<Object>),
     Error(String),
