@@ -2,7 +2,7 @@ use crate::tokens::token::Token;
 
 use super::{AstNode, StatementNode};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockStatement {
     pub token: Token,
     pub statements: Vec<StatementNode>,

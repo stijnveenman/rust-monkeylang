@@ -1,9 +1,15 @@
 use std::{fmt::Display, mem};
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+use crate::{
+    ast::{block_statement::BlockStatement, identifier::Identifier, AstNode},
+    evaluator::environment::Environment,
+};
+
+#[derive(Debug, Clone)]
 pub enum Object {
     Integer(i64),
     Boolean(bool),
+    Function(Vec<Identifier>, BlockStatement, Environment),
     Null,
     Return(Box<Object>),
     Error(String),
@@ -33,6 +39,7 @@ impl Object {
             Object::Integer(_) => "INTEGER",
             Object::Boolean(_) => "BOOLEAN",
             Object::Null => "NULL",
+            Object::Function(_, _, _) => "FUNCTION",
             Object::Return(_) => todo!(),
             Object::Error(_) => todo!(),
         }
@@ -58,6 +65,16 @@ impl Display for Object {
             Object::Boolean(b) => write!(f, "{}", b),
             Object::Null => write!(f, "null"),
             Object::Return(i) => write!(f, "{}", i),
+            Object::Function(arguments, block, _) => write!(
+                f,
+                "fn ({}) {{\n{}\n}}",
+                arguments
+                    .iter()
+                    .map(|a| a.string())
+                    .collect::<Vec<_>>()
+                    .join(", "),
+                block.string()
+            ),
             Object::Error(e) => write!(f, "ERROR: {}", e),
         }
     }
@@ -84,6 +101,7 @@ pub mod test {
             Object::Boolean(i) => {
                 assert_eq!(value_any.downcast_ref::<bool>().unwrap(), i)
             }
+            Object::Function(_, _, _) => todo!(),
             Object::Null => panic!("called test_object on null object, use test_null if expected"),
             Object::Return(_) => todo!(),
             Object::Error(_) => todo!(),
@@ -91,7 +109,7 @@ pub mod test {
     }
 
     pub fn test_null(object: &Object) {
-        assert_eq!(object, &Object::Null)
+        assert!(matches!(object, Object::Null))
     }
 
     pub fn test_error(object: &Object, error: &str) {

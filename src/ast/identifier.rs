@@ -2,7 +2,7 @@ use crate::tokens::token::Token;
 
 use super::{AstNode, ExpressionNode, ParsePrefix};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub token: Token,
     pub value: String,

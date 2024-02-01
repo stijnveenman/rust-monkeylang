@@ -151,8 +151,9 @@ fn is_truthy(object: &Object) -> bool {
     match object {
         Object::Integer(_) => true,
         Object::Boolean(b) => *b,
-        Object::Null => false,
+        Object::Function(_, _, _) => true,
         Object::Return(i) => is_truthy(i),
+        Object::Null => false,
         Object::Error(_) => panic!("called is_truthy on error object"),
     }
 }

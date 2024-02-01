@@ -2,7 +2,7 @@ use crate::{parser::precedence::Precedence, tokens::token::Token};
 
 use super::{block_statement::BlockStatement, AstNode, ExpressionNode, ParsePrefix};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IfExpression {
     pub token: Token,
     pub condition: Box<ExpressionNode>,

@@ -2,7 +2,7 @@ use crate::tokens::token::Token;
 
 use super::{AstNode, ParsePrefix};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntegerLiteral {
     pub token: Token,
     pub value: i64,

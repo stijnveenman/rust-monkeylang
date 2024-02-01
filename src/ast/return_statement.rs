@@ -2,7 +2,7 @@ use crate::{parser::precedence::Precedence, tokens::token::Token};
 
 use super::{AstNode, ExpressionNode, ParseStatement};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ReturnStatement {
     pub token: Token,
     pub return_value: ExpressionNode,

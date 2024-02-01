@@ -5,7 +5,7 @@ use super::{
     ParsableResult, ParsePrefix,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FunctionExpression {
     pub token: Token,
     pub parameters: Vec<Identifier>,

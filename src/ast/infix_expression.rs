@@ -5,7 +5,7 @@ use crate::{
 
 use super::{AstNode, ExpressionNode, ParsableResult, ParseInfix};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InfixExpression {
     pub token: Token,
     pub left: Box<ExpressionNode>,

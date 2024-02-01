@@ -5,7 +5,7 @@ use crate::{
 
 use super::{AstNode, ExpressionNode, ParsableResult, ParseInfix};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CallExpression {
     pub token: Token,
     pub function: Box<ExpressionNode>,

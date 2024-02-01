@@ -4,7 +4,7 @@ use super::{
     identifier::Identifier, AstNode, ExpressionNode, ParsableResult, ParseStatement, StatementNode,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LetStatement {
     pub token: Token,
     pub identifier: Identifier,

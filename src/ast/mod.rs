@@ -29,7 +29,7 @@ pub trait AstNode {
     fn string(&self) -> String;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ExpressionNode {
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
@@ -41,7 +41,7 @@ pub enum ExpressionNode {
     CallExpression(CallExpression),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum StatementNode {
     LetStatement(LetStatement),
     ReturnStatement(ReturnStatement),
@@ -49,7 +49,7 @@ pub enum StatementNode {
     ExpressionStatement(ExpressionStatement),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Node<'a> {
     Statement(&'a StatementNode),
     Expression(&'a ExpressionNode),

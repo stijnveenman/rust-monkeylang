@@ -7,7 +7,7 @@ use crate::{
 
 use super::{AstNode, ExpressionNode, ParsableResult, ParsePrefix};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PrefixExpression {
     pub token: Token,
     pub operator: Token,
