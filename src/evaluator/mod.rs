@@ -6,7 +6,7 @@ use crate::{
     tokens::token::Token,
 };
 
-use self::environment::Environment;
+use self::environment::{Enclose, Environment};
 
 pub mod environment;
 
@@ -83,8 +83,49 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
             expression.body.clone(),
             env.clone(),
         ),
-        ExpressionNode::CallExpression(_) => todo!(),
+        ExpressionNode::CallExpression(expression) => {
+            let function = eval_expression(env, &expression.function);
+            if function.is_error() {
+                return function;
+            }
+
+            let arguments = eval_expressions(env, &expression.arguments);
+            if let Some(Object::Error(e)) = arguments.first() {
+                return Object::Error(e.to_string());
+            }
+
+            call_function(function, arguments)
+        }
     }
+}
+
+fn call_function(function: Object, args: Vec<Object>) -> Object {
+    let Object::Function(identifiers, body, env) = function else {
+        return Object::Error(format!("not a function: {}", function.type_str()));
+    };
+
+    let env = env.enclose();
+
+    for (identifier, value) in identifiers.iter().zip(args) {
+        env.lock().unwrap().set(identifier.value.to_string(), value);
+    }
+
+    let result = eval_statements(&env, &body.statements);
+    result.unwrap()
+}
+
+fn eval_expressions(env: &Rc<Mutex<Environment>>, expressions: &[ExpressionNode]) -> Vec<Object> {
+    let mut results = vec![];
+
+    for exp in expressions {
+        let result = eval_expression(env, exp);
+        if result.is_error() {
+            return vec![result];
+        }
+        results.push(result)
+    }
+
+    results
 }
 
 fn eval_if_expression(env: &Rc<Mutex<Environment>>, if_expression: &IfExpression) -> Object {
@@ -289,6 +330,13 @@ pub mod test {
     #[case("let a = 5 * 5; a;", 25)]
     #[case("let a = 5; let b = a; b;", 5)]
     #[case("let a = 5; let b = a; let c = a + b + 5; c;", 15)]
+    // function application
+    #[case("let identity = fn(x) { x; }; identity(5);", 5)]
+    #[case("let identity = fn(x) { return x; }; identity(5);", 5)]
+    #[case("let double = fn(x) { x * 2; }; double(5);", 10)]
+    #[case("let add = fn(x, y) { x + y; }; add(5, 5);", 10)]
+    #[case("let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20)]
+    #[case("fn(x) { x; }(5)", 5)]
     fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
         println!("{}", input);
         let result = test_eval(input);
