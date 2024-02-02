@@ -1,7 +1,21 @@
 use crate::object::Object;
 
 pub fn builtin_len(args: Vec<Object>) -> Object {
-    Object::Null
+    if args.len() != 1 {
+        return Object::Error(format!(
+            "wrong number of arguments. got={}, want={}",
+            args.len(),
+            1
+        ));
+    };
+
+    match args.into_iter().next().unwrap() {
+        Object::String(s) => (s.len() as i64).into(),
+        e => Object::Error(format!(
+            "arguments to `len` not supported, got {}",
+            e.type_str()
+        )),
+    }
 }
 
 #[cfg(test)]
@@ -11,7 +25,7 @@ mod test {
     use crate::{evaluator::test::test_eval, object::Object};
 
     #[rstest]
-    #[case("len(\"\")", 1)]
+    #[case("len(\"\")", 0)]
     #[case("len(\"four\")", 4)]
     #[case("len(\"hello world\")", 11)]
     fn test_builtin_len(#[case] input: &str, #[case] result: i64) {
@@ -26,7 +40,7 @@ mod test {
 
     #[rstest]
     #[case("len(1)", "arguments to `len` not supported, got INTEGER")]
-    #[case("len(\"one\", \"two\")", "wrong number or arguments. got=1, want=2")]
+    #[case("len(\"one\", \"two\")", "wrong number of arguments. got=2, want=1")]
     fn test_builtin_len_error(#[case] input: &str, #[case] result: &str) {
         let evaluated = test_eval(input);
 

@@ -6,7 +6,10 @@ use crate::{
     tokens::token::Token,
 };
 
-use self::environment::{Enclose, Environment};
+use self::{
+    builtin::get_builtin,
+    environment::{Enclose, Environment},
+};
 
 pub mod builtin;
 pub mod environment;
@@ -50,10 +53,14 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
     match expression {
         ExpressionNode::Identifier(i) => {
             if let Some(value) = env.lock().unwrap().get(&i.value) {
-                value
-            } else {
-                Object::Error(format!("identifier not found: {}", i.value))
+                return value;
             }
+
+            if let Some(builtin) = get_builtin(&i.value) {
+                return builtin;
+            }
+
+            Object::Error(format!("identifier not found: {}", i.value))
         }
         ExpressionNode::IntegerLiteral(i) => i.value.into(),
         ExpressionNode::BooleanLiteral(i) => i.value.into(),
@@ -102,6 +109,10 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
 }
 
 fn call_function(function: Object, args: Vec<Object>) -> Object {
+    if let Object::Builtin(builtin) = function {
+        return builtin.0(args);
+    }
+
     let Object::Function(identifiers, body, env) = function else {
         return Object::Error(format!("not a function: {}", function.type_str()));
     };

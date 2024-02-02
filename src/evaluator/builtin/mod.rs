@@ -7,7 +7,7 @@ use self::len::builtin_len;
 pub mod len;
 
 #[derive(Clone)]
-pub struct BuiltinFunction(&'static dyn Fn(Vec<Object>) -> Object);
+pub struct BuiltinFunction(pub &'static dyn Fn(Vec<Object>) -> Object);
 
 impl Debug for BuiltinFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
