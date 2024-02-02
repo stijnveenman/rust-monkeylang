@@ -4,9 +4,10 @@ use self::{
     array_literal::ArrayLiteral, block_statement::BlockStatement, boolean_literal::BooleanLiteral,
     call_expression::CallExpression, expression_statement::ExpressionStatement,
     function_expression::FunctionExpression, identifier::Identifier, if_expression::IfExpression,
-    infix_expression::InfixExpression, integer_literal::IntegerLiteral,
-    let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
-    return_statement::ReturnStatement, string_literal::StringLiteral,
+    index_expression::IndexExpression, infix_expression::InfixExpression,
+    integer_literal::IntegerLiteral, let_statement::LetStatement,
+    prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
+    string_literal::StringLiteral,
 };
 
 pub mod array_literal;
@@ -18,6 +19,7 @@ pub mod function_expression;
 pub mod grouped_expression;
 pub mod identifier;
 pub mod if_expression;
+pub mod index_expression;
 pub mod infix_expression;
 pub mod integer_literal;
 pub mod let_statement;
@@ -43,6 +45,7 @@ pub enum ExpressionNode {
     IfExpression(IfExpression),
     FunctionExpression(FunctionExpression),
     CallExpression(CallExpression),
+    IndexExpresssion(IndexExpression),
 }
 
 #[derive(Debug, Clone)]
@@ -126,6 +129,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::CallExpression(i) => i.token(),
             ExpressionNode::StringLiteral(i) => i.token(),
             ExpressionNode::ArrayLiteral(i) => i.token(),
+            ExpressionNode::IndexExpresssion(i) => i.token(),
         }
     }
 
@@ -141,6 +145,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::CallExpression(i) => i.string(),
             ExpressionNode::StringLiteral(i) => i.string(),
             ExpressionNode::ArrayLiteral(i) => i.string(),
+            ExpressionNode::IndexExpresssion(i) => i.string(),
         }
     }
 }

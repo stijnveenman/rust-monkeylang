@@ -106,6 +106,7 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
             call_function(function, arguments)
         }
         ExpressionNode::ArrayLiteral(_) => todo!(),
+        ExpressionNode::IndexExpresssion(_) => todo!(),
     }
 }
 
