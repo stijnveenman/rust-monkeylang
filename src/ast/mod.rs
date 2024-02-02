@@ -6,7 +6,7 @@ use self::{
     function_expression::FunctionExpression, identifier::Identifier, if_expression::IfExpression,
     infix_expression::InfixExpression, integer_literal::IntegerLiteral,
     let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
-    return_statement::ReturnStatement,
+    return_statement::ReturnStatement, string_literal::StringLiteral,
 };
 
 pub mod block_statement;
@@ -23,6 +23,7 @@ pub mod let_statement;
 pub mod prefix_expression;
 pub mod program;
 pub mod return_statement;
+pub mod string_literal;
 
 pub trait AstNode {
     fn token(&self) -> &Token;
@@ -34,6 +35,7 @@ pub enum ExpressionNode {
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
     BooleanLiteral(BooleanLiteral),
+    StringLiteral(StringLiteral),
     PrefixExpression(PrefixExpression),
     InfixExpression(InfixExpression),
     IfExpression(IfExpression),
@@ -120,6 +122,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::IfExpression(i) => i.token(),
             ExpressionNode::FunctionExpression(i) => i.token(),
             ExpressionNode::CallExpression(i) => i.token(),
+            ExpressionNode::StringLiteral(i) => i.token(),
         }
     }
 
@@ -133,6 +136,7 @@ impl AstNode for ExpressionNode {
             ExpressionNode::IfExpression(i) => i.string(),
             ExpressionNode::FunctionExpression(i) => i.string(),
             ExpressionNode::CallExpression(i) => i.string(),
+            ExpressionNode::StringLiteral(i) => i.string(),
         }
     }
 }
@@ -159,6 +163,10 @@ mod test {
             ExpressionNode::BooleanLiteral(v) => {
                 assert_eq!(&v.value, value_any.downcast_ref().unwrap())
             }
+            ExpressionNode::StringLiteral(v) => {
+                assert_eq!(&v.value, value_any.downcast_ref::<&str>().unwrap())
+            }
+
             ExpressionNode::PrefixExpression(_) => todo!(),
             ExpressionNode::InfixExpression(_) => todo!(),
             ExpressionNode::IfExpression(_) => todo!(),
