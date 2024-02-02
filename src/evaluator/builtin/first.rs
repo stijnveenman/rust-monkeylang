@@ -1,6 +1,6 @@
 use crate::object::Object;
 
-pub fn builtin_len(args: Vec<Object>) -> Object {
+pub fn builtin_first(args: Vec<Object>) -> Object {
     if args.len() != 1 {
         return Object::Error(format!(
             "wrong number of arguments. got={}, want={}",
@@ -10,10 +10,9 @@ pub fn builtin_len(args: Vec<Object>) -> Object {
     };
 
     match args.into_iter().next().unwrap() {
-        Object::String(s) => (s.len() as i64).into(),
-        Object::Array(a) => (a.len() as i64).into(),
+        Object::Array(a) => a.into_iter().next().unwrap_or(Object::Null),
         e => Object::Error(format!(
-            "arguments to `len` not supported, got {}",
+            "argument to `first` must be ARRAY, got {}",
             e.type_str()
         )),
     }

@@ -117,7 +117,10 @@ mod test {
         };
 
         let ExpressionNode::FunctionExpression(fn_expression) = &expression.expression else {
-            panic!("expected FunctionExpression for node, got {:?}", node);
+            panic!(
+                "expected FunctionExpression for node, got {:?}",
+                expression.expression
+            );
         };
 
         assert_eq!(fn_expression.parameters.len(), params.len());
