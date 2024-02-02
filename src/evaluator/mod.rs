@@ -423,4 +423,26 @@ if (10 > 1) {
         test_object(array.get(1).unwrap(), &4);
         test_object(array.get(2).unwrap(), &6);
     }
+
+    #[rstest]
+    #[case("[1, 2, 3][0]", 1)]
+    #[case("[1, 2, 3][1]", 2)]
+    #[case("[1, 2, 3][2]", 3)]
+    #[case("let i = 0; [1][i];", 1)]
+    #[case("[1, 2, 3][1 + 1];", 3)]
+    #[case("let myArray = [1, 2, 3]; myArray[2];", 3)]
+    #[case("let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", 6)]
+    #[case("let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", 2)]
+    fn test_array_index(#[case] input: &str, #[case] value: i64) {
+        let result = test_eval(input);
+        test_object(&result, &value);
+    }
+
+    #[rstest]
+    #[case("[1, 2, 3][3]")]
+    #[case("[1, 2, 3][-1]")]
+    fn test_array_null(#[case] input: &str) {
+        let result = test_eval(input);
+        test_null(&result);
+    }
 }
