@@ -146,7 +146,10 @@ if (5 < 10) {
 }
 
 10 == 10;
-10 != 9;";
+10 != 9;
+\"foobar\"
+\"foo bar\"
+";
     let mut lexer = Lexer::new(input.into());
 
     assert_eq!(lexer.next_token(), Token::LET);
@@ -222,6 +225,8 @@ if (5 < 10) {
     assert_eq!(lexer.next_token(), Token::NOT_EQ);
     assert_eq!(lexer.next_token(), Token::INT(9));
     assert_eq!(lexer.next_token(), Token::SEMICOLON);
+    assert_eq!(lexer.next_token(), Token::STRING("foobar".into()));
+    assert_eq!(lexer.next_token(), Token::STRING("foo bar".into()));
     assert_eq!(lexer.next_token(), Token::EOF);
 }
 
