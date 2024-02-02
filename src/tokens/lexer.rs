@@ -109,6 +109,8 @@ impl Lexer {
             ')' => Token::RPAREN,
             '{' => Token::LBRACE,
             '}' => Token::RBRACE,
+            '[' => Token::LBRACKET,
+            ']' => Token::RBRACKET,
 
             '\0' => Token::EOF,
             '"' => Token::STRING(self.read_string()),
@@ -263,7 +265,8 @@ if (5 < 10) {
 }
 
 10 == 10;
-10 != 9;";
+10 != 9;
+[1, 2];";
     let mut lexer = Lexer::new(input.into());
 
     assert_eq!(lexer.next_token(), Token::LET);
@@ -338,6 +341,12 @@ if (5 < 10) {
     assert_eq!(lexer.next_token(), Token::INT(10));
     assert_eq!(lexer.next_token(), Token::NOT_EQ);
     assert_eq!(lexer.next_token(), Token::INT(9));
+    assert_eq!(lexer.next_token(), Token::SEMICOLON);
+    assert_eq!(lexer.next_token(), Token::LBRACKET);
+    assert_eq!(lexer.next_token(), Token::INT(1));
+    assert_eq!(lexer.next_token(), Token::COMMA);
+    assert_eq!(lexer.next_token(), Token::INT(2));
+    assert_eq!(lexer.next_token(), Token::RBRACKET);
     assert_eq!(lexer.next_token(), Token::SEMICOLON);
     assert_eq!(lexer.next_token(), Token::EOF);
 }
