@@ -56,6 +56,7 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
         }
         ExpressionNode::IntegerLiteral(i) => i.value.into(),
         ExpressionNode::BooleanLiteral(i) => i.value.into(),
+        ExpressionNode::StringLiteral(i) => (&i.value).into(),
         ExpressionNode::PrefixExpression(i) => {
             let right = eval(env, i.right.as_ref().into());
             if right.is_error() {
@@ -96,7 +97,6 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
 
             call_function(function, arguments)
         }
-        ExpressionNode::StringLiteral(_) => todo!(),
     }
 }
 
@@ -339,6 +339,8 @@ pub mod test {
     #[case("let add = fn(x, y) { x + y; }; add(5, 5);", 10)]
     #[case("let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20)]
     #[case("fn(x) { x; }(5)", 5)]
+    // string
+    #[case("\"Hello world!\"", "Hello world!")]
     fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
         println!("{}", input);
         let result = test_eval(input);
