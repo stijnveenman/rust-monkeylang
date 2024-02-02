@@ -1,7 +1,4 @@
-use crate::{
-    parser::{precedence::Precedence, Parser},
-    tokens::token::Token,
-};
+use crate::{parser::Parser, tokens::token::Token};
 
 use super::{AstNode, ExpressionNode, ParsableResult, ParseInfix};
 
@@ -30,39 +27,11 @@ impl AstNode for CallExpression {
     }
 }
 
-impl CallExpression {
-    fn parse_arguments(parser: &mut Parser) -> ParsableResult<Vec<ExpressionNode>> {
-        let mut arguments = vec![];
-        if parser.peek_token.is(&Token::RPAREN) {
-            parser.next_token();
-            return Ok(arguments);
-        }
-
-        parser.next_token();
-
-        loop {
-            let expression = parser.parse_expression(Precedence::LOWEST)?;
-            arguments.push(expression);
-
-            if !parser.peek_token.is(&Token::COMMA) {
-                break;
-            }
-
-            parser.next_token();
-            parser.next_token();
-        }
-
-        parser.expect_token(Token::RPAREN)?;
-
-        Ok(arguments)
-    }
-}
-
 impl ParseInfix for CallExpression {
     fn parse_infix(parser: &mut Parser, left: ExpressionNode) -> ParsableResult<ExpressionNode> {
         let token = parser.current_token.clone();
 
-        let arguments = CallExpression::parse_arguments(parser)?;
+        let arguments = parser.parse_expression_list(Token::RPAREN)?;
 
         Ok(ExpressionNode::CallExpression(CallExpression {
             token,

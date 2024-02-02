@@ -1,13 +1,13 @@
 use crate::{
     ast::{
-        block_statement::BlockStatement, boolean_literal::BooleanLiteral,
-        call_expression::CallExpression, expression_statement::ExpressionStatement,
-        function_expression::FunctionExpression, grouped_expression::GroupedExpression,
-        identifier::Identifier, if_expression::IfExpression, infix_expression::InfixExpression,
-        integer_literal::IntegerLiteral, let_statement::LetStatement,
-        prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
-        string_literal::StringLiteral, ExpressionNode, ParsableResult, ParseInfix, ParsePrefix,
-        ParseStatement, PrefixParser, StatementNode,
+        array_literal::ArrayLiteral, block_statement::BlockStatement,
+        boolean_literal::BooleanLiteral, call_expression::CallExpression,
+        expression_statement::ExpressionStatement, function_expression::FunctionExpression,
+        grouped_expression::GroupedExpression, identifier::Identifier, if_expression::IfExpression,
+        infix_expression::InfixExpression, integer_literal::IntegerLiteral,
+        let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
+        return_statement::ReturnStatement, string_literal::StringLiteral, ExpressionNode,
+        ParsableResult, ParseInfix, ParsePrefix, ParseStatement, PrefixParser, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -71,6 +71,7 @@ impl Parser {
             Token::IF => IfExpression::parse_prefix(self),
             Token::FUNCTION => FunctionExpression::parse_prefix(self),
             Token::STRING(_) => StringLiteral::parse_prefix(self),
+            Token::LBRACKET => ArrayLiteral::parse_prefix(self),
             e => Err(format!("Invalid prefix token {:?}", e)),
         }
     }
@@ -88,6 +89,35 @@ impl Parser {
             Token::LPAREN => Some(CallExpression::parse_infix),
             _ => None,
         }
+    }
+
+    pub fn parse_expression_list(
+        &mut self,
+        end_token: Token,
+    ) -> ParsableResult<Vec<ExpressionNode>> {
+        let mut arguments = vec![];
+        if self.peek_token.is(&end_token) {
+            self.next_token();
+            return Ok(arguments);
+        }
+
+        self.next_token();
+
+        loop {
+            let expression = self.parse_expression(Precedence::LOWEST)?;
+            arguments.push(expression);
+
+            if !self.peek_token.is(&Token::COMMA) {
+                break;
+            }
+
+            self.next_token();
+            self.next_token();
+        }
+
+        self.expect_token(end_token)?;
+
+        Ok(arguments)
     }
 
     pub fn parse_expression(&mut self, precedence: Precedence) -> ParsableResult<ExpressionNode> {

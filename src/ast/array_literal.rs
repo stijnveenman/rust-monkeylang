@@ -1,11 +1,11 @@
-use crate::tokens::token::Token;
+use crate::{parser::Parser, tokens::token::Token};
 
-use super::{AstNode, ExpressionNode};
+use super::{AstNode, ExpressionNode, ParsableResult, ParsePrefix};
 
 #[derive(Debug, Clone)]
 pub struct ArrayLiteral {
     pub token: Token,
-    pub expressoins: Vec<ExpressionNode>,
+    pub expressions: Vec<ExpressionNode>,
 }
 
 impl AstNode for ArrayLiteral {
@@ -16,12 +16,24 @@ impl AstNode for ArrayLiteral {
     fn string(&self) -> String {
         format!(
             "[{}]",
-            self.expressoins
+            self.expressions
                 .iter()
                 .map(|x| x.string())
                 .collect::<Vec<_>>()
                 .join(", ")
         )
+    }
+}
+
+impl ParsePrefix for ArrayLiteral {
+    fn parse_prefix(parser: &mut Parser) -> ParsableResult<ExpressionNode> {
+        let token = parser.current_token.clone();
+        let expressions = parser.parse_expression_list(Token::RBRACKET)?;
+
+        Ok(ExpressionNode::ArrayLiteral(ArrayLiteral {
+            token,
+            expressions,
+        }))
     }
 }
 
@@ -57,10 +69,10 @@ mod test {
             panic!("expected ArrayLiteral for Expressoin, got {:?}", node);
         };
 
-        assert_eq!(array.expressoins.len(), 3);
-        test_expression(array.expressoins.first().unwrap(), &1);
-        test_infix_expression(array.expressoins.get(1).unwrap(), 2, Token::ASTERISK, 2);
-        test_infix_expression(array.expressoins.get(2).unwrap(), 3, Token::PLUS, 3);
+        assert_eq!(array.expressions.len(), 3);
+        test_expression(array.expressions.first().unwrap(), &1);
+        test_infix_expression(array.expressions.get(1).unwrap(), 2, Token::ASTERISK, 2);
+        test_infix_expression(array.expressions.get(2).unwrap(), 3, Token::PLUS, 3);
     }
 
     #[test]
@@ -84,6 +96,6 @@ mod test {
             panic!("expected ArrayLiteral for Expressoin, got {:?}", node);
         };
 
-        assert_eq!(array.expressoins.len(), 0);
+        assert_eq!(array.expressions.len(), 0);
     }
 }
