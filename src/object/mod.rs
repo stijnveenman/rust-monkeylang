@@ -16,6 +16,7 @@ pub enum Object {
     Boolean(bool),
     Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
     String(String),
+    Array(Vec<Object>),
     Builtin(BuiltinFunction),
     Null,
     Return(Box<Object>),
@@ -51,6 +52,7 @@ impl Object {
             Object::Function(_, _, _) => "FUNCTION",
             Object::String(_) => "STRING",
             Object::Builtin(_) => "BUILTIN",
+            Object::Array(_) => "ARRAY",
         }
     }
 }
@@ -98,6 +100,14 @@ impl Display for Object {
             Object::Error(e) => write!(f, "ERROR: {}", e),
             Object::String(s) => write!(f, "{}", s),
             Object::Builtin(_) => write!(f, "Builtin function"),
+            Object::Array(s) => write!(
+                f,
+                "[{}]",
+                s.iter()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
         }
     }
 }
@@ -130,9 +140,7 @@ pub mod test {
             }
             Object::Function(_, _, _) => todo!(),
             Object::Null => panic!("called test_object on null object, use test_null if expected"),
-            Object::Return(_) => todo!(),
-            Object::Error(_) => todo!(),
-            Object::Builtin(_) => todo!(),
+            _ => todo!(),
         }
     }
 
