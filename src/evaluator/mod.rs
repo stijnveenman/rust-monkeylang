@@ -105,7 +105,14 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
 
             call_function(function, arguments)
         }
-        ExpressionNode::ArrayLiteral(_) => todo!(),
+        ExpressionNode::ArrayLiteral(array) => {
+            let arguments = eval_expressions(env, &array.expressions);
+            if let Some(Object::Error(e)) = arguments.first() {
+                return Object::Error(e.to_string());
+            }
+
+            Object::Array(arguments)
+        }
         ExpressionNode::IndexExpresssion(_) => todo!(),
     }
 }
@@ -401,5 +408,19 @@ if (10 > 1) {
         let result = test_eval(input);
         println!(" -> {:?}", result);
         test_error(&result, error);
+    }
+
+    #[test]
+    fn test_array_object() {
+        let input = "[1, 2 * 2, 3 + 3]";
+        let result = test_eval(input);
+
+        let Object::Array(array) = result else {
+            panic!("Expected Object::Array for result, got {:?}", result);
+        };
+
+        test_object(array.first().unwrap(), &1);
+        test_object(array.get(1).unwrap(), &4);
+        test_object(array.get(2).unwrap(), &6);
     }
 }
