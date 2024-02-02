@@ -2,11 +2,15 @@ use std::fmt::Debug;
 
 use crate::object::Object;
 
-use self::{first::builtin_first, last::builtin_last, len::builtin_len, rest::builtin_rest};
+use self::{
+    first::builtin_first, last::builtin_last, len::builtin_len, push::builtin_push,
+    rest::builtin_rest,
+};
 
 pub mod first;
 pub mod last;
 pub mod len;
+pub mod push;
 pub mod rest;
 
 #[derive(Clone)]
@@ -24,6 +28,7 @@ pub fn get_builtin(name: &str) -> Option<Object> {
         "first" => &builtin_first,
         "last" => &builtin_last,
         "rest" => &builtin_rest,
+        "push" => &builtin_push,
         _ => return None,
     })))
 }
@@ -80,7 +85,8 @@ mod test {
 
     #[rstest]
     #[case("rest([1,2,3])", vec![2,3])]
-    #[case("push([[], 1])", vec![1])]
+    #[case("push([], 1)", vec![1])]
+    #[case("push([1,2,3], 4)", vec![1,2,3,4])]
     fn test_builtin_error_array(#[case] input: &str, #[case] expected: Vec<i64>) {
         println!("{}", input);
         let evaluated = test_eval(input);
