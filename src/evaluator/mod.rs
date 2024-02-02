@@ -8,6 +8,7 @@ use crate::{
 
 use self::environment::{Enclose, Environment};
 
+pub mod builtin;
 pub mod environment;
 
 pub fn eval(env: &Rc<Mutex<Environment>>, node: Node) -> Object {
