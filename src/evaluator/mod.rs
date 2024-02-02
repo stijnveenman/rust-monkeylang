@@ -202,6 +202,7 @@ fn is_truthy(object: &Object) -> bool {
         Object::Integer(_) => true,
         Object::Boolean(b) => *b,
         Object::Function(_, _, _) => true,
+        Object::String(_) => true,
         Object::Return(i) => is_truthy(i),
         Object::Null => false,
         Object::Error(_) => panic!("called is_truthy on error object"),

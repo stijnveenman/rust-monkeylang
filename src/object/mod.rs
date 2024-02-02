@@ -10,6 +10,7 @@ pub enum Object {
     Integer(i64),
     Boolean(bool),
     Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
+    String(String),
     Null,
     Return(Box<Object>),
     Error(String),
@@ -40,6 +41,7 @@ impl Object {
             Object::Boolean(_) => "BOOLEAN",
             Object::Null => "NULL",
             Object::Function(_, _, _) => "FUNCTION",
+            Object::String(_) => "STRING",
             Object::Return(_) => todo!(),
             Object::Error(_) => todo!(),
         }
@@ -76,6 +78,7 @@ impl Display for Object {
                 block.string()
             ),
             Object::Error(e) => write!(f, "ERROR: {}", e),
+            Object::String(s) => write!(f, "{}", s),
         }
     }
 }
@@ -102,6 +105,9 @@ pub mod test {
             }
             Object::Boolean(i) => {
                 assert_eq!(value_any.downcast_ref::<bool>().unwrap(), i)
+            }
+            Object::String(v) => {
+                assert_eq!(&v, value_any.downcast_ref::<&str>().unwrap())
             }
             Object::Function(_, _, _) => todo!(),
             Object::Null => panic!("called test_object on null object, use test_null if expected"),
