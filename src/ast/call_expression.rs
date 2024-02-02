@@ -16,13 +16,13 @@ impl AstNode for CallExpression {
 
     fn string(&self) -> String {
         format!(
-            "{} ({})",
+            "{}({})",
             self.function.string(),
             self.arguments
                 .iter()
                 .map(|a| a.string())
                 .collect::<Vec<_>>()
-                .join(",")
+                .join(", ")
         )
     }
 }

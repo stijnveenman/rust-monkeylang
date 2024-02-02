@@ -167,7 +167,12 @@ mod test {
                 )
             }
             ExpressionNode::IntegerLiteral(v) => {
-                assert_eq!(&v.value, value_any.downcast_ref().unwrap())
+                let val = value_any
+                    .downcast_ref::<i64>()
+                    .copied()
+                    .or(value_any.downcast_ref::<i32>().map(|v| i64::from(*v)))
+                    .unwrap();
+                assert_eq!(&v.value, &val)
             }
             ExpressionNode::BooleanLiteral(v) => {
                 assert_eq!(&v.value, value_any.downcast_ref().unwrap())

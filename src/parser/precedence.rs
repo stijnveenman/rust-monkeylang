@@ -9,6 +9,7 @@ pub enum Precedence {
     PRODUCT,
     PREFIX,
     CALL,
+    INDEX,
 }
 
 impl From<&Token> for Precedence {
@@ -23,6 +24,7 @@ impl From<&Token> for Precedence {
             Token::SLASH => Precedence::PRODUCT,
             Token::ASTERISK => Precedence::PRODUCT,
             Token::LPAREN => Precedence::CALL,
+            Token::LBRACKET => Precedence::INDEX,
             _ => Precedence::LOWEST,
         }
     }

@@ -1,6 +1,9 @@
-use crate::tokens::token::Token;
+use crate::{
+    parser::{precedence::Precedence, Parser},
+    tokens::token::Token,
+};
 
-use super::{AstNode, ExpressionNode};
+use super::{AstNode, ExpressionNode, ParseInfix};
 
 #[derive(Debug, Clone)]
 pub struct IndexExpression {
@@ -16,6 +19,26 @@ impl AstNode for IndexExpression {
 
     fn string(&self) -> String {
         format!("({}[{}])", self.left.string(), self.right.string())
+    }
+}
+
+impl ParseInfix for IndexExpression {
+    fn parse_infix(
+        parser: &mut Parser,
+        left: ExpressionNode,
+    ) -> super::ParsableResult<ExpressionNode> {
+        let token = parser.current_token.clone();
+        parser.next_token();
+
+        let index = parser.parse_expression(Precedence::LOWEST)?;
+
+        parser.expect_token(Token::RBRACKET)?;
+
+        Ok(ExpressionNode::IndexExpresssion(IndexExpression {
+            token,
+            left: Box::new(left),
+            right: Box::new(index),
+        }))
     }
 }
 
@@ -51,6 +74,6 @@ mod test {
         };
 
         test_expression(&expression.left, &"myArray");
-        test_infix_expression(&expression.left, 1, Token::PLUS, 1);
+        test_infix_expression(&expression.right, 1, Token::PLUS, 1);
     }
 }

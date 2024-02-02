@@ -4,10 +4,11 @@ use crate::{
         boolean_literal::BooleanLiteral, call_expression::CallExpression,
         expression_statement::ExpressionStatement, function_expression::FunctionExpression,
         grouped_expression::GroupedExpression, identifier::Identifier, if_expression::IfExpression,
-        infix_expression::InfixExpression, integer_literal::IntegerLiteral,
-        let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
-        return_statement::ReturnStatement, string_literal::StringLiteral, ExpressionNode,
-        ParsableResult, ParseInfix, ParsePrefix, ParseStatement, PrefixParser, StatementNode,
+        index_expression::IndexExpression, infix_expression::InfixExpression,
+        integer_literal::IntegerLiteral, let_statement::LetStatement,
+        prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
+        string_literal::StringLiteral, ExpressionNode, ParsableResult, ParseInfix, ParsePrefix,
+        ParseStatement, PrefixParser, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -87,6 +88,7 @@ impl Parser {
             | Token::LT
             | Token::GT => Some(InfixExpression::parse_infix),
             Token::LPAREN => Some(CallExpression::parse_infix),
+            Token::LBRACKET => Some(IndexExpression::parse_infix),
             _ => None,
         }
     }
