@@ -7,17 +7,8 @@ use std::{
 
 use crate::{
     ast::{block_statement::BlockStatement, identifier::Identifier, AstNode},
-    evaluator::environment::Environment,
+    evaluator::{builtin::BuiltinFunction, environment::Environment},
 };
-
-#[derive(Clone)]
-pub struct BuiltinFunction(&'static dyn Fn(Vec<Object>) -> Object);
-
-impl Debug for BuiltinFunction {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "BuiltinFunction")
-    }
-}
 
 #[derive(Debug, Clone)]
 pub enum Object {

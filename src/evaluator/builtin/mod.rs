@@ -1,33 +1,23 @@
-#[cfg(test)]
-mod test {
-    use rstest::rstest;
+use std::fmt::Debug;
 
-    use crate::{evaluator::test::test_eval, object::Object};
+use crate::object::Object;
 
-    #[rstest]
-    #[case("len(\"\")", 1)]
-    #[case("len(\"four\")", 4)]
-    #[case("len(\"hello world\")", 11)]
-    fn test_builtin_len(#[case] input: &str, #[case] result: i64) {
-        let evaluated = test_eval(input);
+use self::len::builtin_len;
 
-        let Object::Integer(value) = evaluated else {
-            panic!("Expected Object::Integer, got {:?}", evaluated);
-        };
+pub mod len;
 
-        assert_eq!(value, result);
+#[derive(Clone)]
+pub struct BuiltinFunction(&'static dyn Fn(Vec<Object>) -> Object);
+
+impl Debug for BuiltinFunction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "BuiltinFunction")
     }
+}
 
-    #[rstest]
-    #[case("len(1)", "arguments to `len` not supported, got INTEGER")]
-    #[case("len(\"one\", \"two\")", "wrong number or arguments. got=1, want=2")]
-    fn test_builtin_len_error(#[case] input: &str, #[case] result: &str) {
-        let evaluated = test_eval(input);
-
-        let Object::Error(err) = evaluated else {
-            panic!("Expected Object::Error, got {:?}", evaluated);
-        };
-
-        assert_eq!(err, result);
-    }
+pub fn get_builtin(name: &str) -> Option<Object> {
+    Some(Object::Builtin(BuiltinFunction(match name {
+        "len" => &builtin_len,
+        _ => return None,
+    })))
 }
