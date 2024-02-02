@@ -2,9 +2,10 @@ use std::fmt::Debug;
 
 use crate::object::Object;
 
-use self::{first::builtin_first, len::builtin_len};
+use self::{first::builtin_first, last::builtin_last, len::builtin_len};
 
 pub mod first;
+pub mod last;
 pub mod len;
 
 #[derive(Clone)]
@@ -20,6 +21,7 @@ pub fn get_builtin(name: &str) -> Option<Object> {
     Some(Object::Builtin(BuiltinFunction(match name {
         "len" => &builtin_len,
         "first" => &builtin_first,
+        "last" => &builtin_last,
         _ => return None,
     })))
 }
