@@ -165,9 +165,9 @@ fn eval_infix(operator: &Token, left: Object, right: Object) -> Object {
         (Object::Integer(left), _, Object::Integer(right)) => {
             eval_integer_infix(operator, left, right)
         }
+        (Object::String(left), Token::PLUS, Object::String(right)) => (left + &right).into(),
         (Object::Boolean(left), Token::EQ, Object::Boolean(right)) => (left == right).into(),
         (Object::Boolean(left), Token::NOT_EQ, Object::Boolean(right)) => (left != right).into(),
-        (Object::String(left), Token::PLUS, Object::String(right)) => (left + &right).into(),
         (left, operator, right) if !left.is(&right) => Object::Error(format!(
             "type mismatch: {} {:?} {}",
             left.type_str(),
