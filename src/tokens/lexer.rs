@@ -135,7 +135,18 @@ let add = fn(x, y) {
   x + y;
 };
 
-let result = add(five, ten);";
+let result = add(five, ten);
+!-/*5;
+5 < 10 > 5;
+
+if (5 < 10) {
+	return true;
+} else {
+	return false;
+}
+
+10 == 10;
+10 != 9;";
     let mut lexer = Lexer::new(input.into());
 
     assert_eq!(lexer.next_token(), Token::LET);
@@ -173,6 +184,43 @@ let result = add(five, ten);";
     assert_eq!(lexer.next_token(), Token::COMMA);
     assert_eq!(lexer.next_token(), Token::IDENT("ten".into()));
     assert_eq!(lexer.next_token(), Token::RPAREN);
+    assert_eq!(lexer.next_token(), Token::SEMICOLON);
+    assert_eq!(lexer.next_token(), Token::BANG);
+    assert_eq!(lexer.next_token(), Token::MINUS);
+    assert_eq!(lexer.next_token(), Token::SLASH);
+    assert_eq!(lexer.next_token(), Token::ASTERISK);
+    assert_eq!(lexer.next_token(), Token::INT(5));
+    assert_eq!(lexer.next_token(), Token::SEMICOLON);
+    assert_eq!(lexer.next_token(), Token::INT(5));
+    assert_eq!(lexer.next_token(), Token::LT);
+    assert_eq!(lexer.next_token(), Token::INT(10));
+    assert_eq!(lexer.next_token(), Token::GT);
+    assert_eq!(lexer.next_token(), Token::INT(5));
+    assert_eq!(lexer.next_token(), Token::SEMICOLON);
+    assert_eq!(lexer.next_token(), Token::IF);
+    assert_eq!(lexer.next_token(), Token::LPAREN);
+    assert_eq!(lexer.next_token(), Token::INT(5));
+    assert_eq!(lexer.next_token(), Token::LT);
+    assert_eq!(lexer.next_token(), Token::INT(10));
+    assert_eq!(lexer.next_token(), Token::RPAREN);
+    assert_eq!(lexer.next_token(), Token::LBRACE);
+    assert_eq!(lexer.next_token(), Token::RETURN);
+    assert_eq!(lexer.next_token(), Token::TRUE);
+    assert_eq!(lexer.next_token(), Token::SEMICOLON);
+    assert_eq!(lexer.next_token(), Token::RBRACE);
+    assert_eq!(lexer.next_token(), Token::ELSE);
+    assert_eq!(lexer.next_token(), Token::LBRACE);
+    assert_eq!(lexer.next_token(), Token::RETURN);
+    assert_eq!(lexer.next_token(), Token::FALSE);
+    assert_eq!(lexer.next_token(), Token::SEMICOLON);
+    assert_eq!(lexer.next_token(), Token::RBRACE);
+    assert_eq!(lexer.next_token(), Token::INT(10));
+    assert_eq!(lexer.next_token(), Token::EQ);
+    assert_eq!(lexer.next_token(), Token::INT(10));
+    assert_eq!(lexer.next_token(), Token::SEMICOLON);
+    assert_eq!(lexer.next_token(), Token::INT(10));
+    assert_eq!(lexer.next_token(), Token::NOT_EQ);
+    assert_eq!(lexer.next_token(), Token::INT(9));
     assert_eq!(lexer.next_token(), Token::SEMICOLON);
     assert_eq!(lexer.next_token(), Token::EOF);
 }
