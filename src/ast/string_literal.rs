@@ -1,6 +1,6 @@
 use crate::tokens::token::Token;
 
-use super::AstNode;
+use super::{AstNode, ParsePrefix};
 
 #[derive(Debug, Clone)]
 pub struct StringLiteral {
@@ -15,6 +15,21 @@ impl AstNode for StringLiteral {
 
     fn string(&self) -> String {
         self.value.to_string()
+    }
+}
+
+impl ParsePrefix for StringLiteral {
+    fn parse_prefix(
+        parser: &mut crate::parser::Parser,
+    ) -> super::ParsableResult<super::ExpressionNode> {
+        let Token::STRING(value) = parser.current_token.clone() else {
+            return Err(format!("Invalid token {:?}", parser.current_token));
+        };
+
+        Ok(super::ExpressionNode::StringLiteral(StringLiteral {
+            token: Token::STRING(value.to_string()),
+            value,
+        }))
     }
 }
 

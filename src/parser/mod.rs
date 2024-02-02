@@ -6,8 +6,8 @@ use crate::{
         identifier::Identifier, if_expression::IfExpression, infix_expression::InfixExpression,
         integer_literal::IntegerLiteral, let_statement::LetStatement,
         prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
-        ExpressionNode, ParsableResult, ParseInfix, ParsePrefix, ParseStatement, PrefixParser,
-        StatementNode,
+        string_literal::StringLiteral, ExpressionNode, ParsableResult, ParseInfix, ParsePrefix,
+        ParseStatement, PrefixParser, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -70,6 +70,7 @@ impl Parser {
             Token::LPAREN => GroupedExpression::parse_prefix(self),
             Token::IF => IfExpression::parse_prefix(self),
             Token::FUNCTION => FunctionExpression::parse_prefix(self),
+            Token::STRING(_) => StringLiteral::parse_prefix(self),
             e => Err(format!("Invalid prefix token {:?}", e)),
         }
     }
