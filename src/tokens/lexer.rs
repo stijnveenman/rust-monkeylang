@@ -62,6 +62,18 @@ impl Lexer {
             .expect("parsing of number failed")
     }
 
+    fn read_string(&mut self) -> String {
+        let position = self.position + 1;
+        loop {
+            self.read_char();
+            if self.ch as char == '"' || self.ch == 0 {
+                break;
+            }
+        }
+
+        self.input[position..self.position].to_string()
+    }
+
     pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
 
@@ -99,6 +111,7 @@ impl Lexer {
             '}' => Token::RBRACE,
 
             '\0' => Token::EOF,
+            '"' => Token::STRING(self.read_string()),
             c if c.is_ascii_alphabetic() => return Token::from_ident(self.read_identifier()),
             c if c.is_numeric() => return Token::INT(self.read_number()),
             _ => Token::ILLEGAL,
