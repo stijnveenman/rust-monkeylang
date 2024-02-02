@@ -158,6 +158,11 @@ pub mod test {
     #[case("2 / (5 + 5)", "(2 / (5 + 5))")]
     #[case("-(5 + 5)", "(-(5 + 5))")]
     #[case("!(true == true)", "(!(true == true))")]
+    #[case("a * [1, 2, 3, 4][b * c] * d", "((a * ([1, 2, 3, 4][(b * c)])) * d)")]
+    #[case(
+        "aadd(a * b[2], b[1], 2 * [1, 2][1])",
+        "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"
+    )]
     fn test_operator_precedence_parsing(#[case] input: &str, #[case] expected: &str) {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
