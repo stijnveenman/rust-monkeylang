@@ -207,6 +207,7 @@ fn is_truthy(object: &Object) -> bool {
         Object::Return(i) => is_truthy(i),
         Object::Null => false,
         Object::Error(_) => panic!("called is_truthy on error object"),
+        Object::Builtin(_) => true,
     }
 }
 

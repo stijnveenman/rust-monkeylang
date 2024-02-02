@@ -1,9 +1,23 @@
-use std::{fmt::Display, mem, rc::Rc, sync::Mutex};
+use std::{
+    fmt::{Debug, Display},
+    mem,
+    rc::Rc,
+    sync::Mutex,
+};
 
 use crate::{
     ast::{block_statement::BlockStatement, identifier::Identifier, AstNode},
     evaluator::environment::Environment,
 };
+
+#[derive(Clone)]
+pub struct BuiltinFunction(&'static dyn Fn(Vec<Object>) -> Object);
+
+impl Debug for BuiltinFunction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "BuiltinFunction")
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum Object {
@@ -11,6 +25,7 @@ pub enum Object {
     Boolean(bool),
     Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
     String(String),
+    Builtin(BuiltinFunction),
     Null,
     Return(Box<Object>),
     Error(String),
@@ -37,13 +52,14 @@ impl Object {
 
     pub fn type_str(&self) -> &'static str {
         match self {
+            Object::Return(_) => todo!(),
+            Object::Error(_) => todo!(),
             Object::Integer(_) => "INTEGER",
             Object::Boolean(_) => "BOOLEAN",
             Object::Null => "NULL",
             Object::Function(_, _, _) => "FUNCTION",
             Object::String(_) => "STRING",
-            Object::Return(_) => todo!(),
-            Object::Error(_) => todo!(),
+            Object::Builtin(_) => "BUILTIN",
         }
     }
 }
@@ -90,6 +106,7 @@ impl Display for Object {
             ),
             Object::Error(e) => write!(f, "ERROR: {}", e),
             Object::String(s) => write!(f, "{}", s),
+            Object::Builtin(_) => write!(f, "Builtin function"),
         }
     }
 }
@@ -124,6 +141,7 @@ pub mod test {
             Object::Null => panic!("called test_object on null object, use test_null if expected"),
             Object::Return(_) => todo!(),
             Object::Error(_) => todo!(),
+            Object::Builtin(_) => todo!(),
         }
     }
 
