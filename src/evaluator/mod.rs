@@ -341,6 +341,7 @@ pub mod test {
     #[case("fn(x) { x; }(5)", 5)]
     // string
     #[case("\"Hello world!\"", "Hello world!")]
+    #[case("\"Hello\" + \" \" + \"world!\"", "Hello world!")]
     fn test_simple_eval<T: Any>(#[case] input: &str, #[case] value: T) {
         println!("{}", input);
         let result = test_eval(input);
@@ -381,6 +382,7 @@ if (10 > 1) {
         "unknown operator: BOOLEAN PLUS BOOLEAN"
     )]
     #[case("foobar;", "identifier not found: foobar")]
+    #[case("\"Hello\" - \"Hello\"", "unknown operator: STRING MINUS STRING")]
     fn test_errors(#[case] input: &str, #[case] error: &str) {
         println!("{}", input);
         let result = test_eval(input);
