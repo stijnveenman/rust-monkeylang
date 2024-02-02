@@ -140,7 +140,7 @@ pub mod test {
             }
             Object::Function(_, _, _) => todo!(),
             Object::Null => panic!("called test_object on null object, use test_null if expected"),
-            _ => todo!(),
+            e => panic!("test_object called with {:?}", e),
         }
     }
 

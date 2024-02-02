@@ -113,7 +113,37 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
 
             Object::Array(arguments)
         }
-        ExpressionNode::IndexExpresssion(_) => todo!(),
+        ExpressionNode::IndexExpresssion(expression) => {
+            let left = eval_expression(env, &expression.left);
+            if left.is_error() {
+                return left;
+            }
+            let right = eval_expression(env, &expression.right);
+            if right.is_error() {
+                return right;
+            }
+
+            eval_index(left, right)
+        }
+    }
+}
+
+fn eval_index(left: Object, right: Object) -> Object {
+    match (left, right) {
+        (Object::Array(array), Object::Integer(index)) => {
+            let Some(index) = usize::try_from(index).ok() else {
+                return Object::Null;
+            };
+            array.into_iter().nth(index).unwrap_or(Object::Null)
+        }
+        (Object::Array(_), right) => Object::Error(format!(
+            "index operator not supported with: {}",
+            right.type_str()
+        )),
+        (left, _) => Object::Error(format!(
+            "index operator not supported on: {}",
+            left.type_str()
+        )),
     }
 }
 
