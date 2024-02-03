@@ -1,5 +1,7 @@
 use std::{
+    collections::HashMap,
     fmt::{Debug, Display},
+    hash::{Hash, Hasher},
     mem,
     rc::Rc,
     sync::Mutex,
@@ -17,10 +19,35 @@ pub enum Object {
     Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
     String(String),
     Array(Vec<Object>),
+    Hash(HashMap<Object, Object>),
     Builtin(BuiltinFunction),
     Null,
     Return(Box<Object>),
     Error(String),
+}
+
+impl PartialEq for Object {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Integer(l0), Self::Integer(r0)) => l0 == r0,
+            (Self::Boolean(l0), Self::Boolean(r0)) => l0 == r0,
+            (Self::String(l0), Self::String(r0)) => l0 == r0,
+            (Self::Array(l0), Self::Array(r0)) => l0 == r0,
+            (a, b) => panic!("cannot check PartialEq for {} and {}", a, b),
+        }
+    }
+}
+impl Eq for Object {}
+
+impl Hash for Object {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            Object::Integer(i) => i.hash(state),
+            Object::Boolean(i) => i.hash(state),
+            Object::String(i) => i.hash(state),
+            a => panic!("cannot hash for {}", a),
+        }
+    }
 }
 
 impl Object {
@@ -53,6 +80,7 @@ impl Object {
             Object::String(_) => "STRING",
             Object::Builtin(_) => "BUILTIN",
             Object::Array(_) => "ARRAY",
+            Object::Hash(_) => "HASH",
         }
     }
 }
@@ -108,6 +136,16 @@ impl Display for Object {
                     .collect::<Vec<_>>()
                     .join(", ")
             ),
+            Object::Hash(hm) => {
+                write!(
+                    f,
+                    "{{{}}}",
+                    hm.iter()
+                        .map(|p| format!("{}: {}", p.0, p.1))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            }
         }
     }
 }
