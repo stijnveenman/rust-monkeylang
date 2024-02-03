@@ -28,6 +28,7 @@ pub enum Token {
     // delmiters
     COMMA,
     SEMICOLON,
+    COLON,
 
     LPAREN,
     RPAREN,

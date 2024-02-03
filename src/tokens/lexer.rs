@@ -104,6 +104,7 @@ impl Lexer {
             // delmiters
             ',' => Token::COMMA,
             ';' => Token::SEMICOLON,
+            ':' => Token::COLON,
 
             '(' => Token::LPAREN,
             ')' => Token::RPAREN,
@@ -164,6 +165,7 @@ if (5 < 10) {
 10 != 9;
 \"foobar\"
 \"foo bar\"
+{\"foo\": \"bar\"}
 ";
     let mut lexer = Lexer::new(input.into());
 
@@ -242,6 +244,13 @@ if (5 < 10) {
     assert_eq!(lexer.next_token(), Token::SEMICOLON);
     assert_eq!(lexer.next_token(), Token::STRING("foobar".into()));
     assert_eq!(lexer.next_token(), Token::STRING("foo bar".into()));
+
+    assert_eq!(lexer.next_token(), Token::LBRACE);
+    assert_eq!(lexer.next_token(), Token::STRING("foo".into()));
+    assert_eq!(lexer.next_token(), Token::COLON);
+    assert_eq!(lexer.next_token(), Token::STRING("bar".into()));
+    assert_eq!(lexer.next_token(), Token::RBRACE);
+
     assert_eq!(lexer.next_token(), Token::EOF);
 }
 
