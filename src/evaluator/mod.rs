@@ -536,4 +536,15 @@ if (10 > 1) {
         test_object(hm.get(&Object::Boolean(true)).unwrap(), &5);
         test_object(hm.get(&Object::Boolean(false)).unwrap(), &6);
     }
+
+    #[rstest]
+    #[case(
+        "{\"name\": \"Monkey\"}[fn(x) { x }];",
+        "unusable as hash key: FUNCTION"
+    )]
+    fn test_hash_error(#[case] input: &str, #[case] err: &str) {
+        let result = test_eval(input);
+
+        test_error(&result, err)
+    }
 }
