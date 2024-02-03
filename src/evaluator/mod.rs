@@ -490,7 +490,12 @@ if (10 > 1) {
     #[case("let myArray = [1, 2, 3]; myArray[2];", 3)]
     #[case("let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", 6)]
     #[case("let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", 2)]
-    fn test_array_index(#[case] input: &str, #[case] value: i64) {
+    #[case("{\"foo\": 5}[\"foo\"]", 5)]
+    #[case("let key = \"foo\"; {\"foo\": 5}[key]", 5)]
+    #[case("{5: 5}[5]", 5)]
+    #[case("{true: 5}[true]", 5)]
+    #[case("{false: 5}[false]", 5)]
+    fn test_index_expression(#[case] input: &str, #[case] value: i64) {
         let result = test_eval(input);
         test_object(&result, &value);
     }
@@ -498,7 +503,9 @@ if (10 > 1) {
     #[rstest]
     #[case("[1, 2, 3][3]")]
     #[case("[1, 2, 3][-1]")]
-    fn test_array_null(#[case] input: &str) {
+    #[case("{\"foo\": 5}[\"bar\"]")]
+    #[case("{}[\"foo\"]")]
+    fn test_index_null(#[case] input: &str) {
         let result = test_eval(input);
         test_null(&result);
     }
