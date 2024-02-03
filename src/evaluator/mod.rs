@@ -125,6 +125,7 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
 
             eval_index(left, right)
         }
+        ExpressionNode::HashLiteral(_) => todo!(),
     }
 }
 
