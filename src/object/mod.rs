@@ -51,6 +51,15 @@ impl Hash for Object {
 }
 
 impl Object {
+    pub fn hashable(&self) -> bool {
+        matches!(
+            self,
+            Object::Integer(_) | Object::Boolean(_) | Object::String(_)
+        )
+    }
+}
+
+impl Object {
     pub fn is_return(&self) -> bool {
         matches!(self, Object::Return(_))
     }

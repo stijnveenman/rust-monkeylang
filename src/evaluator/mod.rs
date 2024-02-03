@@ -1,7 +1,9 @@
-use std::{rc::Rc, sync::Mutex};
+use std::{collections::HashMap, rc::Rc, sync::Mutex};
 
 use crate::{
-    ast::{if_expression::IfExpression, ExpressionNode, Node, StatementNode},
+    ast::{
+        hash_literal::HashLiteral, if_expression::IfExpression, ExpressionNode, Node, StatementNode,
+    },
     object::Object,
     tokens::token::Token,
 };
@@ -125,8 +127,32 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
 
             eval_index(left, right)
         }
-        ExpressionNode::HashLiteral(_) => todo!(),
+        ExpressionNode::HashLiteral(expression) => eval_hash_literal(env, expression),
     }
+}
+
+fn eval_hash_literal(env: &Rc<Mutex<Environment>>, expression: &HashLiteral) -> Object {
+    let mut hm = HashMap::new();
+
+    for (key, value) in expression.map.iter() {
+        let key = eval_expression(env, key);
+        if key.is_error() {
+            return key;
+        }
+
+        if !key.hashable() {
+            return Object::Error(format!("unusable hash key: {}", key));
+        }
+
+        let value = eval_expression(env, value);
+        if value.is_error() {
+            return value;
+        }
+
+        hm.insert(key, value);
+    }
+
+    Object::Hash(hm)
 }
 
 fn eval_index(left: Object, right: Object) -> Object {
