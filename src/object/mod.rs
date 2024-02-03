@@ -33,7 +33,7 @@ impl PartialEq for Object {
             (Self::Boolean(l0), Self::Boolean(r0)) => l0 == r0,
             (Self::String(l0), Self::String(r0)) => l0 == r0,
             (Self::Array(l0), Self::Array(r0)) => l0 == r0,
-            (a, b) => panic!("cannot check PartialEq for {} and {}", a, b),
+            _ => false,
         }
     }
 }
