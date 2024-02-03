@@ -27,8 +27,12 @@ impl AstNode for HashLiteral {
 #[cfg(test)]
 mod test {
     use crate::{
-        ast::{test::test_expression, ExpressionNode, StatementNode},
+        ast::{
+            infix_expression::test::test_infix_expression, test::test_expression, ExpressionNode,
+            StatementNode,
+        },
         parser::Parser,
+        tokens::token::Token,
     };
 
     #[test]
@@ -99,5 +103,47 @@ mod test {
         };
 
         assert_eq!(hash.map.len(), 0);
+    }
+
+    #[test]
+    fn test_hash_literal_with_expresions() {
+        let input = "{\"one\": 0 + 1, \"two\": 10 - 8, \"three\": 15 / 5}";
+        let mut parser = Parser::new(input.into());
+
+        let (program, errors) = parser.parse_program();
+        let empty: Vec<String> = vec![];
+
+        assert_eq!(errors, empty);
+        assert_eq!(program.statements.len(), 1);
+
+        let mut nodes = program.statements.into_iter();
+        let node = nodes.next().unwrap();
+
+        let StatementNode::ExpressionStatement(expression) = node else {
+            panic!("expected ExpressionStatement for node, got {:?}", node);
+        };
+
+        let ExpressionNode::HashLiteral(hash) = expression.expression else {
+            panic!(
+                "expected ExpressionStatement for node, got {:?}",
+                expression.expression
+            );
+        };
+
+        assert_eq!(hash.map.len(), 3);
+
+        let mut iter = hash.map.into_iter();
+
+        let current = iter.next().unwrap();
+        test_expression(&current.0, &"one");
+        test_infix_expression(&current.1, 0, Token::PLUS, 1);
+
+        let current = iter.next().unwrap();
+        test_expression(&current.0, &"two");
+        test_infix_expression(&current.1, 10, Token::MINUS, 8);
+
+        let current = iter.next().unwrap();
+        test_expression(&current.0, &"three");
+        test_infix_expression(&current.1, 15, Token::SLASH, 5);
     }
 }
