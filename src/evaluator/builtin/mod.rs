@@ -4,13 +4,14 @@ use crate::object::Object;
 
 use self::{
     first::builtin_first, last::builtin_last, len::builtin_len, push::builtin_push,
-    rest::builtin_rest,
+    puts::builtin_puts, rest::builtin_rest,
 };
 
 pub mod first;
 pub mod last;
 pub mod len;
 pub mod push;
+pub mod puts;
 pub mod rest;
 
 #[derive(Clone)]
@@ -29,6 +30,7 @@ pub fn get_builtin(name: &str) -> Option<Object> {
         "last" => &builtin_last,
         "rest" => &builtin_rest,
         "push" => &builtin_push,
+        "puts" => &builtin_puts,
         _ => return None,
     })))
 }
