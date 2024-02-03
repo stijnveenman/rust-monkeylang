@@ -155,14 +155,6 @@ fn eval_hash_literal(env: &Rc<Mutex<Environment>>, expression: &HashLiteral) -> 
     Object::Hash(hm)
 }
 
-fn eval_index_hash(hm: HashMap<Object, Object>, right: Object) -> Object {
-    if !right.hashable() {
-        return Object::Error(format!("unusable as hash key: {}", right.type_str()));
-    }
-
-    hm.get(&right).unwrap_or(&Object::Null).to_owned()
-}
-
 fn eval_index(left: Object, right: Object) -> Object {
     match (left, right) {
         (Object::Array(array), Object::Integer(index)) => {
@@ -171,7 +163,13 @@ fn eval_index(left: Object, right: Object) -> Object {
             };
             array.into_iter().nth(index).unwrap_or(Object::Null)
         }
-        (Object::Hash(hash), right) => eval_index_hash(hash, right),
+        (Object::Hash(hash), right) => {
+            if !right.hashable() {
+                return Object::Error(format!("unusable as hash key: {}", right.type_str()));
+            }
+
+            hash.get(&right).unwrap_or(&Object::Null).to_owned()
+        }
         (Object::Array(_), right) => Object::Error(format!(
             "index operator not supported with: {}",
             right.type_str()
