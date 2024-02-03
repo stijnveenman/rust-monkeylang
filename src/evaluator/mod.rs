@@ -476,4 +476,31 @@ if (10 > 1) {
         let result = test_eval(input);
         test_null(&result);
     }
+
+    #[test]
+    fn test_hash_eval() {
+        let input = "let two = \"two\";
+    {
+        \"one\": 10 - 9,
+        two: 1 + 1,
+        \"thr\" + \"ee\": 6 / 2,
+        4: 4,
+        true: 5,
+        false: 6
+    }";
+        let result = test_eval(input);
+
+        let Object::Hash(hm) = result else {
+            panic!("Expected Object::Hash for result, got {}", result);
+        };
+
+        assert_eq!(hm.len(), 6);
+
+        test_object(hm.get(&Object::String("one".into())).unwrap(), &1);
+        test_object(hm.get(&Object::String("two".into())).unwrap(), &2);
+        test_object(hm.get(&Object::String("three".into())).unwrap(), &3);
+        test_object(hm.get(&Object::Integer(4)).unwrap(), &4);
+        test_object(hm.get(&Object::Boolean(true)).unwrap(), &5);
+        test_object(hm.get(&Object::Boolean(false)).unwrap(), &6);
+    }
 }
