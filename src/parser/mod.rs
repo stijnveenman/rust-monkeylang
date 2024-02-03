@@ -3,12 +3,12 @@ use crate::{
         array_literal::ArrayLiteral, block_statement::BlockStatement,
         boolean_literal::BooleanLiteral, call_expression::CallExpression,
         expression_statement::ExpressionStatement, function_expression::FunctionExpression,
-        grouped_expression::GroupedExpression, identifier::Identifier, if_expression::IfExpression,
-        index_expression::IndexExpression, infix_expression::InfixExpression,
-        integer_literal::IntegerLiteral, let_statement::LetStatement,
-        prefix_expression::PrefixExpression, program::Program, return_statement::ReturnStatement,
-        string_literal::StringLiteral, ExpressionNode, ParsableResult, ParseInfix, ParsePrefix,
-        ParseStatement, PrefixParser, StatementNode,
+        grouped_expression::GroupedExpression, hash_literal::HashLiteral, identifier::Identifier,
+        if_expression::IfExpression, index_expression::IndexExpression,
+        infix_expression::InfixExpression, integer_literal::IntegerLiteral,
+        let_statement::LetStatement, prefix_expression::PrefixExpression, program::Program,
+        return_statement::ReturnStatement, string_literal::StringLiteral, ExpressionNode,
+        ParsableResult, ParseInfix, ParsePrefix, ParseStatement, PrefixParser, StatementNode,
     },
     tokens::{lexer::Lexer, token::Token},
 };
@@ -73,6 +73,7 @@ impl Parser {
             Token::FUNCTION => FunctionExpression::parse_prefix(self),
             Token::STRING(_) => StringLiteral::parse_prefix(self),
             Token::LBRACKET => ArrayLiteral::parse_prefix(self),
+            Token::LBRACE => HashLiteral::parse_prefix(self),
             e => Err(format!("Invalid prefix token {:?}", e)),
         }
     }

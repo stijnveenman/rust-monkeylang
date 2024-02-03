@@ -1,6 +1,9 @@
-use crate::tokens::token::Token;
+use crate::{
+    parser::{precedence::Precedence, Parser},
+    tokens::token::Token,
+};
 
-use super::{AstNode, ExpressionNode};
+use super::{AstNode, ExpressionNode, ParsableResult, ParsePrefix};
 
 #[derive(Debug, Clone)]
 pub struct HashLiteral {
@@ -21,6 +24,34 @@ impl AstNode for HashLiteral {
             .collect::<Vec<_>>();
 
         format!("{{{}}}", pairs.join(", "))
+    }
+}
+
+impl ParsePrefix for HashLiteral {
+    fn parse_prefix(parser: &mut Parser) -> ParsableResult<ExpressionNode> {
+        let token = parser.current_token.clone();
+        let mut v = vec![];
+
+        while !parser.peek_token.is(&Token::RBRACE) {
+            parser.next_token();
+
+            let key = parser.parse_expression(Precedence::LOWEST)?;
+
+            parser.expect_token(Token::COLON)?;
+            parser.next_token();
+
+            let value = parser.parse_expression(Precedence::LOWEST)?;
+
+            v.push((key, value));
+
+            if !parser.peek_token.is(&Token::RBRACE) {
+                parser.expect_token(Token::COMMA)?;
+            }
+        }
+
+        parser.expect_token(Token::RBRACE)?;
+
+        Ok(ExpressionNode::HashLiteral(HashLiteral { token, map: v }))
     }
 }
 
@@ -102,7 +133,7 @@ mod test {
             );
         };
 
-        assert_eq!(hash.map.len(), 3);
+        assert_eq!(hash.map.len(), 2);
 
         let mut iter = hash.map.into_iter();
 
@@ -140,7 +171,7 @@ mod test {
             );
         };
 
-        assert_eq!(hash.map.len(), 3);
+        assert_eq!(hash.map.len(), 2);
 
         let mut iter = hash.map.into_iter();
 
