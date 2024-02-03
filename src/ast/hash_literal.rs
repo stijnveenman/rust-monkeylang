@@ -78,6 +78,44 @@ mod test {
     }
 
     #[test]
+    fn test_hash_literal_boolean() {
+        let input = "{\"true\": true, \"false\": false}";
+        let mut parser = Parser::new(input.into());
+
+        let (program, errors) = parser.parse_program();
+        let empty: Vec<String> = vec![];
+
+        assert_eq!(errors, empty);
+        assert_eq!(program.statements.len(), 1);
+
+        let mut nodes = program.statements.into_iter();
+        let node = nodes.next().unwrap();
+
+        let StatementNode::ExpressionStatement(expression) = node else {
+            panic!("expected ExpressionStatement for node, got {:?}", node);
+        };
+
+        let ExpressionNode::HashLiteral(hash) = expression.expression else {
+            panic!(
+                "expected ExpressionStatement for node, got {:?}",
+                expression.expression
+            );
+        };
+
+        assert_eq!(hash.map.len(), 3);
+
+        let mut iter = hash.map.into_iter();
+
+        let current = iter.next().unwrap();
+        test_expression(&current.0, &"true");
+        test_expression(&current.1, &true);
+
+        let current = iter.next().unwrap();
+        test_expression(&current.0, &"false");
+        test_expression(&current.1, &false);
+    }
+
+    #[test]
     fn test_hash_literal_empty() {
         let input = "{}";
         let mut parser = Parser::new(input.into());
