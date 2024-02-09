@@ -16,7 +16,7 @@ pub struct Vm {
     sp: usize,
 }
 
-type R = Result<(), &'static str>;
+type R = Result<(), String>;
 
 impl Vm {
     fn new(bytecode: Bytecode) -> Vm {
@@ -49,7 +49,12 @@ impl Vm {
 
                     self.push(self.constants[const_index].from_ref())?;
                 }
-                Opcode::OpAdd => {}
+                Opcode::OpAdd => {
+                    let right: i64 = self.pop().try_into()?;
+                    let left: i64 = self.pop().try_into()?;
+
+                    self.push(Object::Integer(left + right))?;
+                }
             };
 
             ip += 1;
@@ -58,9 +63,15 @@ impl Vm {
         Ok(())
     }
 
+    fn pop(&mut self) -> Object {
+        let o = self.stack[self.sp - 1].from_ref();
+        self.sp -= 1;
+        o
+    }
+
     fn push(&mut self, object: Object) -> R {
         if self.sp > STACK_SIZE {
-            return Err("stack overflow");
+            return Err("stack overflow".into());
         }
 
         self.stack[self.sp] = object;
@@ -81,7 +92,7 @@ mod test {
     #[rstest]
     #[case("1", 1)]
     #[case("2", 2)]
-    #[case("1 + 2", 2)] //FIXME
+    #[case("1 + 2", 3)]
     fn test_integer_arithmetic(#[case] input: &str, #[case] expected: i32) {
         test_vm(input, expected)
     }
@@ -98,7 +109,7 @@ mod test {
             .expect("Failed to compile program");
 
         let mut vm = Vm::new(compiler.bytecode());
-        vm.run();
+        vm.run().expect("vm failed to run");
 
         let element = vm.stack_stop();
 

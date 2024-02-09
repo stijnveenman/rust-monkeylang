@@ -27,6 +27,16 @@ pub enum Object {
     Error(String),
 }
 
+impl TryFrom<Object> for i64 {
+    type Error = String;
+    fn try_from(value: Object) -> Result<Self, Self::Error> {
+        match value {
+            Object::Integer(i) => Ok(i),
+            _ => Err(format!("expected Integer, got {}", value.type_str())),
+        }
+    }
+}
+
 impl PartialEq for Object {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
