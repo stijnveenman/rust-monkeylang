@@ -8,7 +8,7 @@ pub fn read_operands(def: &Definition, instructions: &[u8]) -> (Vec<usize>, usiz
     let mut offset = 0;
     for width in &def.operand_widths {
         let result = match width {
-            2 => u16::from_be_bytes(instructions[offset..offset + 2].try_into().unwrap()) as usize,
+            2 => read_u16(&instructions[offset..]),
             _ => panic!("not able to read operand with width: {width}"),
         };
 
@@ -18,6 +18,10 @@ pub fn read_operands(def: &Definition, instructions: &[u8]) -> (Vec<usize>, usiz
     }
 
     (operands, offset)
+}
+
+pub fn read_u16(instructions: &[u8]) -> usize {
+    u16::from_be_bytes(instructions[..2].try_into().unwrap()) as usize
 }
 
 pub fn fmt_instruction(def: &Definition, operands: &[usize]) -> String {

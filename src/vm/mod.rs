@@ -1,20 +1,71 @@
-use crate::{compiler::Bytecode, object::Object};
+use core::panic;
+
+use crate::{
+    code::{read_operands::read_u16, Instructions, Opcode},
+    compiler::Bytecode,
+    object::Object,
+};
+
+const STACK_SIZE: usize = 2048;
 
 pub struct Vm {
-    bytecode: Bytecode,
+    instructions: Instructions,
+    constants: Vec<Object>,
+
+    stack: [Object; STACK_SIZE],
+    sp: usize,
 }
+
+type R = Result<(), &'static str>;
 
 impl Vm {
     fn new(bytecode: Bytecode) -> Vm {
-        Vm { bytecode }
+        Vm {
+            instructions: bytecode.instructions,
+            constants: bytecode.constants,
+
+            stack: std::array::from_fn(|_| Object::Null),
+            sp: 0,
+        }
     }
 
-    fn stack_stop(&self) -> Object {
-        todo!()
+    fn stack_stop(&self) -> &Object {
+        if self.sp == 0 {
+            panic!("stack_top on empty stack");
+        }
+
+        &self.stack[self.sp - 1]
     }
 
-    fn run(&self) {
-        todo!()
+    fn run(&mut self) -> R {
+        let mut ip = 0;
+        while ip < self.instructions.0.len() {
+            let op: Opcode = self.instructions.0[ip].into();
+
+            match op {
+                Opcode::OpConstant => {
+                    let const_index = read_u16(&self.instructions.0[ip + 1..]);
+                    ip += 2;
+
+                    self.push(self.constants[const_index].from_ref())?;
+                }
+            };
+
+            ip += 1;
+        }
+
+        Ok(())
+    }
+
+    fn push(&mut self, object: Object) -> R {
+        if self.sp > STACK_SIZE {
+            return Err("stack overflow");
+        }
+
+        self.stack[self.sp] = object;
+        self.sp += 1;
+
+        Ok(())
     }
 }
 
@@ -45,11 +96,11 @@ mod test {
             .compile((&program).into())
             .expect("Failed to compile program");
 
-        let vm = Vm::new(compiler.bytecode());
+        let mut vm = Vm::new(compiler.bytecode());
         vm.run();
 
         let element = vm.stack_stop();
 
-        test_object(&element, &expected)
+        test_object(element, &expected)
     }
 }

@@ -1,3 +1,4 @@
+use core::panic;
 use std::{
     collections::HashMap,
     fmt::{Debug, Display},
@@ -90,6 +91,13 @@ impl Object {
             Object::Builtin(_) => "BUILTIN",
             Object::Array(_) => "ARRAY",
             Object::Hash(_) => "HASH",
+        }
+    }
+
+    pub fn from_ref(&self) -> Object {
+        match self {
+            Object::Integer(i) => Object::Integer(*i),
+            _ => panic!("from_ref not implemented for {self}"),
         }
     }
 }
