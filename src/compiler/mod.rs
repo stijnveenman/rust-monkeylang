@@ -15,7 +15,7 @@ pub struct Bytecode {
     pub constants: Vec<Object>,
 }
 
-type R = Result<(), &'static str>;
+type R = Result<(), String>;
 
 impl Compiler {
     pub fn new() -> Compiler {
@@ -71,7 +71,7 @@ impl Compiler {
 
                 match &node.operator {
                     Token::PLUS => self.emit(Opcode::OpAdd, vec![]),
-                    e => panic!("unknown infix operator {e:?}"),
+                    e => Err(format!("unknown infix operator {e:?}"))?,
                 };
 
                 Ok(())

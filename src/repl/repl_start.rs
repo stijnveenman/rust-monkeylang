@@ -1,14 +1,29 @@
 use std::io::{self, stdout, BufRead, Write};
 
-use crate::{
-    evaluator::{environment::Environment, eval},
-    parser::Parser,
-};
+use crate::{compiler::Compiler, parser::Parser, vm::Vm};
 
 const PROMPT: &str = ">>";
 
+fn run(line: String) -> Result<String, String> {
+    let mut parser = Parser::new(line);
+
+    let (program, errors) = parser.parse_program();
+
+    if !errors.is_empty() {
+        Err(errors.join("\n").to_string())?;
+    }
+
+    let mut compiler = Compiler::new();
+    compiler.compile((&program).into())?;
+
+    let mut vm = Vm::new(compiler.bytecode());
+    vm.run()?;
+
+    let result = vm.stack_top();
+    Ok(format!("{}", result))
+}
+
 pub fn start() {
-    let env = Environment::new();
     let stdin = io::stdin();
 
     print!("{}", PROMPT);
@@ -17,15 +32,9 @@ pub fn start() {
     for line in stdin.lock().lines() {
         let line = line.expect("failed to read line from stdin");
 
-        let mut parser = Parser::new(line);
-
-        let (program, errors) = parser.parse_program();
-
-        if !errors.is_empty() {
-            println!("{}", errors.join("\n"));
-        } else {
-            let result = eval(&env, (&program).into());
-            println!("{}", result);
+        match run(line) {
+            Ok(result) => println!("{result}"),
+            Err(e) => println!("{e}"),
         }
 
         print!("{}", PROMPT);

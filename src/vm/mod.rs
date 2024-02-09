@@ -19,7 +19,7 @@ pub struct Vm {
 type R = Result<(), String>;
 
 impl Vm {
-    fn new(bytecode: Bytecode) -> Vm {
+    pub fn new(bytecode: Bytecode) -> Vm {
         Vm {
             instructions: bytecode.instructions,
             constants: bytecode.constants,
@@ -29,7 +29,7 @@ impl Vm {
         }
     }
 
-    fn stack_stop(&self) -> &Object {
+    pub fn stack_top(&self) -> &Object {
         if self.sp == 0 {
             panic!("stack_top on empty stack");
         }
@@ -37,7 +37,7 @@ impl Vm {
         &self.stack[self.sp - 1]
     }
 
-    fn run(&mut self) -> R {
+    pub fn run(&mut self) -> R {
         let mut ip = 0;
         while ip < self.instructions.0.len() {
             let op: Opcode = self.instructions.0[ip].into();
@@ -111,7 +111,7 @@ mod test {
         let mut vm = Vm::new(compiler.bytecode());
         vm.run().expect("vm failed to run");
 
-        let element = vm.stack_stop();
+        let element = vm.stack_top();
 
         test_object(element, &expected)
     }
