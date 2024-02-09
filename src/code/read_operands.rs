@@ -19,3 +19,19 @@ pub fn read_operands(def: &Definition, instructions: &[u8]) -> (Vec<usize>, usiz
 
     (operands, offset)
 }
+
+pub fn fmt_instruction(def: &Definition, operands: &[usize]) -> String {
+    let count = def.operand_widths.len();
+
+    if count != operands.len() {
+        return format!(
+            "ERROR: operand len {} does not match defined {count}",
+            operands.len()
+        );
+    }
+
+    match count {
+        1 => format!("{} {}", def.name, operands[0]),
+        _ => format!("ERROR: unhandled operand count for {count}"),
+    }
+}

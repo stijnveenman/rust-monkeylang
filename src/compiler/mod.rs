@@ -41,7 +41,7 @@ pub mod test {
     use std::any::Any;
 
     use crate::{
-        code::{make::make, Opcode},
+        code::{make::make, Instructions, Opcode},
         compiler::Compiler,
         object::test::test_object,
         parser::Parser,
@@ -76,13 +76,17 @@ pub mod test {
 
         let bytecode = compiler.bytecode();
 
+        let expected_instructions = expected_instructions
+            .into_iter()
+            .flatten()
+            .collect::<Vec<u8>>();
+
         assert_eq!(
-            bytecode.instructions,
-            expected_instructions
-                .into_iter()
-                .flatten()
-                .collect::<Vec<u8>>()
+            bytecode.instructions.format_instructions(),
+            expected_instructions.format_instructions(),
         );
+
+        assert_eq!(bytecode.instructions, expected_instructions,);
 
         for (expected, result) in expected_constants.iter().zip(bytecode.constants) {
             test_object(&result, expected)
