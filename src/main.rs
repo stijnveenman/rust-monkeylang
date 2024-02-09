@@ -1,9 +1,18 @@
+pub mod ast;
+pub mod code;
+pub mod compiler;
+pub mod evaluator;
+pub mod object;
+pub mod parser;
+pub mod repl;
+pub mod tokens;
+pub mod vm;
+
 use std::{env, fs, process::exit};
 
-use rust_monkeylang::{
+use crate::{
     evaluator::{environment::Environment, eval},
     parser::Parser,
-    repl,
 };
 
 fn run(file: &str) {
