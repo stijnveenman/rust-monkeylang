@@ -1,19 +1,19 @@
-use crate::{ast::Node, object::Object};
+use crate::{ast::Node, code::Instructions, object::Object};
 
 pub struct Compiler {
-    instructions: Vec<u8>,
+    instructions: Instructions,
     constants: Vec<Object>,
 }
 
 pub struct Bytecode {
-    instructions: Vec<u8>,
+    instructions: Instructions,
     constants: Vec<Object>,
 }
 
 impl Compiler {
     pub fn new() -> Compiler {
         Compiler {
-            instructions: vec![],
+            instructions: Instructions(vec![]),
             constants: vec![],
         }
     }
@@ -41,7 +41,7 @@ pub mod test {
     use std::any::Any;
 
     use crate::{
-        code::{make::make, Instructions, Opcode},
+        code::{make::make, Opcode},
         compiler::Compiler,
         object::test::test_object,
         parser::Parser,
@@ -79,12 +79,10 @@ pub mod test {
         let expected_instructions = expected_instructions
             .into_iter()
             .flatten()
-            .collect::<Vec<u8>>();
+            .collect::<Vec<u8>>()
+            .into();
 
-        assert_eq!(
-            bytecode.instructions.format_instructions(),
-            expected_instructions.format_instructions(),
-        );
+        assert_eq!(bytecode.instructions, expected_instructions,);
 
         assert_eq!(bytecode.instructions, expected_instructions,);
 

@@ -1,9 +1,41 @@
 use self::read_operands::{fmt_instruction, read_operands};
 
 pub mod make;
-use std::fmt::Write as _;
-use std::io::Write as _;
+use std::fmt::{Debug, Display};
 pub mod read_operands;
+
+#[derive(PartialEq, Eq, Clone)]
+pub struct Instructions(pub Vec<u8>);
+
+impl Debug for Instructions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+impl Display for Instructions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut i = 0;
+        while i < self.0.len() {
+            let op: Opcode = self.0[i].into();
+            let def = op.definition();
+
+            let (ops, read) = read_operands(&def, &self.0[i + 1..]);
+
+            writeln!(f, "{:04} {}", i, fmt_instruction(&def, &ops))?;
+
+            i += 1 + read
+        }
+
+        Ok(())
+    }
+}
+
+impl From<Vec<u8>> for Instructions {
+    fn from(value: Vec<u8>) -> Self {
+        Instructions(value)
+    }
+}
 
 #[repr(u8)]
 pub enum Opcode {
@@ -43,29 +75,6 @@ impl Opcode {
     }
 }
 
-pub trait Instructions {
-    fn format_instructions(&self) -> String;
-}
-
-impl Instructions for Vec<u8> {
-    fn format_instructions(&self) -> String {
-        let mut f = String::new();
-        let mut i = 0;
-        while i < self.len() {
-            let op: Opcode = self[i].into();
-            let def = op.definition();
-
-            let (ops, read) = read_operands(&def, &self[i + 1..]);
-
-            writeln!(f, "{:04} {}", i, fmt_instruction(&def, &ops)).unwrap();
-
-            i += 1 + read
-        }
-
-        f
-    }
-}
-
 #[cfg(test)]
 pub mod test {
     use rstest::rstest;
@@ -100,8 +109,8 @@ pub mod test {
 0003 OpConstant 2
 0006 OpConstant 65535\n";
 
-        let bytecode = instructions.into_iter().flatten().collect::<Vec<_>>();
+        let bytecode = Instructions(instructions.into_iter().flatten().collect::<Vec<_>>());
 
-        assert_eq!(expected, bytecode.format_instructions())
+        assert_eq!(expected, bytecode.to_string())
     }
 }
