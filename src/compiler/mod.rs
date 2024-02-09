@@ -2,6 +2,7 @@ use crate::{
     ast::{ExpressionNode, Node, StatementNode},
     code::{make::make, Instructions, Opcode},
     object::Object,
+    tokens::token::Token,
 };
 
 pub struct Compiler {
@@ -66,7 +67,14 @@ impl Compiler {
             ExpressionNode::PrefixExpression(_) => todo!(),
             ExpressionNode::InfixExpression(node) => {
                 self.compile_expression(&node.left)?;
-                self.compile_expression(&node.right)
+                self.compile_expression(&node.right)?;
+
+                match &node.operator {
+                    Token::PLUS => self.emit(Opcode::OpAdd, vec![]),
+                    e => panic!("unknown infix operator {e:?}"),
+                };
+
+                Ok(())
             }
             ExpressionNode::IfExpression(_) => todo!(),
             ExpressionNode::FunctionExpression(_) => todo!(),
@@ -126,6 +134,7 @@ pub mod test {
             vec![
                 make(Opcode::OpConstant, &[0]),
                 make(Opcode::OpConstant, &[1]),
+                make(Opcode::OpAdd, &[]),
             ],
         )
     }

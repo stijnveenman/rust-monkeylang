@@ -49,7 +49,7 @@ impl Vm {
 
                     self.push(self.constants[const_index].from_ref())?;
                 }
-                Opcode::OpAdd => todo!(),
+                Opcode::OpAdd => {}
             };
 
             ip += 1;
