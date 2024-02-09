@@ -53,8 +53,8 @@ pub mod test {
             "1 + 2",
             vec![1, 2],
             vec![
-                make(Opcode::OpConstant, vec![0]),
-                make(Opcode::OpConstant, vec![1]),
+                make(Opcode::OpConstant, &[0]),
+                make(Opcode::OpConstant, &[1]),
             ],
         )
     }

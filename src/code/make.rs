@@ -2,7 +2,7 @@ use core::panic;
 
 use super::Opcode;
 
-pub fn make(op: Opcode, operands: Vec<usize>) -> Vec<u8> {
+pub fn make(op: Opcode, operands: &[usize]) -> Vec<u8> {
     let def = op.definition();
 
     let instruction_len = def.operand_widths.iter().sum::<usize>() + 1;
@@ -34,7 +34,7 @@ mod test {
     #[rstest]
     #[case(Opcode::OpConstant, vec![65534usize], vec![Opcode::OpConstant.into(), 255u8, 254u8])]
     fn name(#[case] op: Opcode, #[case] operands: Vec<usize>, #[case] expected: Vec<u8>) {
-        let result = make(op, operands);
+        let result = make(op, &operands);
 
         assert_eq!(expected, result)
     }
