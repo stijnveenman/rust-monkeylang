@@ -33,6 +33,7 @@ mod test {
 
     #[rstest]
     #[case(Opcode::OpConstant, vec![65534usize], vec![Opcode::OpConstant.into(), 255u8, 254u8])]
+    #[case(Opcode::OpAdd, vec![], vec![Opcode::OpAdd.into()])]
     fn name(#[case] op: Opcode, #[case] operands: Vec<usize>, #[case] expected: Vec<u8>) {
         let result = make(op, &operands);
 

@@ -9,7 +9,7 @@ pub fn read_operands(def: &Definition, instructions: &[u8]) -> (Vec<usize>, usiz
     for width in &def.operand_widths {
         let result = match width {
             2 => read_u16(&instructions[offset..]),
-            _ => panic!("not able to read operand with width: {width}"),
+            _ => panic!("read_operands: not able to read operand with width: {width}"),
         };
 
         operands.push(result);
@@ -35,7 +35,8 @@ pub fn fmt_instruction(def: &Definition, operands: &[usize]) -> String {
     }
 
     match count {
+        0 => def.name.into(),
         1 => format!("{} {}", def.name, operands[0]),
-        _ => format!("ERROR: unhandled operand count for {count}"),
+        _ => format!("ERROR: fmt_instruction unhandled operand count for {count}"),
     }
 }

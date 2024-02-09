@@ -4,6 +4,31 @@ pub mod make;
 use std::fmt::{Debug, Display};
 pub mod read_operands;
 
+#[repr(u8)]
+pub enum Opcode {
+    OpConstant,
+    OpAdd,
+}
+
+impl Opcode {
+    pub fn find_definition(op: &Opcode) -> Definition {
+        match op {
+            Opcode::OpConstant => Definition {
+                name: "OpConstant",
+                operand_widths: vec![2],
+            },
+            Opcode::OpAdd => Definition {
+                name: "OpAdd",
+                operand_widths: vec![],
+            },
+        }
+    }
+
+    pub fn definition(&self) -> Definition {
+        Opcode::find_definition(self)
+    }
+}
+
 #[derive(PartialEq, Eq, Clone)]
 pub struct Instructions(pub Vec<u8>);
 
@@ -37,11 +62,6 @@ impl From<Vec<u8>> for Instructions {
     }
 }
 
-#[repr(u8)]
-pub enum Opcode {
-    OpConstant,
-}
-
 impl From<Opcode> for u8 {
     fn from(m: Opcode) -> u8 {
         m as u8
@@ -58,21 +78,6 @@ impl From<u8> for Opcode {
 pub struct Definition {
     name: &'static str,
     operand_widths: Vec<usize>,
-}
-
-impl Opcode {
-    pub fn find_definition(op: &Opcode) -> Definition {
-        match op {
-            Opcode::OpConstant => Definition {
-                name: "OpConstant",
-                operand_widths: vec![2],
-            },
-        }
-    }
-
-    pub fn definition(&self) -> Definition {
-        Opcode::find_definition(self)
-    }
 }
 
 #[cfg(test)]
@@ -100,14 +105,14 @@ pub mod test {
     #[test]
     fn test_instructions_string() {
         let instructions = vec![
-            make(Opcode::OpConstant, &[1]),
+            make(Opcode::OpAdd, &[]),
             make(Opcode::OpConstant, &[2]),
             make(Opcode::OpConstant, &[65535]),
         ];
 
-        let expected = "0000 OpConstant 1
-0003 OpConstant 2
-0006 OpConstant 65535\n";
+        let expected = "0000 OpAdd
+0001 OpConstant 2
+0004 OpConstant 65535\n";
 
         let bytecode = Instructions(instructions.into_iter().flatten().collect::<Vec<_>>());
 
