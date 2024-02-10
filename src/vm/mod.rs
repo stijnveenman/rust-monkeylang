@@ -185,11 +185,18 @@ impl Vm {
 
 #[cfg(test)]
 mod test {
-    use std::any::Any;
 
     use rstest::rstest;
 
-    use crate::{compiler::Compiler, object::test::test_object, parser::Parser, vm::Vm};
+    use crate::{
+        compiler::Compiler,
+        object::{
+            test::{test_null, test_object},
+            Object,
+        },
+        parser::Parser,
+        vm::Vm,
+    };
 
     #[rstest]
     #[case("1", 1)]
@@ -209,7 +216,8 @@ mod test {
     #[case("-50 + 100 + -50", 0)]
     #[case("(5 + 10 * 2 + 15 / 3) * 2 + -10", 50)]
     fn test_integer_arithmetic(#[case] input: &str, #[case] expected: i32) {
-        test_vm(input, expected)
+        let element = test_vm(input);
+        test_object(&element, &expected)
     }
 
     #[rstest]
@@ -239,7 +247,8 @@ mod test {
     #[case("!!false", false)]
     #[case("!!5", true)]
     fn test_boolean_expression(#[case] input: &str, #[case] expected: bool) {
-        test_vm(input, expected)
+        let element = test_vm(input);
+        test_object(&element, &expected)
     }
 
     #[rstest]
@@ -251,10 +260,19 @@ mod test {
     #[case("if (1 < 2) { 10 } else { 20 }", 10)]
     #[case("if (1 > 2) { 10 } else { 20 }", 20)]
     fn test_conditionals(#[case] input: &str, #[case] expected: i64) {
-        test_vm(input, expected)
+        let element = test_vm(input);
+        test_object(&element, &expected)
     }
 
-    fn test_vm<T: Any>(input: &str, expected: T) {
+    #[rstest]
+    #[case("if (1 > 2) { 10 }")]
+    #[case("if (false) { 10 }")]
+    fn test_conditionals_null(#[case] input: &str) {
+        let element = test_vm(input);
+        test_null(&element)
+    }
+
+    fn test_vm(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
 
@@ -272,6 +290,6 @@ mod test {
 
         println!("{} -> {}", input, element);
 
-        test_object(element, &expected)
+        element.from_ref()
     }
 }
