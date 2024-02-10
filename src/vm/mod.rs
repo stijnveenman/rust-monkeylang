@@ -90,6 +90,7 @@ impl Vm {
                 Opcode::OpFalse => {
                     self.push(Object::Boolean(false))?;
                 }
+                Opcode::OpEqual | Opcode::OpNotEqual | Opcode::OpGreaterThan => {}
             };
 
             ip += 1;

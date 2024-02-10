@@ -17,6 +17,10 @@ pub enum Opcode {
 
     OpTrue,
     OpFalse,
+
+    OpEqual,
+    OpNotEqual,
+    OpGreaterThan,
 }
 
 impl Opcode {
@@ -30,7 +34,10 @@ impl Opcode {
             | Opcode::OpMul
             | Opcode::OpDiv
             | Opcode::OpTrue
-            | Opcode::OpFalse => vec![],
+            | Opcode::OpFalse
+            | Opcode::OpEqual
+            | Opcode::OpNotEqual
+            | Opcode::OpGreaterThan => vec![],
         };
 
         Definition {

@@ -185,9 +185,15 @@ pub mod test {
     #[rstest]
     #[case("true", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpPop, &[])])]
     #[case("false", vec![], vec![make(Opcode::OpFalse, &[]), make(Opcode::OpPop, &[])])]
+    #[case("1 > 2", vec![1, 2], vec![make(Opcode::OpConstant, &[0]), make(Opcode::OpConstant, &[1]), make(Opcode::OpGreaterThan, &[]), make(Opcode::OpPop, &[])])]
+    #[case("1 < 2", vec![2, 1], vec![make(Opcode::OpConstant, &[0]), make(Opcode::OpConstant, &[1]), make(Opcode::OpGreaterThan, &[]), make(Opcode::OpPop, &[])])]
+    #[case("1 == 2", vec![1, 2], vec![make(Opcode::OpConstant, &[0]), make(Opcode::OpConstant, &[1]), make(Opcode::OpEqual, &[]), make(Opcode::OpPop, &[])])]
+    #[case("1 != 2", vec![1, 2], vec![make(Opcode::OpConstant, &[0]), make(Opcode::OpConstant, &[1]), make(Opcode::OpNotEqual, &[]), make(Opcode::OpPop, &[])])]
+    #[case("true == true", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpFalse, &[]), make(Opcode::OpEqual, &[]), make(Opcode::OpPop, &[])])]
+    #[case("true != false", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpFalse, &[]), make(Opcode::OpNotEqual, &[]), make(Opcode::OpPop, &[])])]
     fn test_boolean_expressions(
         #[case] input: &str,
-        #[case] constants: Vec<bool>,
+        #[case] constants: Vec<i64>,
         #[case] instructions: Vec<Vec<u8>>,
     ) {
         test_compiler(input, constants, instructions)
