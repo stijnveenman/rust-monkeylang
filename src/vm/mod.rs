@@ -230,6 +230,18 @@ mod test {
         test_vm(input, expected)
     }
 
+    #[rstest]
+    #[case("if (true) { 10 }", 10)]
+    #[case("if (true) { 10 } else { 20 }", 10)]
+    #[case("if (false) { 10 } else { 20 } ", 20)]
+    #[case("if (1) { 10 }", 10)]
+    #[case("if (1 < 2) { 10 }", 10)]
+    #[case("if (1 < 2) { 10 } else { 20 }", 10)]
+    #[case("if (1 > 2) { 10 } else { 20 }", 20)]
+    fn test_conditionals(#[case] input: &str, #[case] expected: i64) {
+        test_vm(input, expected)
+    }
+
     fn test_vm<T: Any>(input: &str, expected: T) {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
