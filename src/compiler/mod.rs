@@ -176,7 +176,8 @@ pub mod test {
     }
 
     #[rstest]
-    #[case("true",vec![true],vec![make(Opcode::OpTrue,&[])])]
+    #[case("true", vec![true], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpPop, &[])])]
+    #[case("false", vec![false], vec![make(Opcode::OpFalse, &[]), make(Opcode::OpPop, &[])])]
     fn test_boolean_expressoins(
         #[case] input: &str,
         #[case] constants: Vec<bool>,
