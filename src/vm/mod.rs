@@ -85,6 +85,28 @@ impl Vm {
         self.push(Object::Boolean(result))
     }
 
+    fn exec_bang(&mut self) -> R {
+        let operand = self.pop();
+
+        match operand {
+            Object::Boolean(val) => self.push(Object::Boolean(!val)),
+            _ => self.push(Object::Boolean(false)),
+        }
+    }
+
+    fn exec_minus(&mut self) -> R {
+        let operand = self.pop();
+
+        let Object::Integer(val) = operand else {
+            return Err(format!(
+                "unsupported type for negation: {}",
+                operand.type_str()
+            ));
+        };
+
+        self.push(Object::Integer(-val))
+    }
+
     pub fn run(&mut self) -> R {
         let mut ip = 0;
         while ip < self.instructions.0.len() {
@@ -112,7 +134,12 @@ impl Vm {
                 Opcode::OpEqual | Opcode::OpNotEqual | Opcode::OpGreaterThan => {
                     self.exec_comparison(op)?;
                 }
-                Opcode::OpMinus | Opcode::OpBang => {}
+                Opcode::OpBang => {
+                    self.exec_bang()?;
+                }
+                Opcode::OpMinus => {
+                    self.exec_minus()?;
+                }
             };
 
             ip += 1;
