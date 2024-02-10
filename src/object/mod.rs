@@ -116,6 +116,7 @@ impl Object {
         match self {
             Object::Integer(i) => Object::Integer(*i),
             Object::Boolean(i) => Object::Boolean(*i),
+            Object::Null => Object::Null,
             _ => panic!("from_ref not implemented for {self}"),
         }
     }

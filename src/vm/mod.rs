@@ -153,7 +153,9 @@ impl Vm {
                     let pos = read_u16(&self.instructions.0[ip + 1..]);
                     ip = pos - 1;
                 }
-                Opcode::OpNull => todo!(),
+                Opcode::OpNull => {
+                    self.push(Object::Null)?;
+                }
             };
 
             ip += 1;
