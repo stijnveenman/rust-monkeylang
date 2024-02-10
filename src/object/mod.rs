@@ -107,6 +107,7 @@ impl Object {
     pub fn from_ref(&self) -> Object {
         match self {
             Object::Integer(i) => Object::Integer(*i),
+            Object::Boolean(i) => Object::Boolean(*i),
             _ => panic!("from_ref not implemented for {self}"),
         }
     }

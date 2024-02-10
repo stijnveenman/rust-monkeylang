@@ -84,8 +84,12 @@ impl Vm {
                 Opcode::OpPop => {
                     self.pop();
                 }
-                Opcode::OpTrue => {}
-                Opcode::OpFalse => {}
+                Opcode::OpTrue => {
+                    self.push(Object::Boolean(true))?;
+                }
+                Opcode::OpFalse => {
+                    self.push(Object::Boolean(false))?;
+                }
             };
 
             ip += 1;
@@ -138,6 +142,13 @@ mod test {
     #[case("5 + 2 * 10", 25)]
     #[case("5 * (2 + 10)", 60)]
     fn test_integer_arithmetic(#[case] input: &str, #[case] expected: i32) {
+        test_vm(input, expected)
+    }
+
+    #[rstest]
+    #[case("true", true)]
+    #[case("false", false)]
+    fn test_boolean_expression(#[case] input: &str, #[case] expected: bool) {
         test_vm(input, expected)
     }
 
