@@ -58,9 +58,9 @@ impl Vm {
                 Opcode::OpPop => {
                     self.pop();
                 }
-                Opcode::OpSub => todo!(),
-                Opcode::OpMul => todo!(),
-                Opcode::OpDiv => todo!(),
+                Opcode::OpSub => {}
+                Opcode::OpMul => {}
+                Opcode::OpDiv => {}
             };
 
             ip += 1;

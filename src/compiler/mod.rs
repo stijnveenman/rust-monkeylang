@@ -76,6 +76,9 @@ impl Compiler {
 
                 match &node.operator {
                     Token::PLUS => self.emit(Opcode::OpAdd, vec![]),
+                    Token::MINUS => self.emit(Opcode::OpSub, vec![]),
+                    Token::ASTERISK => self.emit(Opcode::OpMul, vec![]),
+                    Token::SLASH => self.emit(Opcode::OpDiv, vec![]),
                     e => Err(format!("unknown infix operator {e:?}"))?,
                 };
 
@@ -152,7 +155,7 @@ pub mod test {
         make(Opcode::OpMul, &[]),
         make(Opcode::OpPop, &[]),
     ])]
-    #[case("2 / 1", vec![1, 2], vec![
+    #[case("2 / 1", vec![2, 1], vec![
         make(Opcode::OpConstant, &[0]), 
         make(Opcode::OpConstant, &[1]), 
         make(Opcode::OpDiv, &[]),
