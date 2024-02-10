@@ -66,6 +66,25 @@ impl Vm {
         }
     }
 
+    fn exec_comparison(&mut self, op: Opcode) -> R {
+        let right = self.pop();
+        let left = self.pop();
+
+        let result = match op {
+            Opcode::OpEqual => left == right,
+            Opcode::OpNotEqual => left != right,
+            Opcode::OpGreaterThan => {
+                let left: i64 = left.try_into()?;
+                let right: i64 = right.try_into()?;
+
+                left > right
+            }
+            op => return Err(format!("unsupported operation for comparison op {:?}", op)),
+        };
+
+        self.push(Object::Boolean(result))
+    }
+
     pub fn run(&mut self) -> R {
         let mut ip = 0;
         while ip < self.instructions.0.len() {
@@ -90,7 +109,9 @@ impl Vm {
                 Opcode::OpFalse => {
                     self.push(Object::Boolean(false))?;
                 }
-                Opcode::OpEqual | Opcode::OpNotEqual | Opcode::OpGreaterThan => {}
+                Opcode::OpEqual | Opcode::OpNotEqual | Opcode::OpGreaterThan => {
+                    self.exec_comparison(op)?;
+                }
             };
 
             ip += 1;
@@ -185,6 +206,8 @@ mod test {
         vm.run().expect("vm failed to run");
 
         let element = vm.last_popped();
+
+        println!("{} -> {}", input, element);
 
         test_object(element, &expected)
     }
