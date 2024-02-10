@@ -112,6 +112,7 @@ impl Vm {
                 Opcode::OpEqual | Opcode::OpNotEqual | Opcode::OpGreaterThan => {
                     self.exec_comparison(op)?;
                 }
+                Opcode::OpMinus | Opcode::OpBang => {}
             };
 
             ip += 1;

@@ -184,6 +184,11 @@ pub mod test {
         make(Opcode::OpConstant,&[1]),
         make(Opcode::OpPop,&[]),
     ])]
+    #[case("-1",vec![1],vec![
+        make(Opcode::OpConstant,&[0]),
+        make(Opcode::OpMinus,&[]),
+        make(Opcode::OpPop,&[]),
+    ])]
     fn test_integer_arithmetic(
         #[case] input: &str,
         #[case] constants: Vec<i64>,
@@ -201,6 +206,7 @@ pub mod test {
     #[case("1 != 2", vec![1, 2], vec![make(Opcode::OpConstant, &[0]), make(Opcode::OpConstant, &[1]), make(Opcode::OpNotEqual, &[]), make(Opcode::OpPop, &[])])]
     #[case("true == true", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpTrue, &[]), make(Opcode::OpEqual, &[]), make(Opcode::OpPop, &[])])]
     #[case("true != false", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpFalse, &[]), make(Opcode::OpNotEqual, &[]), make(Opcode::OpPop, &[])])]
+    #[case("!true", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpBang, &[]), make(Opcode::OpPop, &[])])]
     fn test_boolean_expressions(
         #[case] input: &str,
         #[case] constants: Vec<i64>,

@@ -21,6 +21,9 @@ pub enum Opcode {
     OpEqual,
     OpNotEqual,
     OpGreaterThan,
+
+    OpMinus,
+    OpBang,
 }
 
 impl Opcode {
@@ -37,7 +40,9 @@ impl Opcode {
             | Opcode::OpFalse
             | Opcode::OpEqual
             | Opcode::OpNotEqual
-            | Opcode::OpGreaterThan => vec![],
+            | Opcode::OpGreaterThan
+            | Opcode::OpMinus
+            | Opcode::OpBang => vec![],
         };
 
         Definition {
