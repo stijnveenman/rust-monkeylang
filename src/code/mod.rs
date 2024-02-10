@@ -4,6 +4,7 @@ pub mod make;
 use std::fmt::{Debug, Display};
 pub mod read_operands;
 
+#[derive(Debug)]
 #[repr(u8)]
 pub enum Opcode {
     OpConstant,

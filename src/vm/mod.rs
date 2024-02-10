@@ -37,6 +37,35 @@ impl Vm {
         &self.stack[self.sp - 1]
     }
 
+    fn exec_binary_integer_op(&mut self, op: Opcode, left: i64, right: i64) -> R {
+        let result = match op {
+            Opcode::OpAdd => left + right,
+            Opcode::OpMul => left * right,
+            Opcode::OpDiv => left / right,
+            Opcode::OpSub => left - right,
+
+            op => return Err(format!("unkown Integer operation {:?}", op)),
+        };
+
+        self.push(Object::Integer(result))
+    }
+
+    fn exec_binary_op(&mut self, op: Opcode) -> R {
+        let right = self.pop();
+        let left = self.pop();
+
+        match (left, right) {
+            (Object::Integer(left), Object::Integer(right)) => {
+                self.exec_binary_integer_op(op, left, right)
+            }
+            (left, right) => Err(format!(
+                "unsupported types for binary op {} {}",
+                left.type_str(),
+                right.type_str()
+            )),
+        }
+    }
+
     pub fn run(&mut self) -> R {
         let mut ip = 0;
         while ip < self.instructions.0.len() {
@@ -49,18 +78,12 @@ impl Vm {
 
                     self.push(self.constants[const_index].from_ref())?;
                 }
-                Opcode::OpAdd => {
-                    let right: i64 = self.pop().try_into()?;
-                    let left: i64 = self.pop().try_into()?;
-
-                    self.push(Object::Integer(left + right))?;
+                Opcode::OpAdd | Opcode::OpMul | Opcode::OpDiv | Opcode::OpSub => {
+                    self.exec_binary_op(op)?;
                 }
                 Opcode::OpPop => {
                     self.pop();
                 }
-                Opcode::OpSub => {}
-                Opcode::OpMul => {}
-                Opcode::OpDiv => {}
             };
 
             ip += 1;
