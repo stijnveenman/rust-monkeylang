@@ -21,22 +21,21 @@ pub enum Opcode {
 
 impl Opcode {
     pub fn find_definition(op: &Opcode) -> Definition {
-        let widths = match op {
+        let operand_widths = match op {
             Opcode::OpConstant => vec![2],
-            Opcode::OpPop => vec![],
 
-            Opcode::OpAdd => vec![],
-            Opcode::OpSub => vec![],
-            Opcode::OpMul => vec![],
-            Opcode::OpDiv => vec![],
-
-            Opcode::OpTrue => vec![],
-            Opcode::OpFalse => vec![],
+            Opcode::OpPop
+            | Opcode::OpAdd
+            | Opcode::OpSub
+            | Opcode::OpMul
+            | Opcode::OpDiv
+            | Opcode::OpTrue
+            | Opcode::OpFalse => vec![],
         };
 
         Definition {
             name: format!("{:?}", op),
-            operand_widths: widths,
+            operand_widths,
         }
     }
 
