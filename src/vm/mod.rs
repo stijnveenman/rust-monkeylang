@@ -55,7 +55,9 @@ impl Vm {
 
                     self.push(Object::Integer(left + right))?;
                 }
-                Opcode::OpPop => todo!(),
+                Opcode::OpPop => {
+                    self.pop();
+                }
             };
 
             ip += 1;
@@ -68,6 +70,10 @@ impl Vm {
         let o = self.stack[self.sp - 1].from_ref();
         self.sp -= 1;
         o
+    }
+
+    pub fn last_popped(&self) -> &Object {
+        &self.stack[self.sp]
     }
 
     fn push(&mut self, object: Object) -> R {
@@ -112,7 +118,7 @@ mod test {
         let mut vm = Vm::new(compiler.bytecode());
         vm.run().expect("vm failed to run");
 
-        let element = vm.stack_top();
+        let element = vm.last_popped();
 
         test_object(element, &expected)
     }

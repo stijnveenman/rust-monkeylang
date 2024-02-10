@@ -19,7 +19,7 @@ fn run(line: String) -> Result<String, String> {
     let mut vm = Vm::new(compiler.bytecode());
     vm.run()?;
 
-    let result = vm.stack_top();
+    let result = vm.last_popped();
     Ok(format!("{}", result))
 }
 

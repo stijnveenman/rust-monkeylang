@@ -46,7 +46,12 @@ impl Compiler {
             StatementNode::LetStatement(_) => todo!(),
             StatementNode::ReturnStatement(_) => todo!(),
             StatementNode::BlockStatement(_) => todo!(),
-            StatementNode::ExpressionStatement(node) => self.compile_expression(&node.expression),
+            StatementNode::ExpressionStatement(node) => {
+                self.compile_expression(&node.expression)?;
+                self.emit(Opcode::OpPop, vec![]);
+
+                Ok(())
+            },
         }
     }
 
