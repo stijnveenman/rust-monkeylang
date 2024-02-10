@@ -9,6 +9,7 @@ pub mod read_operands;
 pub enum Opcode {
     OpConstant,
     OpPop,
+    OpNull,
 
     OpAdd,
     OpSub,
@@ -35,6 +36,7 @@ impl Opcode {
             Opcode::OpConstant | Opcode::OpJumpNotTruthy | Opcode::OpJump => vec![2],
 
             Opcode::OpPop
+            | Opcode::OpNull
             | Opcode::OpAdd
             | Opcode::OpSub
             | Opcode::OpMul

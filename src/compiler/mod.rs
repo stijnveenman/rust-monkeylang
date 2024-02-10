@@ -297,8 +297,10 @@ pub mod test {
     #[rstest]
     #[case("if (true) {10}; 3333;", vec![10, 3333], vec![
         make(Opcode::OpTrue, &[]),
-        make(Opcode::OpJumpNotTruthy, &[7]),
+        make(Opcode::OpJumpNotTruthy, &[10]),
         make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpJump, &[11]),
+        make(Opcode::OpNull, &[]),
         make(Opcode::OpPop, &[]),
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpPop, &[]),
