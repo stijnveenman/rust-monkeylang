@@ -220,7 +220,7 @@ fn eval_if_expression(env: &Rc<Mutex<Environment>>, if_expression: &IfExpression
         return condition;
     }
 
-    if is_truthy(&condition) {
+    if condition.is_truthy() {
         return eval_statements(env, &if_expression.concequence.statements);
     }
 
@@ -280,16 +280,6 @@ fn eval_minus(right: Object) -> Object {
     match right {
         Object::Integer(i) => (-i).into(),
         _ => Object::Error(format!("unknown operator: MINUS {}", right.type_str())),
-    }
-}
-
-fn is_truthy(object: &Object) -> bool {
-    match object {
-        Object::Boolean(b) => *b,
-        Object::Return(i) => is_truthy(i),
-        Object::Null => false,
-        Object::Error(_) => panic!("called is_truthy on error object"),
-        _ => true,
     }
 }
 

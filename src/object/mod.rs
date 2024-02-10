@@ -68,9 +68,17 @@ impl Object {
             Object::Integer(_) | Object::Boolean(_) | Object::String(_)
         )
     }
-}
 
-impl Object {
+    pub fn is_truthy(&self) -> bool {
+        match self {
+            Object::Boolean(b) => *b,
+            Object::Return(i) => i.is_truthy(),
+            Object::Null => false,
+            Object::Error(_) => panic!("called is_truthy on error object"),
+            _ => true,
+        }
+    }
+
     pub fn is_return(&self) -> bool {
         matches!(self, Object::Return(_))
     }

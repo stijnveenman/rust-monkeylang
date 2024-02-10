@@ -140,7 +140,19 @@ impl Vm {
                 Opcode::OpMinus => {
                     self.exec_minus()?;
                 }
-                Opcode::OpJumpNotTruthy | Opcode::OpJump => {}
+                Opcode::OpJumpNotTruthy => {
+                    let pos = read_u16(&self.instructions.0[ip + 1..]);
+                    ip += 2;
+
+                    let condition = self.pop();
+                    if !condition.is_truthy() {
+                        ip = pos - 1;
+                    }
+                }
+                Opcode::OpJump => {
+                    let pos = read_u16(&self.instructions.0[ip + 1..]);
+                    ip = pos - 1;
+                }
             };
 
             ip += 1;
