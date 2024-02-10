@@ -51,7 +51,7 @@ impl Compiler {
                 self.emit(Opcode::OpPop, vec![]);
 
                 Ok(())
-            },
+            }
         }
     }
 
@@ -137,39 +137,49 @@ pub mod test {
     };
 
     #[rstest]
-    #[case("1 + 2", vec![1, 2], vec![
-        make(Opcode::OpConstant, &[0]), 
-        make(Opcode::OpConstant, &[1]), 
-        make(Opcode::OpAdd, &[]),
-        make(Opcode::OpPop, &[]),
+    #[case("1 + 2",vec![1,2],vec![
+        make(Opcode::OpConstant,&[0]),
+        make(Opcode::OpConstant,&[1]),
+        make(Opcode::OpAdd,&[]),
+        make(Opcode::OpPop,&[]),
     ])]
-    #[case("1 - 2", vec![1, 2], vec![
-        make(Opcode::OpConstant, &[0]), 
-        make(Opcode::OpConstant, &[1]), 
-        make(Opcode::OpSub, &[]),
-        make(Opcode::OpPop, &[]),
+    #[case("1 - 2",vec![1,2],vec![
+        make(Opcode::OpConstant,&[0]),
+        make(Opcode::OpConstant,&[1]),
+        make(Opcode::OpSub,&[]),
+        make(Opcode::OpPop,&[]),
     ])]
-    #[case("1 * 2", vec![1, 2], vec![
-        make(Opcode::OpConstant, &[0]), 
-        make(Opcode::OpConstant, &[1]), 
-        make(Opcode::OpMul, &[]),
-        make(Opcode::OpPop, &[]),
+    #[case("1 * 2",vec![1,2],vec![
+        make(Opcode::OpConstant,&[0]),
+        make(Opcode::OpConstant,&[1]),
+        make(Opcode::OpMul,&[]),
+        make(Opcode::OpPop,&[]),
     ])]
-    #[case("2 / 1", vec![2, 1], vec![
-        make(Opcode::OpConstant, &[0]), 
-        make(Opcode::OpConstant, &[1]), 
-        make(Opcode::OpDiv, &[]),
-        make(Opcode::OpPop, &[]),
+    #[case("2 / 1",vec![2,1],vec![
+        make(Opcode::OpConstant,&[0]),
+        make(Opcode::OpConstant,&[1]),
+        make(Opcode::OpDiv,&[]),
+        make(Opcode::OpPop,&[]),
     ])]
-    #[case("1; 2", vec![1, 2], vec![
-        make(Opcode::OpConstant, &[0]), 
-        make(Opcode::OpPop, &[]),
-        make(Opcode::OpConstant, &[1]), 
-        make(Opcode::OpPop, &[]),
+    #[case("1; 2",vec![1,2],vec![
+        make(Opcode::OpConstant,&[0]),
+        make(Opcode::OpPop,&[]),
+        make(Opcode::OpConstant,&[1]),
+        make(Opcode::OpPop,&[]),
     ])]
     fn test_integer_arithmetic(
         #[case] input: &str,
         #[case] constants: Vec<i64>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
+    #[rstest]
+    #[case("true",vec![true],vec![make(Opcode::OpTrue,&[])])]
+    fn test_boolean_expressoins(
+        #[case] input: &str,
+        #[case] constants: Vec<bool>,
         #[case] instructions: Vec<Vec<u8>>,
     ) {
         test_compiler(input, constants, instructions)
