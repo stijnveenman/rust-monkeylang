@@ -119,6 +119,8 @@ impl Default for Compiler {
 pub mod test {
     use std::any::Any;
 
+    use rstest::rstest;
+
     use crate::{
         code::{make::make, Opcode},
         compiler::Compiler,
@@ -126,17 +128,25 @@ pub mod test {
         parser::Parser,
     };
 
-    #[test]
-    fn test_integer_arithmetic() {
-        test_compiler(
-            "1 + 2",
-            vec![1, 2],
-            vec![
-                make(Opcode::OpConstant, &[0]),
-                make(Opcode::OpConstant, &[1]),
-                make(Opcode::OpAdd, &[]),
-            ],
-        )
+    #[rstest]
+    #[case("1 + 2", vec![1, 2], vec![
+        make(Opcode::OpConstant, &[0]), 
+        make(Opcode::OpConstant, &[1]), 
+        make(Opcode::OpAdd, &[]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("1; 2", vec![1, 2], vec![
+        make(Opcode::OpConstant, &[0]), 
+        make(Opcode::OpPop, &[]),
+        make(Opcode::OpConstant, &[1]), 
+        make(Opcode::OpPop, &[]),
+    ])]
+    fn test_integer_arithmetic(
+        #[case] input: &str,
+        #[case] constants: Vec<i64>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
     }
 
     pub fn test_compiler<T: Any>(

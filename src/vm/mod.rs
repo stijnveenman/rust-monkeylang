@@ -55,6 +55,7 @@ impl Vm {
 
                     self.push(Object::Integer(left + right))?;
                 }
+                Opcode::OpPop => todo!(),
             };
 
             ip += 1;
