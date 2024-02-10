@@ -164,6 +164,10 @@ mod test {
     #[case("5 * 2 + 10", 20)]
     #[case("5 + 2 * 10", 25)]
     #[case("5 * (2 + 10)", 60)]
+    #[case("-5", -5)]
+    #[case("-10", -10)]
+    #[case("-50 + 100 + -50", 0)]
+    #[case("(5 + 10 * 2 + 15 / 3) * 2 + -10", 50)]
     fn test_integer_arithmetic(#[case] input: &str, #[case] expected: i32) {
         test_vm(input, expected)
     }
@@ -188,6 +192,12 @@ mod test {
     #[case("(1 < 2) == false", false)]
     #[case("(1 > 2) == true", false)]
     #[case("(1 > 2) == false", true)]
+    #[case("!true", false)]
+    #[case("!false", true)]
+    #[case("!5", false)]
+    #[case("!!true", true)]
+    #[case("!!false", false)]
+    #[case("!!5", true)]
     fn test_boolean_expression(#[case] input: &str, #[case] expected: bool) {
         test_vm(input, expected)
     }
