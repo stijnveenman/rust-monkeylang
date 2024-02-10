@@ -66,7 +66,14 @@ impl Compiler {
 
                 Ok(())
             }
-            ExpressionNode::BooleanLiteral(_) => todo!(),
+            ExpressionNode::BooleanLiteral(node) => {
+                if node.value {
+                    self.emit(Opcode::OpTrue, vec![]);
+                } else {
+                    self.emit(Opcode::OpFalse, vec![]);
+                }
+                Ok(())
+            }
             ExpressionNode::StringLiteral(_) => todo!(),
             ExpressionNode::ArrayLiteral(_) => todo!(),
             ExpressionNode::PrefixExpression(_) => todo!(),
@@ -176,9 +183,9 @@ pub mod test {
     }
 
     #[rstest]
-    #[case("true", vec![true], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpPop, &[])])]
-    #[case("false", vec![false], vec![make(Opcode::OpFalse, &[]), make(Opcode::OpPop, &[])])]
-    fn test_boolean_expressoins(
+    #[case("true", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpPop, &[])])]
+    #[case("false", vec![], vec![make(Opcode::OpFalse, &[]), make(Opcode::OpPop, &[])])]
+    fn test_boolean_expressions(
         #[case] input: &str,
         #[case] constants: Vec<bool>,
         #[case] instructions: Vec<Vec<u8>>,
