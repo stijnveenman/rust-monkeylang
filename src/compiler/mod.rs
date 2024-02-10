@@ -129,8 +129,24 @@ impl Compiler {
                     self.remove_last();
                 }
 
-                let concequence_pos = self.instructions.0.len();
-                self.change_operand(jump_not_truthy_pos, concequence_pos);
+                if let Some(alternative) = &node.alternative {
+                    let jump_pos = self.emit(Opcode::OpJump, vec![9999]);
+
+                    let after_concequence_pos = self.instructions.0.len();
+                    self.change_operand(jump_not_truthy_pos, after_concequence_pos);
+
+                    self.compile_statements(&alternative.statements)?;
+
+                    if self.last_instruction.0.is_pop() {
+                        self.remove_last();
+                    }
+
+                    let after_alternative_pos = self.instructions.0.len();
+                    self.change_operand(jump_pos, after_alternative_pos);
+                } else {
+                    let after_concequence_pos = self.instructions.0.len();
+                    self.change_operand(jump_not_truthy_pos, after_concequence_pos);
+                }
 
                 Ok(())
             }
@@ -287,7 +303,7 @@ pub mod test {
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpPop, &[]),
     ])]
-    #[case("if (true) {10} else {20}; 3333;", vec![10, 3333], vec![
+    #[case("if (true) {10} else {20}; 3333;", vec![10, 20, 3333], vec![
         make(Opcode::OpTrue, &[]),
         make(Opcode::OpJumpNotTruthy, &[10]),
         make(Opcode::OpConstant, &[0]),
