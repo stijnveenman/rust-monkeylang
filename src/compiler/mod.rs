@@ -129,24 +129,23 @@ impl Compiler {
                     self.remove_last();
                 }
 
+                let jump_pos = self.emit(Opcode::OpJump, vec![9999]);
+
+                let after_concequence_pos = self.instructions.0.len();
+                self.change_operand(jump_not_truthy_pos, after_concequence_pos);
+
                 if let Some(alternative) = &node.alternative {
-                    let jump_pos = self.emit(Opcode::OpJump, vec![9999]);
-
-                    let after_concequence_pos = self.instructions.0.len();
-                    self.change_operand(jump_not_truthy_pos, after_concequence_pos);
-
                     self.compile_statements(&alternative.statements)?;
 
                     if self.last_instruction.0.is_pop() {
                         self.remove_last();
                     }
-
-                    let after_alternative_pos = self.instructions.0.len();
-                    self.change_operand(jump_pos, after_alternative_pos);
                 } else {
-                    let after_concequence_pos = self.instructions.0.len();
-                    self.change_operand(jump_not_truthy_pos, after_concequence_pos);
+                    self.emit(Opcode::OpNull, vec![]);
                 }
+
+                let after_alternative_pos = self.instructions.0.len();
+                self.change_operand(jump_pos, after_alternative_pos);
 
                 Ok(())
             }
