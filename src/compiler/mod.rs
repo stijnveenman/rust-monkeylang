@@ -78,14 +78,24 @@ impl Compiler {
             ExpressionNode::ArrayLiteral(_) => todo!(),
             ExpressionNode::PrefixExpression(_) => todo!(),
             ExpressionNode::InfixExpression(node) => {
-                self.compile_expression(&node.left)?;
-                self.compile_expression(&node.right)?;
+                if node.operator.is(&Token::LT) {
+                    // invert left and right on less then
+                    self.compile_expression(&node.right)?;
+                    self.compile_expression(&node.left)?;
+                } else {
+                    self.compile_expression(&node.left)?;
+                    self.compile_expression(&node.right)?;
+                }
 
                 match &node.operator {
                     Token::PLUS => self.emit(Opcode::OpAdd, vec![]),
                     Token::MINUS => self.emit(Opcode::OpSub, vec![]),
                     Token::ASTERISK => self.emit(Opcode::OpMul, vec![]),
                     Token::SLASH => self.emit(Opcode::OpDiv, vec![]),
+
+                    Token::GT | Token::LT => self.emit(Opcode::OpGreaterThan, vec![]),
+                    Token::EQ => self.emit(Opcode::OpEqual, vec![]),
+                    Token::NOT_EQ => self.emit(Opcode::OpNotEqual, vec![]),
                     e => Err(format!("unknown infix operator {e:?}"))?,
                 };
 
@@ -189,7 +199,7 @@ pub mod test {
     #[case("1 < 2", vec![2, 1], vec![make(Opcode::OpConstant, &[0]), make(Opcode::OpConstant, &[1]), make(Opcode::OpGreaterThan, &[]), make(Opcode::OpPop, &[])])]
     #[case("1 == 2", vec![1, 2], vec![make(Opcode::OpConstant, &[0]), make(Opcode::OpConstant, &[1]), make(Opcode::OpEqual, &[]), make(Opcode::OpPop, &[])])]
     #[case("1 != 2", vec![1, 2], vec![make(Opcode::OpConstant, &[0]), make(Opcode::OpConstant, &[1]), make(Opcode::OpNotEqual, &[]), make(Opcode::OpPop, &[])])]
-    #[case("true == true", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpFalse, &[]), make(Opcode::OpEqual, &[]), make(Opcode::OpPop, &[])])]
+    #[case("true == true", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpTrue, &[]), make(Opcode::OpEqual, &[]), make(Opcode::OpPop, &[])])]
     #[case("true != false", vec![], vec![make(Opcode::OpTrue, &[]), make(Opcode::OpFalse, &[]), make(Opcode::OpNotEqual, &[]), make(Opcode::OpPop, &[])])]
     fn test_boolean_expressions(
         #[case] input: &str,
