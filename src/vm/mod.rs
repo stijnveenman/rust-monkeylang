@@ -264,6 +264,7 @@ mod test {
     #[case("if (1 < 2) { 10 }", 10)]
     #[case("if (1 < 2) { 10 } else { 20 }", 10)]
     #[case("if (1 > 2) { 10 } else { 20 }", 20)]
+    #[case("if ((if (false) { 10 })) { 10 } else { 20 }", 20)]
     fn test_conditionals(#[case] input: &str, #[case] expected: i64) {
         let element = test_vm(input);
         test_object(&element, &expected)
