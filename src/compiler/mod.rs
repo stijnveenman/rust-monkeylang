@@ -76,7 +76,17 @@ impl Compiler {
             }
             ExpressionNode::StringLiteral(_) => todo!(),
             ExpressionNode::ArrayLiteral(_) => todo!(),
-            ExpressionNode::PrefixExpression(_) => todo!(),
+            ExpressionNode::PrefixExpression(node) => {
+                self.compile_expression(&node.right)?;
+
+                match &node.operator {
+                    Token::BANG => self.emit(Opcode::OpBang, vec![]),
+                    Token::MINUS => self.emit(Opcode::OpMinus, vec![]),
+                    e => Err(format!("unknown prefix operator {e:?}"))?,
+                };
+
+                Ok(())
+            }
             ExpressionNode::InfixExpression(node) => {
                 if node.operator.is(&Token::LT) {
                     // invert left and right on less then
