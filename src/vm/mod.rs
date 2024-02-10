@@ -90,6 +90,7 @@ impl Vm {
 
         match operand {
             Object::Boolean(val) => self.push(Object::Boolean(!val)),
+            Object::Null => self.push(Object::Boolean(true)),
             _ => self.push(Object::Boolean(false)),
         }
     }
@@ -249,6 +250,7 @@ mod test {
     #[case("!!true", true)]
     #[case("!!false", false)]
     #[case("!!5", true)]
+    #[case("!(if (false) { 5; })", true)]
     fn test_boolean_expression(#[case] input: &str, #[case] expected: bool) {
         let element = test_vm(input);
         test_object(&element, &expected)
