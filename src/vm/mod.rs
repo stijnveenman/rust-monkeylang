@@ -103,6 +103,15 @@ mod test {
     #[case("1", 1)]
     #[case("2", 2)]
     #[case("1 + 2", 3)]
+    #[case("1 - 2", -1)]
+    #[case("1 * 2", 2)]
+    #[case("4 / 2", 2)]
+    #[case("50 / 2 * 2 + 10 - 5", 55)]
+    #[case("5 + 5 + 5 + 5 - 10", 10)]
+    #[case("2 * 2 * 2 * 2 * 2", 32)]
+    #[case("5 * 2 + 10", 20)]
+    #[case("5 + 2 * 10", 25)]
+    #[case("5 * (2 + 10)", 60)]
     fn test_integer_arithmetic(#[case] input: &str, #[case] expected: i32) {
         test_vm(input, expected)
     }
