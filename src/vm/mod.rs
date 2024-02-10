@@ -140,6 +140,7 @@ impl Vm {
                 Opcode::OpMinus => {
                     self.exec_minus()?;
                 }
+                Opcode::OpJumpNotTruthy | Opcode::OpJump => {}
             };
 
             ip += 1;

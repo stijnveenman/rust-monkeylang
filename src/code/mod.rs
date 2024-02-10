@@ -24,12 +24,15 @@ pub enum Opcode {
 
     OpMinus,
     OpBang,
+
+    OpJumpNotTruthy,
+    OpJump,
 }
 
 impl Opcode {
     pub fn find_definition(op: &Opcode) -> Definition {
         let operand_widths = match op {
-            Opcode::OpConstant => vec![2],
+            Opcode::OpConstant | Opcode::OpJumpNotTruthy | Opcode::OpJump => vec![2],
 
             Opcode::OpPop
             | Opcode::OpAdd

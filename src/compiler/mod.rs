@@ -225,6 +225,23 @@ pub mod test {
         test_compiler(input, constants, instructions)
     }
 
+    #[rstest]
+    #[case("if (true) {10}; 333;", vec![10, 3333], vec![make(Opcode::OpTrue, &[]),
+        make(Opcode::OpTrue, &[]),
+        make(Opcode::OpJumpNotTruthy, &[7]),
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpPop, &[]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpConstant, &[]),
+    ])]
+    fn test_conditionals(
+        #[case] input: &str,
+        #[case] constants: Vec<i64>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
     pub fn test_compiler<T: Any>(
         input: &str,
         expected_constants: Vec<T>,
