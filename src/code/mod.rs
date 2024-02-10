@@ -4,7 +4,7 @@ pub mod make;
 use std::fmt::{Debug, Display};
 pub mod read_operands;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 pub enum Opcode {
     OpConstant,
@@ -56,6 +56,10 @@ impl Opcode {
 
     pub fn definition(&self) -> Definition {
         Opcode::find_definition(self)
+    }
+
+    pub fn is_pop(&self) -> bool {
+        matches!(self, Opcode::OpPop)
     }
 }
 

@@ -8,6 +8,9 @@ use crate::{
 pub struct Compiler {
     instructions: Instructions,
     constants: Vec<Object>,
+
+    previous_instruction: (Opcode, usize),
+    last_instruction: (Opcode, usize),
 }
 
 pub struct Bytecode {
@@ -22,6 +25,9 @@ impl Compiler {
         Compiler {
             instructions: Instructions(vec![]),
             constants: vec![],
+
+            previous_instruction: (Opcode::OpPop, 0),
+            last_instruction: (Opcode::OpPop, 0),
         }
     }
 
@@ -45,7 +51,7 @@ impl Compiler {
         match statement {
             StatementNode::LetStatement(_) => todo!(),
             StatementNode::ReturnStatement(_) => todo!(),
-            StatementNode::BlockStatement(_) => todo!(),
+            StatementNode::BlockStatement(node) => self.compile_statements(&node.statements),
             StatementNode::ExpressionStatement(node) => {
                 self.compile_expression(&node.expression)?;
                 self.emit(Opcode::OpPop, vec![]);
@@ -111,7 +117,23 @@ impl Compiler {
 
                 Ok(())
             }
-            ExpressionNode::IfExpression(_) => todo!(),
+            ExpressionNode::IfExpression(node) => {
+                self.compile_expression(&node.condition)?;
+
+                // add placeholder OpJumpNotTruthy
+                let jump_not_truthy_pos = self.emit(Opcode::OpJumpNotTruthy, vec![9999]);
+
+                self.compile_statements(&node.concequence.statements)?;
+
+                if self.last_instruction.0.is_pop() {
+                    self.remove_last();
+                }
+
+                let concequence_pos = self.instructions.0.len();
+                self.change_operand(jump_not_truthy_pos, concequence_pos);
+
+                Ok(())
+            }
             ExpressionNode::FunctionExpression(_) => todo!(),
             ExpressionNode::CallExpression(_) => todo!(),
             ExpressionNode::IndexExpresssion(_) => todo!(),
@@ -121,7 +143,38 @@ impl Compiler {
 
     fn emit(&mut self, op: Opcode, operands: Vec<usize>) -> usize {
         let instruction = make(op, &operands);
-        self.add_instruction(instruction)
+        let pos = self.add_instruction(instruction);
+
+        self.set_last_instruction(op, pos);
+
+        pos
+    }
+
+    fn replace_instruction(&mut self, pos: usize, instruction: Vec<u8>) {
+        for (i, b) in instruction.into_iter().enumerate() {
+            self.instructions.0[pos + i] = b;
+        }
+    }
+
+    fn change_operand(&mut self, op_pos: usize, operand: usize) {
+        let op: Opcode = self.instructions.0[op_pos].into();
+
+        let instruction = make(op, &[operand]);
+
+        self.replace_instruction(op_pos, instruction);
+    }
+
+    fn remove_last(&mut self) {
+        self.instructions.0 = self.instructions.0[..self.last_instruction.1].to_vec();
+
+        self.last_instruction = self.previous_instruction;
+    }
+
+    fn set_last_instruction(&mut self, op: Opcode, pos: usize) {
+        let previous = self.last_instruction;
+        self.last_instruction = (op, pos);
+
+        self.previous_instruction = previous;
     }
 
     fn add_instruction(&mut self, mut instruction: Vec<u8>) -> usize {
@@ -226,13 +279,13 @@ pub mod test {
     }
 
     #[rstest]
-    #[case("if (true) {10}; 333;", vec![10, 3333], vec![make(Opcode::OpTrue, &[]),
+    #[case("if (true) {10}; 3333;", vec![10, 3333], vec![
         make(Opcode::OpTrue, &[]),
         make(Opcode::OpJumpNotTruthy, &[7]),
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpPop, &[]),
         make(Opcode::OpConstant, &[1]),
-        make(Opcode::OpConstant, &[]),
+        make(Opcode::OpPop, &[]),
     ])]
     fn test_conditionals(
         #[case] input: &str,
