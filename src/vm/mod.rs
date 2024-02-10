@@ -149,6 +149,23 @@ mod test {
     #[rstest]
     #[case("true", true)]
     #[case("false", false)]
+    #[case("1 < 2", true)]
+    #[case("1 > 2", false)]
+    #[case("1 < 1", false)]
+    #[case("1 > 1", false)]
+    #[case("1 == 1", true)]
+    #[case("1 != 1", false)]
+    #[case("1 == 2", false)]
+    #[case("1 != 2", true)]
+    #[case("true == true", true)]
+    #[case("false == false", true)]
+    #[case("true == false", false)]
+    #[case("true != false", true)]
+    #[case("false != true", true)]
+    #[case("(1 < 2) == true", true)]
+    #[case("(1 < 2) == false", false)]
+    #[case("(1 > 2) == true", false)]
+    #[case("(1 > 2) == false", true)]
     fn test_boolean_expression(#[case] input: &str, #[case] expected: bool) {
         test_vm(input, expected)
     }
