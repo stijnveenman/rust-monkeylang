@@ -21,41 +21,22 @@ pub enum Opcode {
 
 impl Opcode {
     pub fn find_definition(op: &Opcode) -> Definition {
-        match op {
-            Opcode::OpConstant => Definition {
-                name: "OpConstant",
-                operand_widths: vec![2],
-            },
-            Opcode::OpPop => Definition {
-                name: "OpPop",
-                operand_widths: vec![],
-            },
+        let widths = match op {
+            Opcode::OpConstant => vec![2],
+            Opcode::OpPop => vec![],
 
-            Opcode::OpAdd => Definition {
-                name: "OpAdd",
-                operand_widths: vec![],
-            },
-            Opcode::OpSub => Definition {
-                name: "OpSub",
-                operand_widths: vec![],
-            },
-            Opcode::OpMul => Definition {
-                name: "OpMul",
-                operand_widths: vec![],
-            },
-            Opcode::OpDiv => Definition {
-                name: "OpDiv",
-                operand_widths: vec![],
-            },
+            Opcode::OpAdd => vec![],
+            Opcode::OpSub => vec![],
+            Opcode::OpMul => vec![],
+            Opcode::OpDiv => vec![],
 
-            Opcode::OpTrue => Definition {
-                name: "OpTrue",
-                operand_widths: vec![],
-            },
-            Opcode::OpFalse => Definition {
-                name: "OpFalse",
-                operand_widths: vec![],
-            },
+            Opcode::OpTrue => vec![],
+            Opcode::OpFalse => vec![],
+        };
+
+        Definition {
+            name: format!("{:?}", op),
+            operand_widths: widths,
         }
     }
 
@@ -111,7 +92,7 @@ impl From<u8> for Opcode {
 
 #[allow(dead_code)]
 pub struct Definition {
-    name: &'static str,
+    name: String,
     operand_widths: Vec<usize>,
 }
 
