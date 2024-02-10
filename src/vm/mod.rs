@@ -84,6 +84,8 @@ impl Vm {
                 Opcode::OpPop => {
                     self.pop();
                 }
+                Opcode::OpTrue => {}
+                Opcode::OpFalse => {}
             };
 
             ip += 1;

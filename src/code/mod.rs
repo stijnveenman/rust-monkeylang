@@ -8,11 +8,15 @@ pub mod read_operands;
 #[repr(u8)]
 pub enum Opcode {
     OpConstant,
+    OpPop,
+
     OpAdd,
     OpSub,
     OpMul,
     OpDiv,
-    OpPop,
+
+    OpTrue,
+    OpFalse,
 }
 
 impl Opcode {
@@ -22,6 +26,11 @@ impl Opcode {
                 name: "OpConstant",
                 operand_widths: vec![2],
             },
+            Opcode::OpPop => Definition {
+                name: "OpPop",
+                operand_widths: vec![],
+            },
+
             Opcode::OpAdd => Definition {
                 name: "OpAdd",
                 operand_widths: vec![],
@@ -38,8 +47,13 @@ impl Opcode {
                 name: "OpDiv",
                 operand_widths: vec![],
             },
-            Opcode::OpPop => Definition {
-                name: "OpPop",
+
+            Opcode::OpTrue => Definition {
+                name: "OpTrue",
+                operand_widths: vec![],
+            },
+            Opcode::OpFalse => Definition {
+                name: "OpFalse",
                 operand_widths: vec![],
             },
         }
