@@ -140,6 +140,24 @@ pub mod test {
         make(Opcode::OpAdd, &[]),
         make(Opcode::OpPop, &[]),
     ])]
+    #[case("1 - 2", vec![1, 2], vec![
+        make(Opcode::OpConstant, &[0]), 
+        make(Opcode::OpConstant, &[1]), 
+        make(Opcode::OpSub, &[]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("1 * 2", vec![1, 2], vec![
+        make(Opcode::OpConstant, &[0]), 
+        make(Opcode::OpConstant, &[1]), 
+        make(Opcode::OpMul, &[]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("2 / 1", vec![1, 2], vec![
+        make(Opcode::OpConstant, &[0]), 
+        make(Opcode::OpConstant, &[1]), 
+        make(Opcode::OpDiv, &[]),
+        make(Opcode::OpPop, &[]),
+    ])]
     #[case("1; 2", vec![1, 2], vec![
         make(Opcode::OpConstant, &[0]), 
         make(Opcode::OpPop, &[]),
