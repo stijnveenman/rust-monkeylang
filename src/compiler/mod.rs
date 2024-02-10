@@ -287,6 +287,16 @@ pub mod test {
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpPop, &[]),
     ])]
+    #[case("if (true) {10} else {20}; 3333;", vec![10, 3333], vec![
+        make(Opcode::OpTrue, &[]),
+        make(Opcode::OpJumpNotTruthy, &[10]),
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpJump, &[13]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpPop, &[]),
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpPop, &[]),
+    ])]
     fn test_conditionals(
         #[case] input: &str,
         #[case] constants: Vec<i64>,
