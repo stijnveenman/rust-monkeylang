@@ -209,7 +209,14 @@ impl Compiler {
             }
             ExpressionNode::FunctionExpression(_) => todo!(),
             ExpressionNode::CallExpression(_) => todo!(),
-            ExpressionNode::IndexExpresssion(_) => todo!(),
+            ExpressionNode::IndexExpresssion(node) => {
+                self.compile_expression(&node.left)?;
+                self.compile_expression(&node.right)?;
+
+                self.emit(Opcode::OpIndex, vec![]);
+
+                Ok(())
+            }
             ExpressionNode::HashLiteral(node) => {
                 for item in &node.map {
                     self.compile_expression(&item.0)?;
