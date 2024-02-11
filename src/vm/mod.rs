@@ -157,6 +157,8 @@ impl Vm {
                 Opcode::OpNull => {
                     self.push(Object::Null)?;
                 }
+
+                Opcode::OpSetGlobal | Opcode::OpGetGlobal => {}
             };
 
             ip += 1;

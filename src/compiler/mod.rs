@@ -322,6 +322,35 @@ pub mod test {
         test_compiler(input, constants, instructions)
     }
 
+    #[rstest]
+    #[case("let one = 1; let two = 2;", vec![1, 2], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSetGlobal, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpSetGlobal, &[1]),
+    ])]
+    #[case("let one = 1; one;", vec![1], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSetGlobal, &[0]),
+        make(Opcode::OpGetGlobal, &[0]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("let one = 1; let two = one; two;", vec![1], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSetGlobal, &[0]),
+        make(Opcode::OpGetGlobal, &[0]),
+        make(Opcode::OpSetGlobal, &[1]),
+        make(Opcode::OpGetGlobal, &[1]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    fn test_global_let_statements(
+        #[case] input: &str,
+        #[case] constants: Vec<i64>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
     pub fn test_compiler<T: Any>(
         input: &str,
         expected_constants: Vec<T>,

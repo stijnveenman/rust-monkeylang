@@ -28,12 +28,19 @@ pub enum Opcode {
 
     OpJumpNotTruthy,
     OpJump,
+
+    OpSetGlobal,
+    OpGetGlobal,
 }
 
 impl Opcode {
     pub fn find_definition(op: &Opcode) -> Definition {
         let operand_widths = match op {
-            Opcode::OpConstant | Opcode::OpJumpNotTruthy | Opcode::OpJump => vec![2],
+            Opcode::OpConstant
+            | Opcode::OpJumpNotTruthy
+            | Opcode::OpJump
+            | Opcode::OpGetGlobal
+            | Opcode::OpSetGlobal => vec![2],
 
             Opcode::OpPop
             | Opcode::OpNull
