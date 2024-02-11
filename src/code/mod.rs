@@ -10,6 +10,7 @@ pub enum Opcode {
     OpConstant,
     OpPop,
     OpNull,
+    OpArray,
 
     OpAdd,
     OpSub,
@@ -37,6 +38,7 @@ impl Opcode {
     pub fn find_definition(op: &Opcode) -> Definition {
         let operand_widths = match op {
             Opcode::OpConstant
+            | Opcode::OpArray
             | Opcode::OpJumpNotTruthy
             | Opcode::OpJump
             | Opcode::OpGetGlobal

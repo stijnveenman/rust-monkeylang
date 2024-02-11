@@ -193,6 +193,8 @@ impl Vm {
 
                     self.push(self.globals[index].from_ref())?;
                 }
+
+                Opcode::OpArray => {}
             };
 
             ip += 1;

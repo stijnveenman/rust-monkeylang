@@ -420,6 +420,42 @@ pub mod test {
         test_compiler(input, constants, instructions)
     }
 
+    #[rstest]
+    #[case("[]", vec![], vec![
+        make(Opcode::OpArray, &[0]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("[1,2,3]", vec![1,2,3], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpArray, &[3]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("[1 + 2, 3 - 4, 5 * 6]", vec![1, 2, 3, 4, 5, 6], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpAdd, &[]),
+
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpConstant, &[3]),
+        make(Opcode::OpSub, &[]),
+
+        make(Opcode::OpConstant, &[4]),
+        make(Opcode::OpConstant, &[5]),
+        make(Opcode::OpMul, &[]),
+
+        make(Opcode::OpArray, &[3]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    fn test_array_literals(
+        #[case] input: &str,
+        #[case] constants: Vec<i64>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
     pub fn test_compiler<T: Any>(
         input: &str,
         expected_constants: Vec<T>,
