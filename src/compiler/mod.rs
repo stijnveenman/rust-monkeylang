@@ -210,7 +210,16 @@ impl Compiler {
             ExpressionNode::FunctionExpression(_) => todo!(),
             ExpressionNode::CallExpression(_) => todo!(),
             ExpressionNode::IndexExpresssion(_) => todo!(),
-            ExpressionNode::HashLiteral(_) => todo!(),
+            ExpressionNode::HashLiteral(node) => {
+                for item in &node.map {
+                    self.compile_expression(&item.0)?;
+                    self.compile_expression(&item.1)?;
+                }
+
+                self.emit(Opcode::OpHash, vec![node.map.len() * 2]);
+
+                Ok(())
+            }
         }
     }
 
@@ -479,7 +488,7 @@ pub mod test {
         make(Opcode::OpHash, &[6]),
         make(Opcode::OpPop, &[]),
     ])]
-    #[case("{1: 2 + 3, 4: 5 * 6", vec![1, 2, 3, 4, 5, 6], vec![
+    #[case("{1: 2 + 3, 4: 5 * 6}", vec![1, 2, 3, 4, 5, 6], vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpConstant, &[2]),
