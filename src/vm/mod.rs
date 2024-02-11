@@ -215,13 +215,47 @@ impl Vm {
                     self.push(hash)?;
                 }
 
-                Opcode::OpIndex => {}
+                Opcode::OpIndex => {
+                    let index = self.pop();
+                    let left = self.pop();
+
+                    self.exec_index(left, index)?;
+                }
             };
 
             ip += 1;
         }
 
         Ok(())
+    }
+
+    fn exec_array_index(&mut self, left: Vec<Object>, i: i64) -> R {
+        if i < 0 || i > (left.len() as i64) - 1 {
+            return self.push(Object::Null);
+        }
+
+        self.push(left[i as usize].from_ref())
+    }
+
+    fn exec_hash_index(&mut self, left: HashMap<Object, Object>, i: Object) -> R {
+        if !i.hashable() {
+            return Err(format!("unusable as hash key: {}", i.type_str()));
+        }
+
+        let val = match left.get(&i) {
+            Some(i) => i.from_ref(),
+            None => Object::Null,
+        };
+
+        self.push(val)
+    }
+
+    fn exec_index(&mut self, left: Object, right: Object) -> R {
+        match (left, right) {
+            (Object::Array(left), Object::Integer(i)) => self.exec_array_index(left, i),
+            (Object::Hash(left), i) => self.exec_hash_index(left, i),
+            (left, _) => Err(format!("index operator not supported: {}", left.type_str())),
+        }
     }
 
     fn build_hash(&mut self, start: usize, end: usize) -> Result<Object, String> {
