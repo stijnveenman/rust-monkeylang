@@ -7,12 +7,14 @@ use crate::{
 };
 
 const STACK_SIZE: usize = 2048;
+const GLOBALS_SIZE: usize = 65536;
 
 pub struct Vm {
     instructions: Instructions,
     constants: Vec<Object>,
 
     stack: [Object; STACK_SIZE],
+    globals: Box<[Object]>,
     sp: usize,
 }
 
@@ -25,6 +27,7 @@ impl Vm {
             constants: bytecode.constants,
 
             stack: std::array::from_fn(|_| Object::Null),
+            globals: vec![Object::Null; GLOBALS_SIZE].into_boxed_slice(),
             sp: 0,
         }
     }
@@ -157,8 +160,18 @@ impl Vm {
                 Opcode::OpNull => {
                     self.push(Object::Null)?;
                 }
+                Opcode::OpSetGlobal => {
+                    let index = read_u16(&self.instructions.0[ip + 1..]);
+                    ip += 2;
 
-                Opcode::OpSetGlobal | Opcode::OpGetGlobal => {}
+                    self.globals[index] = self.pop();
+                }
+                Opcode::OpGetGlobal => {
+                    let index = read_u16(&self.instructions.0[ip + 1..]);
+                    ip += 2;
+
+                    self.push(self.globals[index].from_ref())?;
+                }
             };
 
             ip += 1;
