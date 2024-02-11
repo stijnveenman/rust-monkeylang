@@ -280,6 +280,15 @@ mod test {
         test_null(&element)
     }
 
+    #[rstest]
+    #[case("let one = 1; one", 1)]
+    #[case("let one = 1; let two = 2; one + two", 3)]
+    #[case("let one = 1; let two = one + one; one + two", 3)]
+    fn test_global_let(#[case] input: &str, #[case] expected: i64) {
+        let element = test_vm(input);
+        test_object(&element, &expected)
+    }
+
     fn test_vm(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
