@@ -131,7 +131,15 @@ impl Compiler {
 
                 Ok(())
             }
-            ExpressionNode::ArrayLiteral(_) => todo!(),
+            ExpressionNode::ArrayLiteral(node) => {
+                for element in &node.expressions {
+                    self.compile_expression(element)?;
+                }
+
+                self.emit(Opcode::OpArray, vec![node.expressions.len()]);
+
+                Ok(())
+            }
             ExpressionNode::PrefixExpression(node) => {
                 self.compile_expression(&node.right)?;
 
