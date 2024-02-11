@@ -203,6 +203,8 @@ impl Vm {
 
                     self.push(array)?;
                 }
+
+                Opcode::OpHash => {}
             };
 
             ip += 1;

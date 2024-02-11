@@ -11,6 +11,7 @@ pub enum Opcode {
     OpPop,
     OpNull,
     OpArray,
+    OpHash,
 
     OpAdd,
     OpSub,
@@ -39,6 +40,7 @@ impl Opcode {
         let operand_widths = match op {
             Opcode::OpConstant
             | Opcode::OpArray
+            | Opcode::OpHash
             | Opcode::OpJumpNotTruthy
             | Opcode::OpJump
             | Opcode::OpGetGlobal
