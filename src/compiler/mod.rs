@@ -78,7 +78,15 @@ impl Compiler {
 
     fn compile_expression(&mut self, expression: &ExpressionNode) -> R {
         match expression {
-            ExpressionNode::Identifier(_) => todo!(),
+            ExpressionNode::Identifier(node) => {
+                let Some(symbol) = self.symbol_table.resolve(&node.value) else {
+                    return Err(format!("undefined variable {}", node.value));
+                };
+
+                self.emit(Opcode::OpGetGlobal, vec![symbol.index]);
+
+                Ok(())
+            }
             ExpressionNode::IntegerLiteral(i) => {
                 let integer = Object::Integer(i.value);
                 let pos = self.add_constant(integer);
