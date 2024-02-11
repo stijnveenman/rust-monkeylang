@@ -118,6 +118,11 @@ impl Object {
             Object::Boolean(i) => Object::Boolean(*i),
             Object::String(i) => Object::String(i.to_string()),
             Object::Array(i) => Object::Array(i.iter().map(|i| i.from_ref()).collect()),
+            Object::Hash(i) => Object::Hash(
+                i.iter()
+                    .map(|(a, b)| (a.from_ref(), b.from_ref()))
+                    .collect(),
+            ),
             Object::Null => Object::Null,
             _ => panic!("from_ref not implemented for {self}"),
         }

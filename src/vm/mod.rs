@@ -1,4 +1,5 @@
 use core::panic;
+use std::collections::HashMap;
 
 use crate::{
     code::{read_operands::read_u16, Instructions, Opcode},
@@ -204,13 +205,38 @@ impl Vm {
                     self.push(array)?;
                 }
 
-                Opcode::OpHash => {}
+                Opcode::OpHash => {
+                    let count = read_u16(&self.instructions.0[ip + 1..]);
+                    ip += 2;
+
+                    let hash = self.build_hash(self.sp - count, self.sp)?;
+                    self.sp -= count;
+
+                    self.push(hash)?;
+                }
             };
 
             ip += 1;
         }
 
         Ok(())
+    }
+
+    fn build_hash(&mut self, start: usize, end: usize) -> Result<Object, String> {
+        let mut hm = HashMap::new();
+
+        for i in (start..end).step_by(2) {
+            let key = self.stack[i].from_ref();
+            let value = self.stack[i + 1].from_ref();
+
+            if !key.hashable() {
+                return Err(format!("unsable as hash key: {}", key.type_str()));
+            }
+
+            hm.insert(key, value);
+        }
+
+        Ok(Object::Hash(hm))
     }
 
     fn build_array(&mut self, start: usize, end: usize) -> Object {
@@ -389,9 +415,8 @@ mod test {
         };
 
         assert_eq!(hm.len(), expected.len());
-        for (object, expected) in hm.iter().zip(expected) {
-            test_object(object.0, &expected.0);
-            test_object(object.1, &expected.1);
+        for (key, value) in expected {
+            assert_eq!(hm.get(&Object::Integer(key)), Some(&Object::Integer(value)));
         }
     }
 
