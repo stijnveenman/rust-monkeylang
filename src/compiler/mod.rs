@@ -24,6 +24,15 @@ pub struct Bytecode {
     pub constants: Vec<Object>,
 }
 
+impl Bytecode {
+    pub fn empty() -> Bytecode {
+        Bytecode {
+            instructions: Instructions(vec![]),
+            constants: vec![],
+        }
+    }
+}
+
 type R = Result<(), String>;
 
 impl Compiler {
@@ -36,6 +45,18 @@ impl Compiler {
             last_instruction: (Opcode::OpPop, 0),
 
             symbol_table: SymbolTable::new(),
+        }
+    }
+
+    pub fn new_from(self) -> Compiler {
+        Compiler {
+            instructions: Instructions(vec![]),
+            constants: self.constants,
+
+            previous_instruction: (Opcode::OpPop, 0),
+            last_instruction: (Opcode::OpPop, 0),
+
+            symbol_table: self.symbol_table,
         }
     }
 

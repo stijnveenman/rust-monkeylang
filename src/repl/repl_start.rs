@@ -4,7 +4,7 @@ use crate::{compiler::Compiler, parser::Parser, vm::Vm};
 
 const PROMPT: &str = ">>";
 
-fn run(line: String) -> Result<String, String> {
+fn run(compiler: &mut Compiler, vm: &mut Vm, line: String) -> Result<String, String> {
     let mut parser = Parser::new(line);
 
     let (program, errors) = parser.parse_program();
@@ -13,10 +13,10 @@ fn run(line: String) -> Result<String, String> {
         Err(errors.join("\n").to_string())?;
     }
 
-    let mut compiler = Compiler::new();
     compiler.compile((&program).into())?;
 
-    let mut vm = Vm::new(compiler.bytecode());
+    vm.with_bytecode(compiler.bytecode());
+
     vm.run()?;
 
     let result = vm.last_popped();
@@ -29,10 +29,14 @@ pub fn start() {
     print!("{}", PROMPT);
     stdout().flush().expect("failed to flush stdout");
 
+    let mut compiler = Compiler::new();
+    let mut vm = Vm::new();
+
     for line in stdin.lock().lines() {
         let line = line.expect("failed to read line from stdin");
+        compiler = compiler.new_from();
 
-        match run(line) {
+        match run(&mut compiler, &mut vm, line) {
             Ok(result) => println!("{result}"),
             Err(e) => println!("{e}"),
         }

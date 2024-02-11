@@ -21,7 +21,8 @@ pub struct Vm {
 type R = Result<(), String>;
 
 impl Vm {
-    pub fn new(bytecode: Bytecode) -> Vm {
+    pub fn new() -> Vm {
+        let bytecode = Bytecode::empty();
         Vm {
             instructions: bytecode.instructions,
             constants: bytecode.constants,
@@ -30,6 +31,14 @@ impl Vm {
             globals: vec![Object::Null; GLOBALS_SIZE].into_boxed_slice(),
             sp: 0,
         }
+    }
+
+    pub fn with_bytecode(&mut self, bytecode: Bytecode) {
+        self.instructions = bytecode.instructions;
+        self.constants = bytecode.constants;
+
+        self.stack = std::array::from_fn(|_| Object::Null);
+        self.sp = 0;
     }
 
     pub fn stack_top(&self) -> &Object {
@@ -202,6 +211,12 @@ impl Vm {
     }
 }
 
+impl Default for Vm {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod test {
 
@@ -313,7 +328,8 @@ mod test {
             .compile((&program).into())
             .expect("Failed to compile program");
 
-        let mut vm = Vm::new(compiler.bytecode());
+        let mut vm = Vm::new();
+        vm.with_bytecode(compiler.bytecode());
         vm.run().expect("vm failed to run");
 
         let element = vm.last_popped();
