@@ -24,12 +24,20 @@ impl SymbolTable {
         }
     }
 
-    pub fn define(&mut self, name: &str) {
-        todo!()
+    pub fn define(&mut self, name: &str) -> &Symbol {
+        let symbol = Symbol {
+            name: name.to_string(),
+            scope: Scope::Global,
+            index: self.map.len(),
+        };
+
+        self.map.insert(name.to_string(), symbol);
+
+        self.resolve(name).unwrap()
     }
 
     pub fn resolve(&self, name: &str) -> Option<&Symbol> {
-        todo!()
+        self.map.get(name)
     }
 }
 
