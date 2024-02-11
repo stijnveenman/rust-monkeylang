@@ -28,7 +28,7 @@ impl SymbolTable {
         todo!()
     }
 
-    pub fn resolve(&self, name: &str) -> Result<&Symbol, String> {
+    pub fn resolve(&self, name: &str) -> Option<&Symbol> {
         todo!()
     }
 }
@@ -89,6 +89,6 @@ fn test_resolve_global() {
     for item in expected {
         let result = global.resolve(item.0);
 
-        assert_eq!(result, Ok(&item.1))
+        assert_eq!(result, Some(&item.1))
     }
 }
