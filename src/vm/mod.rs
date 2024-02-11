@@ -340,6 +340,23 @@ mod test {
         test_object(&element, &expected)
     }
 
+    #[rstest]
+    #[case("[]", vec![])]
+    #[case("[1, 2, 3]", vec![1,2,3])]
+    #[case("[1 + 2, 3 * 4, 5 + 6]", vec![3, 12, 11])]
+    fn test_array_literals(#[case] input: &str, #[case] expected: Vec<i64>) {
+        let element = test_vm(input);
+
+        let Object::Array(array) = element else {
+            panic!("expected Object::Array got {:?}", element);
+        };
+
+        assert_eq!(array.len(), expected.len());
+        for (object, expected) in array.iter().zip(expected) {
+            test_object(object, &expected);
+        }
+    }
+
     fn test_vm(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
