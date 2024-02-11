@@ -317,6 +317,15 @@ mod test {
         test_object(&element, &expected)
     }
 
+    #[rstest]
+    #[case("\"monkey\"", "monkey")]
+    #[case("\"mon\" + \"key\"", "monkey")]
+    #[case("\"mon\" + \"key\" + \"banana\"", "monkeybanana")]
+    fn test_string_expression(#[case] input: &str, #[case] expected: &'static str) {
+        let element = test_vm(input);
+        test_object(&element, &expected)
+    }
+
     fn test_vm(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
