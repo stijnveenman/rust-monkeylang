@@ -1,9 +1,13 @@
+mod symbol_table;
+
 use crate::{
     ast::{ExpressionNode, Node, StatementNode},
     code::{make::make, Instructions, Opcode},
     object::Object,
     tokens::token::Token,
 };
+
+use self::symbol_table::SymbolTable;
 
 pub struct Compiler {
     instructions: Instructions,
