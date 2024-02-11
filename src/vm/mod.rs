@@ -377,6 +377,24 @@ mod test {
         }
     }
 
+    #[rstest]
+    #[case("{}", vec![])]
+    #[case("{1: 2, 2: 3}", vec![(1,2),(2,3)])]
+    #[case("{1 + 1: 2 * 2, 3 + 3: 4 * 4}", vec![(2,4),(6,16)])]
+    fn test_hash_literals(#[case] input: &str, #[case] expected: Vec<(i64, i64)>) {
+        let element = test_vm(input);
+
+        let Object::Hash(hm) = element else {
+            panic!("expected Object::Hash got {:?}", element);
+        };
+
+        assert_eq!(hm.len(), expected.len());
+        for (object, expected) in hm.iter().zip(expected) {
+            test_object(object.0, &expected.0);
+            test_object(object.1, &expected.1);
+        }
+    }
+
     fn test_vm(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
