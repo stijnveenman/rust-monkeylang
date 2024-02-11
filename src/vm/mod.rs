@@ -62,6 +62,15 @@ impl Vm {
         self.push(Object::Integer(result))
     }
 
+    fn exec_binary_string_op(&mut self, op: Opcode, left: String, right: String) -> R {
+        let result = match op {
+            Opcode::OpAdd => left + &right,
+            op => return Err(format!("unkown String operation {:?}", op)),
+        };
+
+        self.push(Object::String(result))
+    }
+
     fn exec_binary_op(&mut self, op: Opcode) -> R {
         let right = self.pop();
         let left = self.pop();
@@ -69,6 +78,9 @@ impl Vm {
         match (left, right) {
             (Object::Integer(left), Object::Integer(right)) => {
                 self.exec_binary_integer_op(op, left, right)
+            }
+            (Object::String(left), Object::String(right)) => {
+                self.exec_binary_string_op(op, left, right)
             }
             (left, right) => Err(format!(
                 "unsupported types for binary op {} {}",
