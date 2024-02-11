@@ -422,6 +422,28 @@ mod test {
         }
     }
 
+    #[rstest]
+    #[case("[1, 2, 3][1]", 2)]
+    #[case("[1, 2, 3][0 + 2]", 3)]
+    #[case("[[1, 1, 1]][0][0]", 1)]
+    #[case("{1: 1, 2: 2}[1]", 1)]
+    #[case("{1: 1, 2: 2}[2]", 2)]
+    fn test_index_expression(#[case] input: &str, #[case] expected: i64) {
+        let element = test_vm(input);
+        test_object(&element, &expected)
+    }
+
+    #[rstest]
+    #[case("[][0]")]
+    #[case("[1, 2, 3][99]")]
+    #[case("[1][-1]")]
+    #[case("{1: 1}[0]")]
+    #[case("{}[0]")]
+    fn test_index_expression_null(#[case] input: &str) {
+        let element = test_vm(input);
+        test_null(&element)
+    }
+
     fn test_vm(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
