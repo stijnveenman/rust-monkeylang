@@ -117,6 +117,7 @@ impl Object {
             Object::Integer(i) => Object::Integer(*i),
             Object::Boolean(i) => Object::Boolean(*i),
             Object::String(i) => Object::String(i.to_string()),
+            Object::Array(i) => Object::Array(i.iter().map(|i| i.from_ref()).collect()),
             Object::Null => Object::Null,
             _ => panic!("from_ref not implemented for {self}"),
         }

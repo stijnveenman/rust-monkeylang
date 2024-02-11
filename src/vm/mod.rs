@@ -194,13 +194,31 @@ impl Vm {
                     self.push(self.globals[index].from_ref())?;
                 }
 
-                Opcode::OpArray => {}
+                Opcode::OpArray => {
+                    let count = read_u16(&self.instructions.0[ip + 1..]);
+                    ip += 2;
+
+                    let array = self.build_array(self.sp - count, self.sp);
+                    self.sp -= count;
+
+                    self.push(array)?;
+                }
             };
 
             ip += 1;
         }
 
         Ok(())
+    }
+
+    fn build_array(&mut self, start: usize, end: usize) -> Object {
+        let mut elements = Vec::with_capacity(end - start);
+
+        for i in start..end {
+            elements.push(self.stack[i].from_ref());
+        }
+
+        Object::Array(elements)
     }
 
     fn pop(&mut self) -> Object {
