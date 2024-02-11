@@ -510,6 +510,40 @@ pub mod test {
         test_compiler(input, constants, instructions)
     }
 
+    #[rstest]
+    #[case("[1, 2, 3][1 + 1]", vec![1, 2, 3, 1, 1], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpArray, &[3]),
+
+        make(Opcode::OpConstant, &[3]),
+        make(Opcode::OpConstant, &[4]),
+        make(Opcode::OpAdd, &[]),
+
+        make(Opcode::OpIndex, &[]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("{1: 2}[2 - 1]", vec![1, 2, 2, 1], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpHash, &[2]),
+
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpConstant, &[3]),
+        make(Opcode::OpSub, &[]),
+
+        make(Opcode::OpIndex, &[]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    fn test_index_expression(
+        #[case] input: &str,
+        #[case] constants: Vec<i64>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
     pub fn test_compiler<T: Any>(
         input: &str,
         expected_constants: Vec<T>,

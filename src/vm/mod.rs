@@ -214,6 +214,8 @@ impl Vm {
 
                     self.push(hash)?;
                 }
+
+                Opcode::OpIndex => {}
             };
 
             ip += 1;

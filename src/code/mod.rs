@@ -12,6 +12,7 @@ pub enum Opcode {
     OpNull,
     OpArray,
     OpHash,
+    OpIndex,
 
     OpAdd,
     OpSub,
@@ -58,6 +59,7 @@ impl Opcode {
             | Opcode::OpNotEqual
             | Opcode::OpGreaterThan
             | Opcode::OpMinus
+            | Opcode::OpIndex
             | Opcode::OpBang => vec![],
         };
 
