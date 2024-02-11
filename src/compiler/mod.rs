@@ -49,7 +49,11 @@ impl Compiler {
 
     fn compile_statement(&mut self, statement: &StatementNode) -> R {
         match statement {
-            StatementNode::LetStatement(_) => todo!(),
+            StatementNode::LetStatement(node) => {
+                self.compile_expression(&node.value)?;
+
+                Ok(())
+            }
             StatementNode::ReturnStatement(_) => todo!(),
             StatementNode::BlockStatement(node) => self.compile_statements(&node.statements),
             StatementNode::ExpressionStatement(node) => {
