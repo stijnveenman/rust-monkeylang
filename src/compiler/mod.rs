@@ -15,6 +15,8 @@ pub struct Compiler {
 
     previous_instruction: (Opcode, usize),
     last_instruction: (Opcode, usize),
+
+    symbol_table: SymbolTable,
 }
 
 pub struct Bytecode {
@@ -32,6 +34,8 @@ impl Compiler {
 
             previous_instruction: (Opcode::OpPop, 0),
             last_instruction: (Opcode::OpPop, 0),
+
+            symbol_table: SymbolTable::new(),
         }
     }
 
@@ -56,6 +60,9 @@ impl Compiler {
             StatementNode::LetStatement(node) => {
                 self.compile_expression(&node.value)?;
 
+                let symbol_index = self.symbol_table.define(&node.identifier.value).index;
+
+                self.emit(Opcode::OpSetGlobal, vec![symbol_index]);
                 Ok(())
             }
             StatementNode::ReturnStatement(_) => todo!(),

@@ -7,9 +7,9 @@ pub enum Scope {
 
 #[derive(PartialEq, Eq, Debug)]
 pub struct Symbol {
-    name: String,
-    scope: Scope,
-    index: usize,
+    pub name: String,
+    pub scope: Scope,
+    pub index: usize,
 }
 
 #[derive(Debug)]
