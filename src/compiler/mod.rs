@@ -124,7 +124,13 @@ impl Compiler {
                 }
                 Ok(())
             }
-            ExpressionNode::StringLiteral(_) => todo!(),
+            ExpressionNode::StringLiteral(node) => {
+                let obj = Object::String(node.value.to_string());
+                let pos = self.add_constant(obj);
+                self.emit(Opcode::OpConstant, vec![pos]);
+
+                Ok(())
+            }
             ExpressionNode::ArrayLiteral(_) => todo!(),
             ExpressionNode::PrefixExpression(node) => {
                 self.compile_expression(&node.right)?;
@@ -390,6 +396,25 @@ pub mod test {
     fn test_global_let_statements(
         #[case] input: &str,
         #[case] constants: Vec<i64>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
+    #[rstest]
+    #[case("\"monkey\"", vec!["monkey"], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("\"mon\" + \"key\"", vec!["mon", "key"], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpAdd, &[]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    fn test_string_expression(
+        #[case] input: &str,
+        #[case] constants: Vec<&'static str>,
         #[case] instructions: Vec<Vec<u8>>,
     ) {
         test_compiler(input, constants, instructions)
