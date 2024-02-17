@@ -265,7 +265,12 @@ impl Vm {
 
                     self.push(value)?;
                 }
-                Opcode::OpReturn => {}
+                Opcode::OpReturn => {
+                    self.pop_frame();
+                    self.pop();
+
+                    self.push(Object::Null)?;
+                }
             };
 
             self.frame_mut().ip += 1;
@@ -552,6 +557,24 @@ earlyExit();
     fn test_calling_functions_without_arguments(#[case] input: &str, #[case] expected: i64) {
         let element = test_vm(input);
         test_object(&element, &expected)
+    }
+
+    #[rstest]
+    #[case(
+        "
+let noReturn = fn() { };
+noReturn();"
+    )]
+    #[case(
+        "
+let noReturn = fn() { };
+let noReturnTwo = fn() { noReturn(); };
+noReturn();
+noReturnTwo();"
+    )]
+    fn test_no_return_value(#[case] input: &str) {
+        let element = test_vm(input);
+        test_null(&element)
     }
 
     #[rstest]
