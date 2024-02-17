@@ -10,6 +10,7 @@ use std::{
 
 use crate::{
     ast::{block_statement::BlockStatement, identifier::Identifier, AstNode},
+    code::Instructions,
     evaluator::{builtin::BuiltinFunction, environment::Environment},
 };
 
@@ -18,6 +19,7 @@ pub enum Object {
     Integer(i64),
     Boolean(bool),
     Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
+    CompiledFunction(Instructions),
     String(String),
     Array(Vec<Object>),
     Hash(HashMap<Object, Object>),
@@ -109,6 +111,7 @@ impl Object {
             Object::Builtin(_) => "BUILTIN",
             Object::Array(_) => "ARRAY",
             Object::Hash(_) => "HASH",
+            Object::CompiledFunction(_) => "COMPILED_FUNCTION",
         }
     }
 
@@ -189,6 +192,9 @@ impl Display for Object {
                         .collect::<Vec<_>>()
                         .join(", ")
                 )
+            }
+            Object::CompiledFunction(instructions) => {
+                write!(f, "CompiledFunction[{}]", instructions)
             }
         }
     }
