@@ -152,6 +152,7 @@ pub mod test {
 
     #[rstest]
     #[case(Opcode::OpConstant, vec![65535], 2)]
+    #[case(Opcode::OpGetLocal, vec![255], 1)]
     fn test_read_operands(
         #[case] op: Opcode,
         #[case] operands: Vec<usize>,
@@ -170,13 +171,15 @@ pub mod test {
     fn test_instructions_string() {
         let instructions = vec![
             make(Opcode::OpAdd, &[]),
+            make(Opcode::OpGetLocal, &[1]),
             make(Opcode::OpConstant, &[2]),
             make(Opcode::OpConstant, &[65535]),
         ];
 
         let expected = "0000 OpAdd
-0001 OpConstant 2
-0004 OpConstant 65535\n";
+0001 OpGetLocal 1
+0003 OpConstant 2
+0006 OpConstant 65535\n";
 
         let bytecode = Instructions(instructions.into_iter().flatten().collect::<Vec<_>>());
 
