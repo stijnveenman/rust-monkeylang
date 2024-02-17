@@ -126,6 +126,8 @@ impl Object {
                     .map(|(a, b)| (a.from_ref(), b.from_ref()))
                     .collect(),
             ),
+
+            Object::CompiledFunction(i) => Object::CompiledFunction(i.clone()),
             Object::Null => Object::Null,
             _ => panic!("from_ref not implemented for {self}"),
         }

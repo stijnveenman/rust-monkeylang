@@ -493,6 +493,17 @@ mod test {
     }
 
     #[rstest]
+    #[case(
+        "let fivePlusTen = fn() { 5 + 10; };
+fivePlusTen();",
+        15
+    )]
+    fn test_calling_functions_without_arguments(#[case] input: &str, #[case] expected: i64) {
+        let element = test_vm(input);
+        test_object(&element, &expected)
+    }
+
+    #[rstest]
     #[case("[][0]")]
     #[case("[1, 2, 3][99]")]
     #[case("[1][-1]")]
