@@ -243,9 +243,9 @@ impl Vm {
                     self.exec_index(left, index)?;
                 }
                 Opcode::OpNoop => {}
-                Opcode::OpCall => todo!(),
-                Opcode::OpReturnValue => todo!(),
-                Opcode::OpReturn => todo!(),
+                Opcode::OpCall => {}
+                Opcode::OpReturnValue => {}
+                Opcode::OpReturn => {}
             };
 
             ip += 1;
