@@ -221,6 +221,8 @@ impl Vm {
 
                     self.exec_index(left, index)?;
                 }
+                Opcode::OpCall => todo!(),
+                Opcode::OpReturnValue => todo!(),
             };
 
             ip += 1;
