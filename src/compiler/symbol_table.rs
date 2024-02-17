@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub enum Scope {
     Global,
     Local,
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Symbol {
     pub name: String,
     pub scope: Scope,
@@ -19,28 +19,35 @@ impl Symbol {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SymbolTable {
     map: HashMap<String, Symbol>,
+
+    outer: Option<Box<SymbolTable>>,
 }
 
 impl SymbolTable {
     pub fn new() -> SymbolTable {
         SymbolTable {
             map: HashMap::new(),
+            outer: None,
         }
     }
 
     pub fn enclose(&mut self) -> SymbolTable {
-        todo!()
+        SymbolTable {
+            map: HashMap::new(),
+            outer: Some(Box::new(self.clone())),
+        }
     }
 
     pub fn define(&mut self, name: &str) -> &Symbol {
-        let symbol = Symbol {
-            name: name.to_string(),
-            scope: Scope::Global,
-            index: self.map.len(),
+        let scope = match self.outer {
+            Some(_) => Scope::Local,
+            None => Scope::Global,
         };
+
+        let symbol = Symbol::new(name.into(), scope, self.map.len());
 
         self.map.insert(name.to_string(), symbol);
 
@@ -48,7 +55,9 @@ impl SymbolTable {
     }
 
     pub fn resolve(&self, name: &str) -> Option<&Symbol> {
-        self.map.get(name)
+        self.map
+            .get(name)
+            .or_else(|| self.outer.as_ref().and_then(|o| o.resolve(name)))
     }
 }
 
@@ -129,7 +138,7 @@ fn test_resolve_local() {
     local.define("d");
 
     let mut expected = HashMap::new();
-    expected.insert("a", Symbol::new("b".into(), Scope::Global, 0));
+    expected.insert("a", Symbol::new("a".into(), Scope::Global, 0));
     expected.insert("b", Symbol::new("b".into(), Scope::Global, 1));
     expected.insert("c", Symbol::new("c".into(), Scope::Local, 0));
     expected.insert("d", Symbol::new("d".into(), Scope::Local, 1));
@@ -156,7 +165,7 @@ fn test_resolve_nested_local() {
     second.define("f");
 
     let mut expected = HashMap::new();
-    expected.insert("a", Symbol::new("b".into(), Scope::Global, 0));
+    expected.insert("a", Symbol::new("a".into(), Scope::Global, 0));
     expected.insert("b", Symbol::new("b".into(), Scope::Global, 1));
     expected.insert("c", Symbol::new("c".into(), Scope::Local, 0));
     expected.insert("d", Symbol::new("d".into(), Scope::Local, 1));
@@ -168,10 +177,10 @@ fn test_resolve_nested_local() {
     }
 
     let mut expected = HashMap::new();
-    expected.insert("a", Symbol::new("b".into(), Scope::Global, 0));
+    expected.insert("a", Symbol::new("a".into(), Scope::Global, 0));
     expected.insert("b", Symbol::new("b".into(), Scope::Global, 1));
-    expected.insert("c", Symbol::new("e".into(), Scope::Local, 0));
-    expected.insert("d", Symbol::new("f".into(), Scope::Local, 1));
+    expected.insert("e", Symbol::new("e".into(), Scope::Local, 0));
+    expected.insert("f", Symbol::new("f".into(), Scope::Local, 1));
 
     for item in expected {
         let result = second.resolve(item.0);
