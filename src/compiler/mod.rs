@@ -264,7 +264,12 @@ impl Compiler {
 
                 Ok(())
             }
-            ExpressionNode::CallExpression(_) => todo!(),
+            ExpressionNode::CallExpression(node) => {
+                self.compile_expression(&node.function)?;
+                self.emit(Opcode::OpCall, vec![]);
+
+                Ok(())
+            }
             ExpressionNode::IndexExpresssion(node) => {
                 self.compile_expression(&node.left)?;
                 self.compile_expression(&node.right)?;
