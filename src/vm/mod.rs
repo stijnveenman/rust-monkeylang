@@ -223,6 +223,7 @@ impl Vm {
                 }
                 Opcode::OpCall => todo!(),
                 Opcode::OpReturnValue => todo!(),
+                Opcode::OpReturn => todo!(),
             };
 
             ip += 1;

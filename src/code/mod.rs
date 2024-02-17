@@ -16,6 +16,7 @@ pub enum Opcode {
 
     OpCall,
     OpReturnValue,
+    OpReturn,
 
     OpAdd,
     OpSub,
@@ -65,6 +66,7 @@ impl Opcode {
             | Opcode::OpIndex
             | Opcode::OpCall
             | Opcode::OpReturnValue
+            | Opcode::OpReturn
             | Opcode::OpBang => vec![],
         };
 
