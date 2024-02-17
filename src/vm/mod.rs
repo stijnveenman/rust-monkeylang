@@ -514,9 +514,40 @@ mod test {
 
     #[rstest]
     #[case(
-        "let fivePlusTen = fn() { 5 + 10; };
+        "
+let fivePlusTen = fn() { 5 + 10; };
 fivePlusTen();",
         15
+    )]
+    #[case(
+        "
+let one = fn() { 1; };
+let two = fn() { 2; };
+one() + two()",
+        3
+    )]
+    #[case(
+        "
+let a = fn() { 1 };
+let b = fn() { a() + 1 };
+let c = fn() { b() + 1 };
+c();
+",
+        3
+    )]
+    #[case(
+        "
+let earlyExit = fn() { return 99; 100; };
+earlyExit();
+",
+        99
+    )]
+    #[case(
+        "
+let earlyExit = fn() { return 99; return 100; };
+earlyExit();
+",
+        99
     )]
     fn test_calling_functions_without_arguments(#[case] input: &str, #[case] expected: i64) {
         let element = test_vm(input);
