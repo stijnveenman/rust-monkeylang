@@ -554,6 +554,14 @@ earlyExit();
 ",
         99
     )]
+    #[case(
+        "
+let returnsOne = fn() { 1; };
+let returnsOneReturner = fn() { returnsOne; };
+returnsOneReturner()();
+",
+        1
+    )]
     fn test_calling_functions_without_arguments(#[case] input: &str, #[case] expected: i64) {
         let element = test_vm(input);
         test_object(&element, &expected)
