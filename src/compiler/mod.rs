@@ -32,7 +32,6 @@ pub struct Compiler {
     symbol_table: SymbolTable,
 
     scopes: Vec<CompilerScope>,
-    scope_index: usize,
 }
 
 pub struct Bytecode {
@@ -58,7 +57,6 @@ impl Compiler {
             symbol_table: SymbolTable::new(),
 
             scopes: vec![CompilerScope::new()],
-            scope_index: 0,
         }
     }
 
@@ -68,7 +66,6 @@ impl Compiler {
             symbol_table: self.symbol_table,
 
             scopes: vec![CompilerScope::new()],
-            scope_index: 0,
         }
     }
 
@@ -81,11 +78,11 @@ impl Compiler {
     }
 
     fn scope(&self) -> &CompilerScope {
-        &self.scopes[self.scope_index]
+        self.scopes.last().unwrap()
     }
 
     fn scope_mut(&mut self) -> &mut CompilerScope {
-        &mut self.scopes[self.scope_index]
+        self.scopes.last_mut().unwrap()
     }
 
     fn compile_statements(&mut self, statements: &[StatementNode]) -> R {
@@ -106,7 +103,13 @@ impl Compiler {
                 self.emit(Opcode::OpSetGlobal, vec![symbol_index]);
                 Ok(())
             }
-            StatementNode::ReturnStatement(_) => todo!(),
+            StatementNode::ReturnStatement(node) => {
+                self.compile_expression(&node.return_value)?;
+
+                self.emit(Opcode::OpReturnValue, vec![]);
+
+                Ok(())
+            }
             StatementNode::BlockStatement(node) => self.compile_statements(&node.statements),
             StatementNode::ExpressionStatement(node) => {
                 self.compile_expression(&node.expression)?;
@@ -121,16 +124,12 @@ impl Compiler {
         let scope = CompilerScope::new();
 
         self.scopes.push(scope);
-
-        self.scope_index += 1;
     }
 
-    fn leave_scope(&mut self) {
-        let scope = self.scope_mut();
+    fn leave_scope(&mut self) -> Instructions {
+        let scope = self.scopes.pop().unwrap();
 
-        scope.instructions.0.pop();
-
-        self.scope_index -= 1;
+        scope.instructions
     }
 
     fn compile_expression(&mut self, expression: &ExpressionNode) -> R {
@@ -243,7 +242,21 @@ impl Compiler {
 
                 Ok(())
             }
-            ExpressionNode::FunctionExpression(_) => todo!(),
+            ExpressionNode::FunctionExpression(node) => {
+                self.enter_scope();
+
+                self.compile_statements(&node.body.statements)?;
+
+                let instructions = self.leave_scope();
+
+                let compiled_fn = Object::CompiledFunction(instructions);
+
+                let operand = self.add_constant(compiled_fn);
+
+                self.emit(Opcode::OpConstant, vec![operand]);
+
+                Ok(())
+            }
             ExpressionNode::CallExpression(_) => todo!(),
             ExpressionNode::IndexExpresssion(node) => {
                 self.compile_expression(&node.left)?;
@@ -341,8 +354,6 @@ pub mod test {
         object::{test::test_object, Object},
         parser::Parser,
     };
-
-    use super::CompilerScope;
 
     #[rstest]
     #[case("1 + 2",vec![1,2],vec![
@@ -594,11 +605,11 @@ pub mod test {
     #[case("fn() {return 5+10}", vec![Object::Integer(5),Object::Integer(10), Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpConstant, &[1]),
-        make(Opcode::OpAdd, &[1]),
-        make(Opcode::OpReturnValue, &[1]),
+        make(Opcode::OpAdd, &[]),
+        make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()))], vec![
-        make(Opcode::OpAdd, &[1]),
-        make(Opcode::OpReturnValue, &[1]),
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpPop, &[]),
     ])]
     fn test_functions(
         #[case] input: &str,
@@ -644,13 +655,9 @@ pub mod test {
     fn compiler_scopes() {
         let mut compiler = Compiler::new();
 
-        assert_eq!(compiler.scope_index, 0);
-
         compiler.emit(Opcode::OpMul, vec![]);
 
         compiler.enter_scope();
-
-        assert_eq!(compiler.scope_index, 1);
 
         compiler.emit(Opcode::OpSub, vec![]);
 
@@ -659,8 +666,6 @@ pub mod test {
         assert_eq!(compiler.scope().last_instruction.0, Opcode::OpSub);
 
         compiler.leave_scope();
-
-        assert_eq!(compiler.scope_index, 0);
 
         compiler.emit(Opcode::OpAdd, vec![]);
         assert_eq!(compiler.scope().instructions.0.len(), 2);

@@ -16,6 +16,13 @@ pub fn read_operands(def: &Definition, instructions: &[u8]) -> (Vec<usize>, usiz
 
         offset += width;
     }
+    let total_width = def.operand_widths.iter().sum();
+    if offset != total_width {
+        panic!(
+            "Did not read full operand with, read {} of {}",
+            offset, total_width
+        );
+    }
 
     (operands, offset)
 }

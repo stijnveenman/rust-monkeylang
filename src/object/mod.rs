@@ -212,7 +212,10 @@ pub mod test {
         let value_any = val as &dyn Any;
 
         if let Some(obj) = value_any.downcast_ref::<Object>() {
-            assert_eq!(object, obj);
+            match (object, obj) {
+                (Object::CompiledFunction(a), Object::CompiledFunction(b)) => assert_eq!(a.0, b.0),
+                (a, b) => assert_eq!(a, b),
+            }
             return;
         }
 
