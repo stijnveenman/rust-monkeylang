@@ -123,11 +123,15 @@ impl Compiler {
     fn enter_scope(&mut self) {
         let scope = CompilerScope::new();
 
+        self.symbol_table.enclose();
+
         self.scopes.push(scope);
     }
 
     fn leave_scope(&mut self) -> Instructions {
         let scope = self.scopes.pop().unwrap();
+
+        self.symbol_table.pop();
 
         scope.instructions
     }

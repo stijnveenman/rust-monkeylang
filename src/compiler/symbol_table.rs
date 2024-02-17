@@ -21,43 +21,51 @@ impl Symbol {
 
 #[derive(Debug, Clone)]
 pub struct SymbolTable {
-    map: HashMap<String, Symbol>,
-
-    outer: Option<Box<SymbolTable>>,
+    maps: Vec<HashMap<String, Symbol>>,
 }
 
 impl SymbolTable {
     pub fn new() -> SymbolTable {
         SymbolTable {
-            map: HashMap::new(),
-            outer: None,
+            maps: vec![HashMap::new()],
         }
     }
 
-    pub fn enclose(&mut self) -> SymbolTable {
-        SymbolTable {
-            map: HashMap::new(),
-            outer: Some(Box::new(self.clone())),
-        }
+    pub fn enclose(&mut self) {
+        self.maps.push(HashMap::new());
+    }
+
+    pub fn pop(&mut self) {
+        self.maps.pop();
+    }
+
+    fn current(&self) -> &HashMap<String, Symbol> {
+        self.maps.last().unwrap()
     }
 
     pub fn define(&mut self, name: &str) -> &Symbol {
-        let scope = match self.outer {
-            Some(_) => Scope::Local,
-            None => Scope::Global,
+        let scope = match self.maps.len() > 1 {
+            true => Scope::Local,
+            false => Scope::Global,
         };
 
-        let symbol = Symbol::new(name.into(), scope, self.map.len());
+        let symbol = Symbol::new(name.into(), scope, self.current().len());
 
-        self.map.insert(name.to_string(), symbol);
+        self.maps
+            .last_mut()
+            .unwrap()
+            .insert(name.to_string(), symbol);
 
         self.resolve(name).unwrap()
     }
 
     pub fn resolve(&self, name: &str) -> Option<&Symbol> {
-        self.map
-            .get(name)
-            .or_else(|| self.outer.as_ref().and_then(|o| o.resolve(name)))
+        for m in self.maps.iter().rev() {
+            if let Some(s) = m.get(name) {
+                return Some(s);
+            }
+        }
+        None
     }
 }
 
@@ -74,26 +82,26 @@ fn test_define() {
     let mut global = SymbolTable::new();
 
     global.define("a");
-    assert_eq!(global.map["a"], expected["a"]);
+    assert_eq!(global.current()["a"], expected["a"]);
 
     global.define("b");
-    assert_eq!(global.map["b"], expected["b"]);
+    assert_eq!(global.current()["b"], expected["b"]);
 
-    let mut first = global.enclose();
+    global.enclose();
 
-    first.define("c");
-    assert_eq!(first.map["c"], expected["c"]);
+    global.define("c");
+    assert_eq!(global.current()["c"], expected["c"]);
 
-    first.define("d");
-    assert_eq!(first.map["d"], expected["d"]);
+    global.define("d");
+    assert_eq!(global.current()["d"], expected["d"]);
 
-    let mut second = global.enclose();
+    global.enclose();
 
-    second.define("e");
-    assert_eq!(second.map["e"], expected["e"]);
+    global.define("e");
+    assert_eq!(global.current()["e"], expected["e"]);
 
-    second.define("f");
-    assert_eq!(second.map["f"], expected["f"]);
+    global.define("f");
+    assert_eq!(global.current()["f"], expected["f"]);
 }
 
 #[test]
@@ -133,9 +141,9 @@ fn test_resolve_local() {
     global.define("a");
     global.define("b");
 
-    let mut local = global.enclose();
-    local.define("c");
-    local.define("d");
+    global.enclose();
+    global.define("c");
+    global.define("d");
 
     let mut expected = HashMap::new();
     expected.insert("a", Symbol::new("a".into(), Scope::Global, 0));
@@ -144,7 +152,7 @@ fn test_resolve_local() {
     expected.insert("d", Symbol::new("d".into(), Scope::Local, 1));
 
     for item in expected {
-        let result = local.resolve(item.0);
+        let result = global.resolve(item.0);
 
         assert_eq!(result, Some(&item.1))
     }
@@ -156,25 +164,13 @@ fn test_resolve_nested_local() {
     global.define("a");
     global.define("b");
 
-    let mut first = global.enclose();
-    first.define("c");
-    first.define("d");
+    global.enclose();
+    global.define("c");
+    global.define("d");
 
-    let mut second = first.enclose();
-    second.define("e");
-    second.define("f");
-
-    let mut expected = HashMap::new();
-    expected.insert("a", Symbol::new("a".into(), Scope::Global, 0));
-    expected.insert("b", Symbol::new("b".into(), Scope::Global, 1));
-    expected.insert("c", Symbol::new("c".into(), Scope::Local, 0));
-    expected.insert("d", Symbol::new("d".into(), Scope::Local, 1));
-
-    for item in expected {
-        let result = first.resolve(item.0);
-
-        assert_eq!(result, Some(&item.1))
-    }
+    global.enclose();
+    global.define("e");
+    global.define("f");
 
     let mut expected = HashMap::new();
     expected.insert("a", Symbol::new("a".into(), Scope::Global, 0));
@@ -183,7 +179,21 @@ fn test_resolve_nested_local() {
     expected.insert("f", Symbol::new("f".into(), Scope::Local, 1));
 
     for item in expected {
-        let result = second.resolve(item.0);
+        let result = global.resolve(item.0);
+
+        assert_eq!(result, Some(&item.1))
+    }
+
+    global.pop();
+
+    let mut expected = HashMap::new();
+    expected.insert("a", Symbol::new("a".into(), Scope::Global, 0));
+    expected.insert("b", Symbol::new("b".into(), Scope::Global, 1));
+    expected.insert("c", Symbol::new("c".into(), Scope::Local, 0));
+    expected.insert("d", Symbol::new("d".into(), Scope::Local, 1));
+
+    for item in expected {
+        let result = global.resolve(item.0);
 
         assert_eq!(result, Some(&item.1))
     }
