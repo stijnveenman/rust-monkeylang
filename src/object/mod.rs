@@ -213,7 +213,11 @@ pub mod test {
 
         if let Some(obj) = value_any.downcast_ref::<Object>() {
             match (object, obj) {
-                (Object::CompiledFunction(a), Object::CompiledFunction(b)) => assert_eq!(a.0, b.0),
+                (Object::CompiledFunction(a), Object::CompiledFunction(b)) => {
+                    if a.0 != b.0 {
+                        assert_eq!(a, b)
+                    }
+                }
                 (a, b) => assert_eq!(a, b),
             }
             return;

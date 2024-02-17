@@ -611,6 +611,15 @@ pub mod test {
         make(Opcode::OpConstant, &[2]),
         make(Opcode::OpPop, &[]),
     ])]
+    #[case("fn() {5+10}", vec![Object::Integer(5),Object::Integer(10), Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpAdd, &[]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()))], vec![
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpPop, &[]),
+    ])]
     fn test_functions(
         #[case] input: &str,
         #[case] constants: Vec<Object>,
