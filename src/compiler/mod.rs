@@ -658,6 +658,34 @@ pub mod test {
         test_compiler(input, constants, instructions)
     }
 
+    #[rstest]
+    #[case("fn() {24}();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()))], vec![
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpCall, &[]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("let noArg = fn() {24};
+noArg();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()))], vec![
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpSetGlobal, &[0]),
+        make(Opcode::OpGetGlobal, &[0]),
+        make(Opcode::OpCall, &[]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    fn test_function_calls(
+        #[case] input: &str,
+        #[case] constants: Vec<Object>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
     pub fn test_compiler<T: Any>(
         input: &str,
         expected_constants: Vec<T>,
