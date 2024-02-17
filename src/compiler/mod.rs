@@ -745,4 +745,58 @@ noArg();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
         assert_eq!(compiler.scope().last_instruction.0, Opcode::OpAdd);
         assert_eq!(compiler.scope().previous_instruction.0, Opcode::OpMul);
     }
+
+    #[rstest]
+    #[case("
+let num = 55;
+fn() {num}
+", vec![Object::Integer(55), Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpGetGlobal, &[0]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()))], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSetGlobal, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("
+fn() {
+    let num = 55;
+    num
+}
+", vec![Object::Integer(55), Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSetLocal, &[0]),
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()))], vec![
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("
+fn() {
+    let a = 55;
+    let b = 77;
+    a + b
+}
+", vec![Object::Integer(55),Object::Integer(77), Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSetLocal, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpSetLocal, &[1]),
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpGetLocal, &[1]),
+        make(Opcode::OpAdd, &[]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()))], vec![
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    fn test_let_statement_scopes(
+        #[case] input: &str,
+        #[case] constants: Vec<Object>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
 }
