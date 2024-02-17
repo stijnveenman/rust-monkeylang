@@ -43,7 +43,7 @@ impl SymbolTable {
         self.maps.last().unwrap()
     }
 
-    pub fn define(&mut self, name: &str) -> &Symbol {
+    pub fn define(&mut self, name: &str) {
         let scope = match self.maps.len() > 1 {
             true => Scope::Local,
             false => Scope::Global,
@@ -55,8 +55,6 @@ impl SymbolTable {
             .last_mut()
             .unwrap()
             .insert(name.to_string(), symbol);
-
-        self.resolve(name).unwrap()
     }
 
     pub fn resolve(&self, name: &str) -> Option<&Symbol> {

@@ -98,9 +98,16 @@ impl Compiler {
             StatementNode::LetStatement(node) => {
                 self.compile_expression(&node.value)?;
 
-                let symbol_index = self.symbol_table.define(&node.identifier.value).index;
+                self.symbol_table.define(&node.identifier.value);
+                let symbol = self.symbol_table.resolve(&node.identifier.value).unwrap();
 
-                self.emit(Opcode::OpSetGlobal, vec![symbol_index]);
+                match symbol.scope {
+                    symbol_table::Scope::Global => {
+                        self.emit(Opcode::OpSetGlobal, vec![symbol.index])
+                    }
+                    symbol_table::Scope::Local => self.emit(Opcode::OpSetLocal, vec![symbol.index]),
+                };
+
                 Ok(())
             }
             StatementNode::ReturnStatement(node) => {
@@ -143,7 +150,12 @@ impl Compiler {
                     return Err(format!("undefined variable {}", node.value));
                 };
 
-                self.emit(Opcode::OpGetGlobal, vec![symbol.index]);
+                match symbol.scope {
+                    symbol_table::Scope::Global => {
+                        self.emit(Opcode::OpGetGlobal, vec![symbol.index])
+                    }
+                    symbol_table::Scope::Local => self.emit(Opcode::OpGetLocal, vec![symbol.index]),
+                };
 
                 Ok(())
             }
