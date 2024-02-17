@@ -211,6 +211,11 @@ pub mod test {
     pub fn test_object<T: Any>(object: &Object, val: &T) {
         let value_any = val as &dyn Any;
 
+        if let Some(obj) = value_any.downcast_ref::<Object>() {
+            assert_eq!(object, obj);
+            return;
+        }
+
         match object {
             Object::Integer(i) => {
                 let val = value_any

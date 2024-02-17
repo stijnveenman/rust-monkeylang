@@ -299,9 +299,9 @@ pub mod test {
     use rstest::rstest;
 
     use crate::{
-        code::{make::make, Opcode},
+        code::{make::make, Instructions, Opcode},
         compiler::Compiler,
-        object::test::test_object,
+        object::{test::test_object, Object},
         parser::Parser,
     };
 
@@ -546,6 +546,24 @@ pub mod test {
     fn test_index_expression(
         #[case] input: &str,
         #[case] constants: Vec<i64>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
+    #[rstest]
+    #[case("fn() {return 5+10}", vec![Object::Integer(5),Object::Integer(10), Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpAdd, &[1]),
+        make(Opcode::OpReturnValue, &[1]),
+    ].into_iter().flatten().collect()))], vec![
+        make(Opcode::OpAdd, &[1]),
+        make(Opcode::OpReturnValue, &[1]),
+    ])]
+    fn test_functions(
+        #[case] input: &str,
+        #[case] constants: Vec<Object>,
         #[case] instructions: Vec<Vec<u8>>,
     ) {
         test_compiler(input, constants, instructions)
