@@ -39,12 +39,17 @@ pub enum Opcode {
     OpSetGlobal,
     OpGetGlobal,
 
+    OpSetLocal,
+    OpGetLocal,
+
     OpNoop,
 }
 
 impl Opcode {
     pub fn find_definition(op: &Opcode) -> Definition {
         let operand_widths = match op {
+            Opcode::OpSetLocal | Opcode::OpGetLocal => vec![1],
+
             Opcode::OpConstant
             | Opcode::OpArray
             | Opcode::OpHash

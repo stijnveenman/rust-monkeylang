@@ -271,6 +271,8 @@ impl Vm {
 
                     self.push(Object::Null)?;
                 }
+                Opcode::OpSetLocal => todo!(),
+                Opcode::OpGetLocal => todo!(),
             };
 
             self.frame_mut().ip += 1;
