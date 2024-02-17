@@ -9,14 +9,30 @@ use crate::{
 
 use self::symbol_table::SymbolTable;
 
+pub struct CompilerScope {
+    pub instructions: Instructions,
+
+    pub previous_instruction: (Opcode, usize),
+    pub last_instruction: (Opcode, usize),
+}
+
+impl CompilerScope {
+    fn new() -> CompilerScope {
+        CompilerScope {
+            instructions: Instructions(vec![]),
+            previous_instruction: (Opcode::OpPop, 0),
+            last_instruction: (Opcode::OpPop, 0),
+        }
+    }
+}
+
 pub struct Compiler {
-    instructions: Instructions,
     constants: Vec<Object>,
 
-    previous_instruction: (Opcode, usize),
-    last_instruction: (Opcode, usize),
-
     symbol_table: SymbolTable,
+
+    scopes: Vec<CompilerScope>,
+    scope_index: usize,
 }
 
 pub struct Bytecode {
@@ -38,25 +54,21 @@ type R = Result<(), String>;
 impl Compiler {
     pub fn new() -> Compiler {
         Compiler {
-            instructions: Instructions(vec![]),
             constants: vec![],
-
-            previous_instruction: (Opcode::OpPop, 0),
-            last_instruction: (Opcode::OpPop, 0),
-
             symbol_table: SymbolTable::new(),
+
+            scopes: vec![CompilerScope::new()],
+            scope_index: 0,
         }
     }
 
     pub fn new_from(self) -> Compiler {
         Compiler {
-            instructions: Instructions(vec![]),
             constants: self.constants,
-
-            previous_instruction: (Opcode::OpPop, 0),
-            last_instruction: (Opcode::OpPop, 0),
-
             symbol_table: self.symbol_table,
+
+            scopes: vec![CompilerScope::new()],
+            scope_index: 0,
         }
     }
 
@@ -66,6 +78,14 @@ impl Compiler {
             Node::Expression(_) => todo!(),
             Node::Program(node) => self.compile_statements(&node.statements),
         }
+    }
+
+    fn scope(&self) -> &CompilerScope {
+        &self.scopes[self.scope_index]
+    }
+
+    fn scope_mut(&mut self) -> &mut CompilerScope {
+        &mut self.scopes[self.scope_index]
     }
 
     fn compile_statements(&mut self, statements: &[StatementNode]) -> R {
@@ -95,6 +115,22 @@ impl Compiler {
                 Ok(())
             }
         }
+    }
+
+    fn enter_scope(&mut self) {
+        let scope = CompilerScope::new();
+
+        self.scopes.push(scope);
+
+        self.scope_index += 1;
+    }
+
+    fn leave_scope(&mut self) {
+        let scope = self.scope_mut();
+
+        scope.instructions.0.pop();
+
+        self.scope_index -= 1;
     }
 
     fn compile_expression(&mut self, expression: &ExpressionNode) -> R {
@@ -183,26 +219,26 @@ impl Compiler {
 
                 self.compile_statements(&node.concequence.statements)?;
 
-                if self.last_instruction.0.is_pop() {
+                if self.scope().last_instruction.0.is_pop() {
                     self.remove_last();
                 }
 
                 let jump_pos = self.emit(Opcode::OpJump, vec![9999]);
 
-                let after_concequence_pos = self.instructions.0.len();
+                let after_concequence_pos = self.scope().instructions.0.len();
                 self.change_operand(jump_not_truthy_pos, after_concequence_pos);
 
                 if let Some(alternative) = &node.alternative {
                     self.compile_statements(&alternative.statements)?;
 
-                    if self.last_instruction.0.is_pop() {
+                    if self.scope().last_instruction.0.is_pop() {
                         self.remove_last();
                     }
                 } else {
                     self.emit(Opcode::OpNull, vec![]);
                 }
 
-                let after_alternative_pos = self.instructions.0.len();
+                let after_alternative_pos = self.scope().instructions.0.len();
                 self.change_operand(jump_pos, after_alternative_pos);
 
                 Ok(())
@@ -241,12 +277,12 @@ impl Compiler {
 
     fn replace_instruction(&mut self, pos: usize, instruction: Vec<u8>) {
         for (i, b) in instruction.into_iter().enumerate() {
-            self.instructions.0[pos + i] = b;
+            self.scope_mut().instructions.0[pos + i] = b;
         }
     }
 
     fn change_operand(&mut self, op_pos: usize, operand: usize) {
-        let op: Opcode = self.instructions.0[op_pos].into();
+        let op: Opcode = self.scope().instructions.0[op_pos].into();
 
         let instruction = make(op, &[operand]);
 
@@ -254,21 +290,22 @@ impl Compiler {
     }
 
     fn remove_last(&mut self) {
-        self.instructions.0 = self.instructions.0[..self.last_instruction.1].to_vec();
+        let r = ..self.scope().last_instruction.1;
+        self.scope_mut().instructions.0 = self.scope().instructions.0[r].to_vec();
 
-        self.last_instruction = self.previous_instruction;
+        self.scope_mut().last_instruction = self.scope().previous_instruction;
     }
 
     fn set_last_instruction(&mut self, op: Opcode, pos: usize) {
-        let previous = self.last_instruction;
-        self.last_instruction = (op, pos);
+        let previous = self.scope().last_instruction;
+        self.scope_mut().last_instruction = (op, pos);
 
-        self.previous_instruction = previous;
+        self.scope_mut().previous_instruction = previous;
     }
 
     fn add_instruction(&mut self, mut instruction: Vec<u8>) -> usize {
-        let pos = self.instructions.0.len();
-        self.instructions.0.append(&mut instruction);
+        let pos = self.scope().instructions.0.len();
+        self.scope_mut().instructions.0.append(&mut instruction);
         pos
     }
 
@@ -280,7 +317,7 @@ impl Compiler {
 
     pub fn bytecode(&self) -> Bytecode {
         Bytecode {
-            instructions: self.instructions.clone(),
+            instructions: self.scope().instructions.clone(),
             constants: self.constants.clone(),
         }
     }
@@ -304,6 +341,8 @@ pub mod test {
         object::{test::test_object, Object},
         parser::Parser,
     };
+
+    use super::CompilerScope;
 
     #[rstest]
     #[case("1 + 2",vec![1,2],vec![
@@ -599,5 +638,34 @@ pub mod test {
         for (expected, result) in expected_constants.iter().zip(bytecode.constants) {
             test_object(&result, expected)
         }
+    }
+
+    #[test]
+    fn compiler_scopes() {
+        let mut compiler = Compiler::new();
+
+        assert_eq!(compiler.scope_index, 0);
+
+        compiler.emit(Opcode::OpMul, vec![]);
+
+        compiler.enter_scope();
+
+        assert_eq!(compiler.scope_index, 1);
+
+        compiler.emit(Opcode::OpSub, vec![]);
+
+        assert_eq!(compiler.scope().instructions.0.len(), 1);
+
+        assert_eq!(compiler.scope().last_instruction.0, Opcode::OpSub);
+
+        compiler.leave_scope();
+
+        assert_eq!(compiler.scope_index, 0);
+
+        compiler.emit(Opcode::OpAdd, vec![]);
+        assert_eq!(compiler.scope().instructions.0.len(), 2);
+
+        assert_eq!(compiler.scope().last_instruction.0, Opcode::OpAdd);
+        assert_eq!(compiler.scope().previous_instruction.0, Opcode::OpMul);
     }
 }
