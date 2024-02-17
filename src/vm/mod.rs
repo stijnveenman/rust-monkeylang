@@ -52,6 +52,10 @@ impl Vm {
         self.frames.last().unwrap()
     }
 
+    fn frame_mut(&mut self) -> &mut Frame {
+        self.frames.last_mut().unwrap()
+    }
+
     pub fn with_bytecode(&mut self, bytecode: Bytecode) {
         let frame = Frame::new(bytecode.instructions);
         self.constants = bytecode.constants;
@@ -154,15 +158,16 @@ impl Vm {
     }
 
     pub fn run(&mut self) -> R {
-        let mut ip = 0;
-        while ip < self.frame().instructions.0.len() {
+        while self.frame().ip < self.frame().instructions.0.len() {
             let instructions = &self.frame().instructions.0;
+            let ip = self.frame().ip;
             let op: Opcode = instructions[ip].into();
 
             match op {
+                Opcode::OpNoop => {}
                 Opcode::OpConstant => {
                     let const_index = read_u16(&instructions[ip + 1..]);
-                    ip += 2;
+                    self.frame_mut().ip += 2;
 
                     self.push(self.constants[const_index].from_ref())?;
                 }
@@ -189,36 +194,36 @@ impl Vm {
                 }
                 Opcode::OpJumpNotTruthy => {
                     let pos = read_u16(&instructions[ip + 1..]);
-                    ip += 2;
+                    self.frame_mut().ip += 2;
 
                     let condition = self.pop();
                     if !condition.is_truthy() {
-                        ip = pos - 1;
+                        self.frame_mut().ip = pos - 1;
                     }
                 }
                 Opcode::OpJump => {
                     let pos = read_u16(&instructions[ip + 1..]);
-                    ip = pos - 1;
+                    self.frame_mut().ip = pos - 1;
                 }
                 Opcode::OpNull => {
                     self.push(Object::Null)?;
                 }
                 Opcode::OpSetGlobal => {
                     let index = read_u16(&instructions[ip + 1..]);
-                    ip += 2;
+                    self.frame_mut().ip += 2;
 
                     self.globals[index] = self.pop();
                 }
                 Opcode::OpGetGlobal => {
                     let index = read_u16(&instructions[ip + 1..]);
-                    ip += 2;
+                    self.frame_mut().ip += 2;
 
                     self.push(self.globals[index].from_ref())?;
                 }
 
                 Opcode::OpArray => {
                     let count = read_u16(&instructions[ip + 1..]);
-                    ip += 2;
+                    self.frame_mut().ip += 2;
 
                     let array = self.build_array(self.sp - count, self.sp);
                     self.sp -= count;
@@ -228,7 +233,7 @@ impl Vm {
 
                 Opcode::OpHash => {
                     let count = read_u16(&instructions[ip + 1..]);
-                    ip += 2;
+                    self.frame_mut().ip += 2;
 
                     let hash = self.build_hash(self.sp - count, self.sp)?;
                     self.sp -= count;
@@ -242,13 +247,12 @@ impl Vm {
 
                     self.exec_index(left, index)?;
                 }
-                Opcode::OpNoop => {}
                 Opcode::OpCall => {}
                 Opcode::OpReturnValue => {}
                 Opcode::OpReturn => {}
             };
 
-            ip += 1;
+            self.frame_mut().ip += 1;
         }
 
         Ok(())

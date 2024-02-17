@@ -6,9 +6,9 @@ pub struct Frame {
 }
 
 impl Frame {
-    pub fn new(function: Instructions) -> Frame {
+    pub fn new(instructions: Instructions) -> Frame {
         Frame {
-            instructions: function,
+            instructions,
             ip: 0,
         }
     }
