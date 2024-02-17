@@ -20,8 +20,8 @@ impl CompilerScope {
     fn new() -> CompilerScope {
         CompilerScope {
             instructions: Instructions(vec![]),
-            previous_instruction: (Opcode::OpPop, 0),
-            last_instruction: (Opcode::OpPop, 0),
+            previous_instruction: (Opcode::OpNoop, 0),
+            last_instruction: (Opcode::OpNoop, 0),
         }
     }
 }
@@ -218,7 +218,7 @@ impl Compiler {
 
                 self.compile_statements(&node.concequence.statements)?;
 
-                if self.scope().last_instruction.0.is_pop() {
+                if self.scope().last_instruction.0.is(&Opcode::OpPop) {
                     self.remove_last();
                 }
 
@@ -230,7 +230,7 @@ impl Compiler {
                 if let Some(alternative) = &node.alternative {
                     self.compile_statements(&alternative.statements)?;
 
-                    if self.scope().last_instruction.0.is_pop() {
+                    if self.scope().last_instruction.0.is(&Opcode::OpPop) {
                         self.remove_last();
                     }
                 } else {
@@ -246,6 +246,13 @@ impl Compiler {
                 self.enter_scope();
 
                 self.compile_statements(&node.body.statements)?;
+
+                if self.scope().last_instruction.0.is(&Opcode::OpPop) {
+                    self.replace_last_with_return();
+                }
+                if !self.scope().last_instruction.0.is(&Opcode::OpReturnValue) {
+                    self.emit(Opcode::OpReturn, vec![]);
+                }
 
                 let instructions = self.leave_scope();
 
@@ -286,6 +293,14 @@ impl Compiler {
         self.set_last_instruction(op, pos);
 
         pos
+    }
+
+    fn replace_last_with_return(&mut self) {
+        let pos = self.scope().last_instruction.1;
+
+        self.replace_instruction(pos, make(Opcode::OpReturnValue, &[]));
+
+        self.scope_mut().last_instruction.0 = Opcode::OpReturnValue;
     }
 
     fn replace_instruction(&mut self, pos: usize, instruction: Vec<u8>) {
@@ -627,6 +642,12 @@ pub mod test {
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()))], vec![
         make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("fn() {}", vec![Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpReturn, &[]),
+    ].into_iter().flatten().collect()))], vec![
+        make(Opcode::OpConstant, &[0]),
         make(Opcode::OpPop, &[]),
     ])]
     fn test_functions(

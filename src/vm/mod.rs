@@ -221,6 +221,7 @@ impl Vm {
 
                     self.exec_index(left, index)?;
                 }
+                Opcode::OpNoop => {}
                 Opcode::OpCall => todo!(),
                 Opcode::OpReturnValue => todo!(),
                 Opcode::OpReturn => todo!(),

@@ -38,6 +38,8 @@ pub enum Opcode {
 
     OpSetGlobal,
     OpGetGlobal,
+
+    OpNoop,
 }
 
 impl Opcode {
@@ -67,6 +69,7 @@ impl Opcode {
             | Opcode::OpCall
             | Opcode::OpReturnValue
             | Opcode::OpReturn
+            | Opcode::OpNoop
             | Opcode::OpBang => vec![],
         };
 
@@ -80,8 +83,8 @@ impl Opcode {
         Opcode::find_definition(self)
     }
 
-    pub fn is_pop(&self) -> bool {
-        matches!(self, Opcode::OpPop)
+    pub fn is(&self, op: &Opcode) -> bool {
+        self == op
     }
 }
 
