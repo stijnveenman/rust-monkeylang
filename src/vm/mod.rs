@@ -247,8 +247,24 @@ impl Vm {
 
                     self.exec_index(left, index)?;
                 }
-                Opcode::OpCall => {}
-                Opcode::OpReturnValue => {}
+                Opcode::OpCall => {
+                    let Object::CompiledFunction(instructions) = self.stack_top() else {
+                        return Err("Calling non-function".into());
+                    };
+
+                    let frame = Frame::new(instructions.clone());
+                    self.push_frame(frame);
+
+                    continue;
+                }
+                Opcode::OpReturnValue => {
+                    let value = self.pop();
+
+                    self.pop_frame();
+                    self.pop();
+
+                    self.push(value)?;
+                }
                 Opcode::OpReturn => {}
             };
 
