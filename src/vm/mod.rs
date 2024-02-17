@@ -4,7 +4,7 @@ use core::panic;
 use std::collections::HashMap;
 
 use crate::{
-    code::{read_operands::read_u16, Instructions, Opcode},
+    code::{read_operands::read_u16, Opcode},
     compiler::Bytecode,
     object::Object,
 };
