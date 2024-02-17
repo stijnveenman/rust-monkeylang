@@ -1,3 +1,5 @@
+mod frame;
+
 use core::panic;
 use std::collections::HashMap;
 
@@ -7,16 +9,19 @@ use crate::{
     object::Object,
 };
 
+use self::frame::Frame;
+
 const STACK_SIZE: usize = 2048;
 const GLOBALS_SIZE: usize = 65536;
 
 pub struct Vm {
-    instructions: Instructions,
     constants: Vec<Object>,
 
     stack: [Object; STACK_SIZE],
     globals: Box<[Object]>,
     sp: usize,
+
+    frames: Vec<Frame>,
 }
 
 type R = Result<(), String>;
@@ -25,21 +30,36 @@ impl Vm {
     pub fn new() -> Vm {
         let bytecode = Bytecode::empty();
         Vm {
-            instructions: bytecode.instructions,
             constants: bytecode.constants,
 
             stack: std::array::from_fn(|_| Object::Null),
             globals: vec![Object::Null; GLOBALS_SIZE].into_boxed_slice(),
             sp: 0,
+
+            frames: vec![],
         }
     }
 
+    fn push_frame(&mut self, frame: Frame) {
+        self.frames.push(frame)
+    }
+
+    fn pop_frame(&mut self) -> Frame {
+        self.frames.pop().unwrap()
+    }
+
+    fn frame(&self) -> &Frame {
+        self.frames.last().unwrap()
+    }
+
     pub fn with_bytecode(&mut self, bytecode: Bytecode) {
-        self.instructions = bytecode.instructions;
+        let frame = Frame::new(bytecode.instructions);
         self.constants = bytecode.constants;
 
         self.stack = std::array::from_fn(|_| Object::Null);
         self.sp = 0;
+
+        self.push_frame(frame);
     }
 
     pub fn stack_top(&self) -> &Object {
@@ -135,12 +155,13 @@ impl Vm {
 
     pub fn run(&mut self) -> R {
         let mut ip = 0;
-        while ip < self.instructions.0.len() {
-            let op: Opcode = self.instructions.0[ip].into();
+        while ip < self.frame().instructions.0.len() {
+            let instructions = &self.frame().instructions.0;
+            let op: Opcode = instructions[ip].into();
 
             match op {
                 Opcode::OpConstant => {
-                    let const_index = read_u16(&self.instructions.0[ip + 1..]);
+                    let const_index = read_u16(&instructions[ip + 1..]);
                     ip += 2;
 
                     self.push(self.constants[const_index].from_ref())?;
@@ -167,7 +188,7 @@ impl Vm {
                     self.exec_minus()?;
                 }
                 Opcode::OpJumpNotTruthy => {
-                    let pos = read_u16(&self.instructions.0[ip + 1..]);
+                    let pos = read_u16(&instructions[ip + 1..]);
                     ip += 2;
 
                     let condition = self.pop();
@@ -176,27 +197,27 @@ impl Vm {
                     }
                 }
                 Opcode::OpJump => {
-                    let pos = read_u16(&self.instructions.0[ip + 1..]);
+                    let pos = read_u16(&instructions[ip + 1..]);
                     ip = pos - 1;
                 }
                 Opcode::OpNull => {
                     self.push(Object::Null)?;
                 }
                 Opcode::OpSetGlobal => {
-                    let index = read_u16(&self.instructions.0[ip + 1..]);
+                    let index = read_u16(&instructions[ip + 1..]);
                     ip += 2;
 
                     self.globals[index] = self.pop();
                 }
                 Opcode::OpGetGlobal => {
-                    let index = read_u16(&self.instructions.0[ip + 1..]);
+                    let index = read_u16(&instructions[ip + 1..]);
                     ip += 2;
 
                     self.push(self.globals[index].from_ref())?;
                 }
 
                 Opcode::OpArray => {
-                    let count = read_u16(&self.instructions.0[ip + 1..]);
+                    let count = read_u16(&instructions[ip + 1..]);
                     ip += 2;
 
                     let array = self.build_array(self.sp - count, self.sp);
@@ -206,7 +227,7 @@ impl Vm {
                 }
 
                 Opcode::OpHash => {
-                    let count = read_u16(&self.instructions.0[ip + 1..]);
+                    let count = read_u16(&instructions[ip + 1..]);
                     ip += 2;
 
                     let hash = self.build_hash(self.sp - count, self.sp)?;
