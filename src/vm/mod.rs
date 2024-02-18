@@ -4,7 +4,10 @@ use core::panic;
 use std::collections::HashMap;
 
 use crate::{
-    code::{read_operands::read_u16, Opcode},
+    code::{
+        read_operands::{read_u16, read_u8},
+        Opcode,
+    },
     compiler::Bytecode,
     object::Object,
 };
@@ -57,7 +60,7 @@ impl Vm {
     }
 
     pub fn with_bytecode(&mut self, bytecode: Bytecode) {
-        let frame = Frame::new(bytecode.instructions);
+        let frame = Frame::new(bytecode.instructions, 0);
         self.constants = bytecode.constants;
 
         self.stack = std::array::from_fn(|_| Object::Null);
@@ -248,12 +251,15 @@ impl Vm {
                     self.exec_index(left, index)?;
                 }
                 Opcode::OpCall => {
-                    let Object::CompiledFunction(instructions, _num_locals) = self.stack_top()
+                    let Object::CompiledFunction(instructions, num_locals) = self.stack_top()
                     else {
                         return Err("Calling non-function".into());
                     };
 
-                    let frame = Frame::new(instructions.clone());
+                    let frame = Frame::new(instructions.clone(), self.sp);
+
+                    self.sp = frame.base_poiner + num_locals;
+
                     self.push_frame(frame);
 
                     continue;
@@ -261,19 +267,32 @@ impl Vm {
                 Opcode::OpReturnValue => {
                     let value = self.pop();
 
-                    self.pop_frame();
-                    self.pop();
+                    let frame = self.pop_frame();
+                    self.sp = frame.base_poiner - 1;
 
                     self.push(value)?;
                 }
                 Opcode::OpReturn => {
-                    self.pop_frame();
-                    self.pop();
+                    let frame = self.pop_frame();
+                    self.sp = frame.base_poiner - 1;
 
                     self.push(Object::Null)?;
                 }
-                Opcode::OpSetLocal => todo!(),
-                Opcode::OpGetLocal => todo!(),
+                Opcode::OpSetLocal => {
+                    let local_index = read_u8(&instructions[ip + 1..]);
+
+                    self.frame_mut().ip += 1;
+
+                    self.stack[self.frame().base_poiner + local_index] = self.pop();
+                }
+                Opcode::OpGetLocal => {
+                    let local_index = read_u8(&instructions[ip + 1..]);
+
+                    self.frame_mut().ip += 1;
+
+                    let o = self.stack[self.frame().base_poiner + local_index].from_ref();
+                    self.push(o)?;
+                }
             };
 
             self.frame_mut().ip += 1;
