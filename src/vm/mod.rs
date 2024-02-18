@@ -248,7 +248,8 @@ impl Vm {
                     self.exec_index(left, index)?;
                 }
                 Opcode::OpCall => {
-                    let Object::CompiledFunction(instructions) = self.stack_top() else {
+                    let Object::CompiledFunction(instructions, _num_locals) = self.stack_top()
+                    else {
                         return Err("Calling non-function".into());
                     };
 

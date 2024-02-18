@@ -19,7 +19,7 @@ pub enum Object {
     Integer(i64),
     Boolean(bool),
     Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
-    CompiledFunction(Instructions),
+    CompiledFunction(Instructions, usize),
     String(String),
     Array(Vec<Object>),
     Hash(HashMap<Object, Object>),
@@ -111,7 +111,7 @@ impl Object {
             Object::Builtin(_) => "BUILTIN",
             Object::Array(_) => "ARRAY",
             Object::Hash(_) => "HASH",
-            Object::CompiledFunction(_) => "COMPILED_FUNCTION",
+            Object::CompiledFunction(_, _) => "COMPILED_FUNCTION",
         }
     }
 
@@ -127,7 +127,7 @@ impl Object {
                     .collect(),
             ),
 
-            Object::CompiledFunction(i) => Object::CompiledFunction(i.clone()),
+            Object::CompiledFunction(i, b) => Object::CompiledFunction(i.clone(), *b),
             Object::Null => Object::Null,
             _ => panic!("from_ref not implemented for {self}"),
         }
@@ -195,7 +195,7 @@ impl Display for Object {
                         .join(", ")
                 )
             }
-            Object::CompiledFunction(instructions) => {
+            Object::CompiledFunction(instructions, _) => {
                 write!(f, "CompiledFunction[{}]", instructions)
             }
         }
@@ -215,10 +215,12 @@ pub mod test {
 
         if let Some(obj) = value_any.downcast_ref::<Object>() {
             match (object, obj) {
-                (Object::CompiledFunction(a), Object::CompiledFunction(b)) => {
+                (Object::CompiledFunction(a, a2), Object::CompiledFunction(b, b2)) => {
                     if a.0 != b.0 {
                         assert_eq!(a, b)
                     }
+
+                    assert_eq!(a2, b2)
                 }
                 (a, b) => assert_eq!(a, b),
             }

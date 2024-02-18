@@ -43,6 +43,10 @@ impl SymbolTable {
         self.maps.last().unwrap()
     }
 
+    pub fn num_locals(&self) -> usize {
+        self.current().len()
+    }
+
     pub fn define(&mut self, name: &str) {
         let scope = match self.maps.len() > 1 {
             true => Scope::Local,

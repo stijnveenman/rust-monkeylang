@@ -270,9 +270,10 @@ impl Compiler {
                     self.emit(Opcode::OpReturn, vec![]);
                 }
 
+                let num_locals = self.symbol_table.num_locals();
                 let instructions = self.leave_scope();
 
-                let compiled_fn = Object::CompiledFunction(instructions);
+                let compiled_fn = Object::CompiledFunction(instructions, num_locals);
 
                 let operand = self.add_constant(compiled_fn);
 
@@ -643,7 +644,7 @@ pub mod test {
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpAdd, &[]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()))], vec![
+    ].into_iter().flatten().collect()), 0)], vec![
         make(Opcode::OpConstant, &[2]),
         make(Opcode::OpPop, &[]),
     ])]
@@ -652,7 +653,7 @@ pub mod test {
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpAdd, &[]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()))], vec![
+    ].into_iter().flatten().collect()), 0)], vec![
         make(Opcode::OpConstant, &[2]),
         make(Opcode::OpPop, &[]),
     ])]
@@ -661,13 +662,13 @@ pub mod test {
         make(Opcode::OpPop, &[]),
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()))], vec![
+    ].into_iter().flatten().collect()), 0)], vec![
         make(Opcode::OpConstant, &[2]),
         make(Opcode::OpPop, &[]),
     ])]
     #[case("fn() {}", vec![Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpReturn, &[]),
-    ].into_iter().flatten().collect()))], vec![
+    ].into_iter().flatten().collect()), 0)], vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpPop, &[]),
     ])]
@@ -683,7 +684,7 @@ pub mod test {
     #[case("fn() {24}();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()))], vec![
+    ].into_iter().flatten().collect()), 0)], vec![
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpCall, &[]),
         make(Opcode::OpPop, &[]),
@@ -692,7 +693,7 @@ pub mod test {
 noArg();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()))], vec![
+    ].into_iter().flatten().collect()), 0)], vec![
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpSetGlobal, &[0]),
         make(Opcode::OpGetGlobal, &[0]),
@@ -769,7 +770,7 @@ fn() {num}
 ", vec![Object::Integer(55), Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpGetGlobal, &[0]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()))], vec![
+    ].into_iter().flatten().collect()), 0)], vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpSetGlobal, &[0]),
         make(Opcode::OpConstant, &[1]),
@@ -785,7 +786,7 @@ fn() {
         make(Opcode::OpSetLocal, &[0]),
         make(Opcode::OpGetLocal, &[0]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()))], vec![
+    ].into_iter().flatten().collect()), 1)], vec![
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpPop, &[]),
     ])]
@@ -804,7 +805,7 @@ fn() {
         make(Opcode::OpGetLocal, &[1]),
         make(Opcode::OpAdd, &[]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()))], vec![
+    ].into_iter().flatten().collect()), 2)], vec![
         make(Opcode::OpConstant, &[2]),
         make(Opcode::OpPop, &[]),
     ])]
