@@ -572,6 +572,57 @@ returnsOneReturner()();
     #[rstest]
     #[case(
         "
+           let one = fn() { let one = 1; one };
+           one();
+           ",
+        1
+    )]
+    #[case(
+        "
+           let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
+           oneAndTwo();
+           ",
+        3
+    )]
+    #[case(
+        "
+           let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
+           let threeAndFour = fn() { let three = 3; let four = 4; three + four; };
+           oneAndTwo() + threeAndFour();
+           ",
+        10
+    )]
+    #[case(
+        "
+           let firstFoobar = fn() { let foobar = 50; foobar; };
+           let secondFoobar = fn() { let foobar = 100; foobar; };
+           firstFoobar() + secondFoobar();
+           ",
+        150
+    )]
+    #[case(
+        "
+           let globalSeed = 50;
+           let minusOne = fn() {
+let num = 1;
+               globalSeed - num;
+           }
+           let minusTwo = fn() {
+               let num = 2;
+               globalSeed - num;
+           }
+           minusOne() + minusTwo();
+           ",
+        97
+    )]
+    fn test_calling_functions_with_bindings(#[case] input: &str, #[case] expected: i64) {
+        let element = test_vm(input);
+        test_object(&element, &expected)
+    }
+
+    #[rstest]
+    #[case(
+        "
 let noReturn = fn() { };
 noReturn();"
     )]
