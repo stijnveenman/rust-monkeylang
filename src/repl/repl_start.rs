@@ -4,7 +4,7 @@ use crate::{compiler::Compiler, parser::Parser, vm::Vm};
 
 const PROMPT: &str = ">>";
 
-fn run(compiler: &mut Compiler, vm: &mut Vm, line: String) -> Result<String, String> {
+pub fn repl_run(compiler: &mut Compiler, vm: &mut Vm, line: String) -> Result<String, String> {
     let mut parser = Parser::new(line);
 
     let (program, errors) = parser.parse_program();
@@ -36,7 +36,7 @@ pub fn start() {
         let line = line.expect("failed to read line from stdin");
         compiler = compiler.new_from();
 
-        match run(&mut compiler, &mut vm, line) {
+        match repl_run(&mut compiler, &mut vm, line) {
             Ok(result) => println!("{result}"),
             Err(e) => println!("{e}"),
         }

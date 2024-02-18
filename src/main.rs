@@ -10,6 +10,10 @@ pub mod vm;
 
 use std::{env, fs, process::exit};
 
+use compiler::Compiler;
+use repl::repl_run;
+use vm::Vm;
+
 use crate::{
     evaluator::{environment::Environment, eval},
     parser::Parser,
@@ -31,10 +35,29 @@ fn run(file: &str) {
     println!("{}", result);
 }
 
+fn compiled_run(file: &str) {
+    let mut compiler = Compiler::new();
+    let mut vm = Vm::new();
+
+    let content = fs::read_to_string(file).unwrap();
+
+    match repl_run(&mut compiler, &mut vm, content) {
+        Ok(result) => println!("{}", result),
+        Err(err) => {
+            println!("ERR: {}", err);
+            exit(1);
+        }
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
-        run(args.get(1).unwrap())
+        if args.get(1).unwrap() == "-c" {
+            compiled_run(args.get(2).unwrap())
+        } else {
+            run(args.get(1).unwrap())
+        }
     } else {
         repl::start();
     }
