@@ -635,6 +635,16 @@ let num = 1;
            ",
         97
     )]
+    #[case(
+        "
+           let returnsOneReturner = fn() {
+               let returnsOne = fn() { 1; };
+               returnsOne;
+           };
+           returnsOneReturner()();
+",
+        1
+    )]
     fn test_calling_functions_with_bindings(#[case] input: &str, #[case] expected: i64) {
         let element = test_vm(input);
         test_object(&element, &expected)
