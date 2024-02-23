@@ -251,13 +251,16 @@ impl Vm {
                     self.exec_index(left, index)?;
                 }
                 Opcode::OpCall => {
+                    let num_args = read_u8(&instructions[ip + 1..]);
                     self.frame_mut().ip += 1;
-                    let Object::CompiledFunction(instructions, num_locals) = self.stack_top()
+
+                    let Object::CompiledFunction(instructions, num_locals) =
+                        &self.stack[self.sp - 1 - num_args]
                     else {
                         return Err("Calling non-function".into());
                     };
 
-                    let frame = Frame::new(instructions.clone(), self.sp);
+                    let frame = Frame::new(instructions.clone(), self.sp - num_args);
 
                     self.sp = frame.base_poiner + num_locals;
 
@@ -688,7 +691,7 @@ identity(4);",
     )]
     #[case(
         "let sum = fn (a, b) {a + b;};
-identity(1,2);",
+sum(1,2);",
         3
     )]
     fn test_function_call_with_arguments(#[case] input: &str, #[case] expected: i64) {
