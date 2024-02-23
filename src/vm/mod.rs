@@ -397,7 +397,7 @@ mod test {
     use crate::{
         compiler::Compiler,
         object::{
-            test::{test_null, test_object},
+            test::{test_error, test_null, test_object},
             Object,
         },
         parser::Parser,
@@ -730,6 +730,15 @@ outer();
     fn test_function_call_with_arguments(#[case] input: &str, #[case] expected: i64) {
         let element = test_vm(input);
         test_object(&element, &expected)
+    }
+
+    #[rstest]
+    #[case("fn() { 1; }(1);", "wrong number of arguments: want=0, got=1")]
+    #[case("fn(a) { a; }();", "wrong number of arguments: want=1, got=0")]
+    #[case("fn(a, b) { a + b; }(1);", "wrong number of arguments: want=2, got=1")]
+    fn test_invalid_argument_count(#[case] input: &str, #[case] expected_error: &str) {
+        let element = test_vm(input);
+        test_error(&element, expected_error)
     }
 
     fn test_vm(input: &str) -> Object {
