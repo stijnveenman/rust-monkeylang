@@ -14,7 +14,7 @@ pub mod push;
 pub mod puts;
 pub mod rest;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct BuiltinFunction(pub &'static dyn Fn(Vec<Object>) -> Object);
 
 impl Debug for BuiltinFunction {
@@ -23,16 +23,20 @@ impl Debug for BuiltinFunction {
     }
 }
 
-pub fn get_builtin(name: &str) -> Option<Object> {
-    Some(Object::Builtin(BuiltinFunction(match name {
-        "len" => &builtin_len,
-        "first" => &builtin_first,
-        "last" => &builtin_last,
-        "rest" => &builtin_rest,
-        "push" => &builtin_push,
-        "puts" => &builtin_puts,
-        _ => return None,
-    })))
+const BUILTINS: &[(&str, BuiltinFunction)] = &[
+    ("len", BuiltinFunction(&builtin_len)),
+    ("last", BuiltinFunction(&builtin_last)),
+    ("first", BuiltinFunction(&builtin_first)),
+    ("push", BuiltinFunction(&builtin_push)),
+    ("puts", BuiltinFunction(&builtin_puts)),
+    ("rest", BuiltinFunction(&builtin_rest)),
+];
+
+pub fn get_builtin_by_name(name: &str) -> Option<Object> {
+    BUILTINS
+        .iter()
+        .find(|n| n.0 == name)
+        .map(|b| Object::Builtin(b.1))
 }
 
 #[cfg(test)]

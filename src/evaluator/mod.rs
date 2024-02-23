@@ -4,16 +4,13 @@ use crate::{
     ast::{
         hash_literal::HashLiteral, if_expression::IfExpression, ExpressionNode, Node, StatementNode,
     },
+    builtin::get_builtin_by_name,
     object::Object,
     tokens::token::Token,
 };
 
-use self::{
-    builtin::get_builtin,
-    environment::{Enclose, Environment},
-};
+use self::environment::{Enclose, Environment};
 
-pub mod builtin;
 pub mod environment;
 
 pub fn eval(env: &Rc<Mutex<Environment>>, node: Node) -> Object {
@@ -58,7 +55,7 @@ fn eval_expression(env: &Rc<Mutex<Environment>>, expression: &ExpressionNode) ->
                 return value;
             }
 
-            if let Some(builtin) = get_builtin(&i.value) {
+            if let Some(builtin) = get_builtin_by_name(&i.value) {
                 return builtin;
             }
 

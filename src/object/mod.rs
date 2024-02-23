@@ -10,8 +10,9 @@ use std::{
 
 use crate::{
     ast::{block_statement::BlockStatement, identifier::Identifier, AstNode},
+    builtin::BuiltinFunction,
     code::Instructions,
-    evaluator::{builtin::BuiltinFunction, environment::Environment},
+    evaluator::environment::Environment,
 };
 
 #[derive(Debug, Clone)]
