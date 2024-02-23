@@ -680,6 +680,22 @@ noReturnTwo();"
         test_null(&element)
     }
 
+    #[rstest]
+    #[case(
+        "let identity = fn (a) {a;};
+identity(4);",
+        4
+    )]
+    #[case(
+        "let sum = fn (a, b) {a + b;};
+identity(1,2);",
+        3
+    )]
+    fn test_function_call_with_arguments(#[case] input: &str, #[case] expected: i64) {
+        let element = test_vm(input);
+        test_object(&element, &expected)
+    }
+
     fn test_vm(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
