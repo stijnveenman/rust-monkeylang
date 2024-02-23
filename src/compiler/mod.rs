@@ -283,7 +283,7 @@ impl Compiler {
             }
             ExpressionNode::CallExpression(node) => {
                 self.compile_expression(&node.function)?;
-                self.emit(Opcode::OpCall, vec![]);
+                self.emit(Opcode::OpCall, vec![0]);
 
                 Ok(())
             }
@@ -686,7 +686,7 @@ pub mod test {
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 0)], vec![
         make(Opcode::OpConstant, &[1]),
-        make(Opcode::OpCall, &[]),
+        make(Opcode::OpCall, &[0]),
         make(Opcode::OpPop, &[]),
     ])]
     #[case("let noArg = fn() {24};
@@ -697,7 +697,7 @@ noArg();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpSetGlobal, &[0]),
         make(Opcode::OpGetGlobal, &[0]),
-        make(Opcode::OpCall, &[]),
+        make(Opcode::OpCall, &[0]),
         make(Opcode::OpPop, &[]),
     ])]
     fn test_function_calls(

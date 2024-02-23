@@ -251,6 +251,7 @@ impl Vm {
                     self.exec_index(left, index)?;
                 }
                 Opcode::OpCall => {
+                    self.frame_mut().ip += 1;
                     let Object::CompiledFunction(instructions, num_locals) = self.stack_top()
                     else {
                         return Err("Calling non-function".into());
