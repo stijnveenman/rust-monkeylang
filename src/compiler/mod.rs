@@ -261,6 +261,10 @@ impl Compiler {
             ExpressionNode::FunctionExpression(node) => {
                 self.enter_scope();
 
+                for parameter in &node.parameters {
+                    self.symbol_table.define(&parameter.value);
+                }
+
                 self.compile_statements(&node.body.statements)?;
 
                 if self.scope().last_instruction.0.is(&Opcode::OpPop) {
@@ -705,10 +709,11 @@ noArg();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpCall, &[0]),
         make(Opcode::OpPop, &[]),
     ])]
-    #[case("let oneArg = fn(a) { }; 
+    #[case("let oneArg = fn(a) { a }; 
 oneArg(24);", vec![Object::CompiledFunction(Instructions(vec![
-        make(Opcode::OpReturn, &[]),
-    ].into_iter().flatten().collect()), 0), Object::Integer(24)], vec![
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 1), Object::Integer(24)], vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpSetGlobal, &[0]),
         make(Opcode::OpGetGlobal, &[0]),
@@ -716,10 +721,15 @@ oneArg(24);", vec![Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpCall, &[1]),
         make(Opcode::OpPop, &[]),
     ])]
-    #[case("let manyArg = fn(a, b, c) {};
+    #[case("let manyArg = fn(a, b, c) {a; b; c;};
 manyArg(24,25,26);", vec![Object::CompiledFunction(Instructions(vec![
-           make(Opcode::OpReturn, &[]),
-        ].into_iter().flatten().collect()), 0), 
+           make(Opcode::OpGetLocal, &[0]),
+           make(Opcode::OpPop, &[]),
+           make(Opcode::OpGetLocal, &[1]),
+           make(Opcode::OpPop, &[]),
+           make(Opcode::OpGetLocal, &[2]),
+           make(Opcode::OpReturnValue, &[]),
+        ].into_iter().flatten().collect()), 3), 
          Object::Integer(24),
          Object::Integer(25),
          Object::Integer(26),
