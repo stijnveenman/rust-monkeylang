@@ -700,6 +700,35 @@ noArg();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpCall, &[0]),
         make(Opcode::OpPop, &[]),
     ])]
+    #[case("let oneArg = (a) { }; 
+oneArg(24);", vec![Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpReturn, &[]),
+    ].into_iter().flatten().collect()), 0), Object::Integer(24)], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSetGlobal, &[0]),
+        make(Opcode::OpGetGlobal, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpCall, &[1]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("let manyArg = fn(a, b, c) {};
+manyArg(24,25,26);", vec![Object::CompiledFunction(Instructions(vec![
+           make(Opcode::OpReturn, &[]),
+        ].into_iter().flatten().collect()), 0), 
+         Object::Integer(24),
+         Object::Integer(25),
+         Object::Integer(26),
+    ], 
+    vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSetGlobal, &[0]),
+        make(Opcode::OpGetGlobal, &[0]),
+        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpConstant, &[3]),
+        make(Opcode::OpCall, &[3]),
+        make(Opcode::OpPop, &[]),
+    ])]
     fn test_function_calls(
         #[case] input: &str,
         #[case] constants: Vec<Object>,
