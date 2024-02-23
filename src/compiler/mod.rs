@@ -283,7 +283,12 @@ impl Compiler {
             }
             ExpressionNode::CallExpression(node) => {
                 self.compile_expression(&node.function)?;
-                self.emit(Opcode::OpCall, vec![0]);
+
+                for argument in &node.arguments {
+                    self.compile_expression(argument)?;
+                }
+
+                self.emit(Opcode::OpCall, vec![node.arguments.len()]);
 
                 Ok(())
             }
@@ -700,7 +705,7 @@ noArg();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpCall, &[0]),
         make(Opcode::OpPop, &[]),
     ])]
-    #[case("let oneArg = (a) { }; 
+    #[case("let oneArg = fn(a) { }; 
 oneArg(24);", vec![Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpReturn, &[]),
     ].into_iter().flatten().collect()), 0), Object::Integer(24)], vec![
