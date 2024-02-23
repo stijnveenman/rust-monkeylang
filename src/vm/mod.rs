@@ -254,11 +254,18 @@ impl Vm {
                     let num_args = read_u8(&instructions[ip + 1..]);
                     self.frame_mut().ip += 1;
 
-                    let Object::CompiledFunction(instructions, num_locals) =
+                    let Object::CompiledFunction(instructions, num_locals, num_parameters) =
                         &self.stack[self.sp - 1 - num_args]
                     else {
                         return Err("Calling non-function".into());
                     };
+
+                    if num_args != *num_parameters {
+                        return Err(format!(
+                            "wrong number of arguments: want={}, got={}",
+                            num_parameters, num_args
+                        ));
+                    }
 
                     let frame = Frame::new(instructions.clone(), self.sp - num_args);
 
@@ -397,7 +404,7 @@ mod test {
     use crate::{
         compiler::Compiler,
         object::{
-            test::{test_error, test_null, test_object},
+            test::{test_null, test_object},
             Object,
         },
         parser::Parser,
@@ -737,8 +744,8 @@ outer();
     #[case("fn(a) { a; }();", "wrong number of arguments: want=1, got=0")]
     #[case("fn(a, b) { a + b; }(1);", "wrong number of arguments: want=2, got=1")]
     fn test_invalid_argument_count(#[case] input: &str, #[case] expected_error: &str) {
-        let element = test_vm(input);
-        test_error(&element, expected_error)
+        let result = test_vm_result(input);
+        assert_eq!(result, Err(expected_error.into()));
     }
 
     fn test_vm(input: &str) -> Object {
@@ -761,5 +768,27 @@ outer();
         println!("{} -> {}", input, element);
 
         element.from_ref()
+    }
+
+    fn test_vm_result(input: &str) -> Result<Object, String> {
+        let mut parser = Parser::new(input.into());
+        let (program, errors) = parser.parse_program();
+
+        assert_eq!(errors, Vec::<String>::new());
+
+        let mut compiler = Compiler::new();
+        compiler
+            .compile((&program).into())
+            .expect("Failed to compile program");
+
+        let mut vm = Vm::new();
+        vm.with_bytecode(compiler.bytecode());
+        vm.run()?;
+
+        let element = vm.last_popped();
+
+        println!("{} -> {}", input, element);
+
+        Ok(element.from_ref())
     }
 }

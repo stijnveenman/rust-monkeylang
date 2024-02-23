@@ -19,7 +19,8 @@ pub enum Object {
     Integer(i64),
     Boolean(bool),
     Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
-    CompiledFunction(Instructions, usize),
+    // Instructions, NumLocals, NumParemterers
+    CompiledFunction(Instructions, usize, usize),
     String(String),
     Array(Vec<Object>),
     Hash(HashMap<Object, Object>),
@@ -111,7 +112,7 @@ impl Object {
             Object::Builtin(_) => "BUILTIN",
             Object::Array(_) => "ARRAY",
             Object::Hash(_) => "HASH",
-            Object::CompiledFunction(_, _) => "COMPILED_FUNCTION",
+            Object::CompiledFunction(_, _, _) => "COMPILED_FUNCTION",
         }
     }
 
@@ -127,7 +128,7 @@ impl Object {
                     .collect(),
             ),
 
-            Object::CompiledFunction(i, b) => Object::CompiledFunction(i.clone(), *b),
+            Object::CompiledFunction(i, b, c) => Object::CompiledFunction(i.clone(), *b, *c),
             Object::Null => Object::Null,
             _ => panic!("from_ref not implemented for {self}"),
         }
@@ -195,7 +196,7 @@ impl Display for Object {
                         .join(", ")
                 )
             }
-            Object::CompiledFunction(instructions, _) => {
+            Object::CompiledFunction(instructions, _, _) => {
                 write!(f, "CompiledFunction[{}]", instructions)
             }
         }
@@ -215,12 +216,13 @@ pub mod test {
 
         if let Some(obj) = value_any.downcast_ref::<Object>() {
             match (object, obj) {
-                (Object::CompiledFunction(a, a2), Object::CompiledFunction(b, b2)) => {
+                (Object::CompiledFunction(a, a2, a3), Object::CompiledFunction(b, b2, b3)) => {
                     if a.0 != b.0 {
-                        assert_eq!(a, b)
+                        assert_eq!(a, b);
                     }
 
-                    assert_eq!(a2, b2)
+                    assert_eq!(a2, b2);
+                    assert_eq!(a3, b3);
                 }
                 (a, b) => assert_eq!(a, b),
             }
