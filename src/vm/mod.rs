@@ -694,6 +694,39 @@ identity(4);",
 sum(1,2);",
         3
     )]
+    #[case(
+        "
+let sum = fn(a, b) {
+    let c = a + b;
+    c; 
+};
+sum(1, 2);
+",
+        3
+    )]
+    #[case(
+        "
+let sum = fn(a, b) {
+    let c = a + b;
+    c; 
+};
+sum(1, 2) + sum(3, 4);
+",
+        10
+    )]
+    #[case(
+        "
+let sum = fn(a, b) {
+    let c = a + b;
+    c; 
+};
+let outer = fn() {
+    sum(1, 2) + sum(3, 4);
+};
+outer();
+",
+        10
+    )]
     fn test_function_call_with_arguments(#[case] input: &str, #[case] expected: i64) {
         let element = test_vm(input);
         test_object(&element, &expected)
