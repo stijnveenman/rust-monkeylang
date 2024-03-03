@@ -13,6 +13,7 @@ pub enum Opcode {
     OpArray,
     OpHash,
     OpIndex,
+    OpGetBuiltin,
 
     OpCall,
     OpReturnValue,
@@ -48,7 +49,9 @@ pub enum Opcode {
 impl Opcode {
     pub fn find_definition(op: &Opcode) -> Definition {
         let operand_widths = match op {
-            Opcode::OpSetLocal | Opcode::OpGetLocal | Opcode::OpCall => vec![1],
+            Opcode::OpSetLocal | Opcode::OpGetLocal | Opcode::OpCall | Opcode::OpGetBuiltin => {
+                vec![1]
+            }
 
             Opcode::OpConstant
             | Opcode::OpArray
