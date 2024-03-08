@@ -4,6 +4,7 @@ use std::collections::HashMap;
 pub enum Scope {
     Global,
     Local,
+    Builtin,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -59,6 +60,11 @@ impl SymbolTable {
             .last_mut()
             .unwrap()
             .insert(name.to_string(), symbol);
+    }
+
+    pub fn define_builtin(&mut self, index: usize, name: &str) {
+        let symbol = Symbol::new(name.into(), Scope::Builtin, index);
+        self.maps.last_mut().unwrap().insert(name.into(), symbol);
     }
 
     pub fn resolve(&self, name: &str) -> Option<&Symbol> {
@@ -199,4 +205,33 @@ fn test_resolve_nested_local() {
 
         assert_eq!(result, Some(&item.1))
     }
+}
+
+#[test]
+fn test_builtin_scope() {
+    let mut global = SymbolTable::new();
+    global.define_builtin(0, "a");
+    global.define_builtin(1, "b");
+    global.define_builtin(2, "c");
+    global.define_builtin(3, "d");
+
+    global.enclose();
+    global.enclose();
+
+    assert_eq!(
+        global.resolve("a"),
+        Some(&Symbol::new("a".into(), Scope::Builtin, 0))
+    );
+    assert_eq!(
+        global.resolve("b"),
+        Some(&Symbol::new("b".into(), Scope::Builtin, 1))
+    );
+    assert_eq!(
+        global.resolve("c"),
+        Some(&Symbol::new("c".into(), Scope::Builtin, 2))
+    );
+    assert_eq!(
+        global.resolve("d"),
+        Some(&Symbol::new("d".into(), Scope::Builtin, 3))
+    );
 }

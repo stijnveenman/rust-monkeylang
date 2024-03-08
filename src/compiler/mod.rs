@@ -106,6 +106,7 @@ impl Compiler {
                         self.emit(Opcode::OpSetGlobal, vec![symbol.index])
                     }
                     symbol_table::Scope::Local => self.emit(Opcode::OpSetLocal, vec![symbol.index]),
+                    symbol_table::Scope::Builtin => todo!(),
                 };
 
                 Ok(())
@@ -155,6 +156,7 @@ impl Compiler {
                         self.emit(Opcode::OpGetGlobal, vec![symbol.index])
                     }
                     symbol_table::Scope::Local => self.emit(Opcode::OpGetLocal, vec![symbol.index]),
+                    symbol_table::Scope::Builtin => todo!(),
                 };
 
                 Ok(())
