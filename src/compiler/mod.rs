@@ -277,7 +277,8 @@ impl Compiler {
                 let num_locals = self.symbol_table.num_locals();
                 let instructions = self.leave_scope();
 
-                let compiled_fn = Object::CompiledFunction(instructions, num_locals, node.parameters.len());
+                let compiled_fn =
+                    Object::CompiledFunction(instructions, num_locals, node.parameters.len());
 
                 let operand = self.add_constant(compiled_fn);
 
@@ -729,11 +730,11 @@ manyArg(24,25,26);", vec![Object::CompiledFunction(Instructions(vec![
            make(Opcode::OpPop, &[]),
            make(Opcode::OpGetLocal, &[2]),
            make(Opcode::OpReturnValue, &[]),
-        ].into_iter().flatten().collect()), 3, 3), 
+        ].into_iter().flatten().collect()), 3, 3),
          Object::Integer(24),
          Object::Integer(25),
          Object::Integer(26),
-    ], 
+    ],
     vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpSetGlobal, &[0]),
@@ -854,6 +855,40 @@ fn() {
         make(Opcode::OpPop, &[]),
     ])]
     fn test_let_statement_scopes(
+        #[case] input: &str,
+        #[case] constants: Vec<Object>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
+    #[rstest]
+    #[case("
+len([]);
+push([], 1);
+", vec![Object::Integer(1)], vec![
+        make(Opcode::OpGetBuiltin, &[0]),
+        make(Opcode::OpArray, &[0]),
+        make(Opcode::OpCall, &[1]),
+        make(Opcode::OpPop, &[]),
+        make(Opcode::OpGetBuiltin, &[5]),
+        make(Opcode::OpArray, &[0]),
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpCall, &[2]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("
+fn() { len([]) }
+", vec![Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpGetBuiltin, &[0]),
+        make(Opcode::OpArray, &[]),
+        make(Opcode::OpCall, &[]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 0, 0)], vec![
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    fn test_builtins(
         #[case] input: &str,
         #[case] constants: Vec<Object>,
         #[case] instructions: Vec<Vec<u8>>,

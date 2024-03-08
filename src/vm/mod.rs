@@ -304,6 +304,7 @@ impl Vm {
                     let o = self.stack[self.frame().base_poiner + local_index].from_ref();
                     self.push(o)?;
                 }
+                Opcode::OpGetBuiltin => todo!(),
             };
 
             self.frame_mut().ip += 1;
