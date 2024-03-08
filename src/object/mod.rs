@@ -48,6 +48,7 @@ impl PartialEq for Object {
             (Self::Boolean(l0), Self::Boolean(r0)) => l0 == r0,
             (Self::String(l0), Self::String(r0)) => l0 == r0,
             (Self::Array(l0), Self::Array(r0)) => l0 == r0,
+            (Self::Error(l0), Self::Error(r0)) => l0 == r0,
             _ => false,
         }
     }
@@ -131,6 +132,7 @@ impl Object {
 
             Object::CompiledFunction(i, b, c) => Object::CompiledFunction(i.clone(), *b, *c),
             Object::Builtin(i) => Object::Builtin(*i),
+            Object::Error(i) => Object::Error(i.to_string()),
             Object::Null => Object::Null,
             _ => panic!("from_ref not implemented for {self}"),
         }

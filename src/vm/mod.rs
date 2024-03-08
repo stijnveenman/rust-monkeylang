@@ -4,7 +4,7 @@ use core::panic;
 use std::collections::HashMap;
 
 use crate::{
-    builtin::BUILTINS,
+    builtin::{BuiltinFunction, BUILTINS},
     code::{
         read_operands::{read_u16, read_u8},
         Instructions, Opcode,
@@ -256,8 +256,6 @@ impl Vm {
                     self.frame_mut().ip += 1;
 
                     self.exec_call(num_args)?;
-
-                    continue;
                 }
                 Opcode::OpReturnValue => {
                     let value = self.pop();
@@ -310,8 +308,18 @@ impl Vm {
             Object::CompiledFunction(instructions, num_locals, num_parameters) => {
                 self.call_compiled_function(&instructions, num_locals, num_parameters, num_args)
             }
+            Object::Builtin(builtin) => self.exec_builtin(builtin, num_args),
             _ => Err("calling non-function and non-built-in".into()),
         }
+    }
+
+    fn exec_builtin(&mut self, builtin: BuiltinFunction, num_args: usize) -> R {
+        let args = self.stack[self.sp - num_args..self.sp].to_vec();
+
+        let result = builtin.0(args);
+        self.sp = self.sp - num_args - 1;
+
+        self.push(result)
     }
 
     fn call_compiled_function(
@@ -800,7 +808,7 @@ outer();
     #[case("push([], 1)", Object::Array(vec![Object::Integer(1)]))]
     #[case(
         "len(1)",
-        Object::Error("argument to `len` not supported, got INTEGER".into())
+        Object::Error("arguments to `len` not supported, got INTEGER".into())
     )]
     #[case(
         "len(\"one\", \"two\")",
