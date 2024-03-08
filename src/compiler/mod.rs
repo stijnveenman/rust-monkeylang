@@ -894,8 +894,8 @@ push([], 1);
 fn() { len([]) }
 ", vec![Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpGetBuiltin, &[0]),
-        make(Opcode::OpArray, &[]),
-        make(Opcode::OpCall, &[]),
+        make(Opcode::OpArray, &[0]),
+        make(Opcode::OpCall, &[1]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 0, 0)], vec![
         make(Opcode::OpConstant, &[0]),
