@@ -749,6 +749,58 @@ outer();
         assert_eq!(result, Err(expected_error.into()));
     }
 
+    #[rstest]
+    #[case("len(\"\")", 0)]
+    #[case("len(\"four\")", 4)]
+    #[case("len(\"hello world\")", 11)]
+    #[case("len([1, 2, 3])", 3)]
+    #[case("len([])", 0)]
+    #[case("first([1, 2, 3])", 1)]
+    #[case("last([1, 2, 3])", 3)]
+    fn test_builtin_functions(#[case] input: &str, #[case] expected: i64) {
+        let element = test_vm(input);
+        test_object(&element, &expected);
+    }
+
+    #[rstest]
+    #[case("puts(\"hello\", \"world!\")")]
+    #[case("first([])")]
+    #[case("last([])")]
+    #[case("rest([])")]
+    fn test_builtin_function_null(#[case] input: &str) {
+        let element = test_vm(input);
+        test_null(&element);
+    }
+
+    #[rstest]
+    #[case("rest([1, 2, 3])", Object::Array(vec![Object::Integer(2), Object::Integer(3)]))]
+    #[case("push([], 1)", Object::Array(vec![Object::Integer(1)]))]
+    #[case(
+        "len(1)",
+        Object::Error("argument to `len` not supported, got INTEGER".into())
+    )]
+    #[case(
+        "len(\"one\", \"two\")",
+        Object::Error("wrong number of arguments. got=2, want=1".into())
+    )]
+    #[case(
+        "first(1)",
+        Object::Error("argument to `first` must be ARRAY, got INTEGER".into())
+    )]
+    #[case(
+        "last(1)",
+        Object::Error("argument to `last` must be ARRAY, got INTEGER".into())
+    )]
+    #[case(
+        "push(1,1)",
+        Object::Error("argument to `push` must be ARRAY, got INTEGER".into())
+    )]
+    fn test_builtin_object(#[case] input: &str, #[case] output: Object) {
+        let element = test_vm(input);
+
+        assert_eq!(element, output);
+    }
+
     fn test_vm(input: &str) -> Object {
         let mut parser = Parser::new(input.into());
         let (program, errors) = parser.parse_program();
