@@ -10,7 +10,7 @@ impl Frame {
     pub fn new(instructions: Instructions, base_poiner: usize) -> Frame {
         Frame {
             instructions,
-            ip: 0,
+            ip: usize::MAX,
             base_poiner,
         }
     }

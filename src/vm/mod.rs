@@ -162,7 +162,11 @@ impl Vm {
     }
 
     pub fn run(&mut self) -> R {
-        while self.frame().ip < self.frame().instructions.0.len() {
+        while self.frame().ip < self.frame().instructions.0.len() - 1
+            || self.frame().ip == usize::MAX
+        {
+            self.frame_mut().ip = self.frame().ip.wrapping_add(1);
+
             let instructions = &self.frame().instructions.0;
             let ip = self.frame().ip;
             let op: Opcode = instructions[ip].into();
@@ -295,8 +299,6 @@ impl Vm {
                     self.push(Object::Builtin(builtin.1))?;
                 }
             };
-
-            self.frame_mut().ip += 1;
         }
 
         Ok(())
