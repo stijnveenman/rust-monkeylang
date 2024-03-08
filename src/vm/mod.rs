@@ -7,7 +7,7 @@ use crate::{
     builtin::BUILTINS,
     code::{
         read_operands::{read_u16, read_u8},
-        Opcode,
+        Instructions, Opcode,
     },
     compiler::Bytecode,
     object::Object,
@@ -255,24 +255,7 @@ impl Vm {
                     let num_args = read_u8(&instructions[ip + 1..]);
                     self.frame_mut().ip += 1;
 
-                    let Object::CompiledFunction(instructions, num_locals, num_parameters) =
-                        &self.stack[self.sp - 1 - num_args]
-                    else {
-                        return Err("Calling non-function".into());
-                    };
-
-                    if num_args != *num_parameters {
-                        return Err(format!(
-                            "wrong number of arguments: want={}, got={}",
-                            num_parameters, num_args
-                        ));
-                    }
-
-                    let frame = Frame::new(instructions.clone(), self.sp - num_args);
-
-                    self.sp = frame.base_poiner + num_locals;
-
-                    self.push_frame(frame);
+                    self.exec_call(num_args)?;
 
                     continue;
                 }
@@ -318,6 +301,38 @@ impl Vm {
             self.frame_mut().ip += 1;
         }
 
+        Ok(())
+    }
+
+    fn exec_call(&mut self, num_args: usize) -> R {
+        let item = self.stack[self.sp - 1 - num_args].from_ref();
+        match item {
+            Object::CompiledFunction(instructions, num_locals, num_parameters) => {
+                self.call_compiled_function(&instructions, num_locals, num_parameters, num_args)
+            }
+            _ => Err("calling non-function and non-built-in".into()),
+        }
+    }
+
+    fn call_compiled_function(
+        &mut self,
+        instructions: &Instructions,
+        num_locals: usize,
+        num_parameters: usize,
+        num_args: usize,
+    ) -> R {
+        if num_args != num_parameters {
+            return Err(format!(
+                "wrong number of arguments: want={}, got={}",
+                num_parameters, num_args
+            ));
+        }
+
+        let frame = Frame::new(instructions.clone(), self.sp - num_args);
+
+        self.sp = frame.base_poiner + num_locals;
+
+        self.push_frame(frame);
         Ok(())
     }
 

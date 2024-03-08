@@ -130,6 +130,7 @@ impl Object {
             ),
 
             Object::CompiledFunction(i, b, c) => Object::CompiledFunction(i.clone(), *b, *c),
+            Object::Builtin(i) => Object::Builtin(*i),
             Object::Null => Object::Null,
             _ => panic!("from_ref not implemented for {self}"),
         }
