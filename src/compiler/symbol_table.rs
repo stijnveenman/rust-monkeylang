@@ -23,29 +23,34 @@ impl Symbol {
 #[derive(Debug, Clone)]
 pub struct SymbolTable {
     maps: Vec<HashMap<String, Symbol>>,
+    counts: Vec<usize>,
 }
 
 impl SymbolTable {
     pub fn new() -> SymbolTable {
         SymbolTable {
             maps: vec![HashMap::new()],
+            counts: vec![0],
         }
     }
 
     pub fn enclose(&mut self) {
         self.maps.push(HashMap::new());
+        self.counts.push(0);
     }
 
     pub fn pop(&mut self) {
         self.maps.pop();
+        self.counts.pop();
     }
 
+    #[cfg(test)]
     fn current(&self) -> &HashMap<String, Symbol> {
         self.maps.last().unwrap()
     }
 
     pub fn num_locals(&self) -> usize {
-        self.current().len()
+        *self.counts.last().unwrap()
     }
 
     pub fn define(&mut self, name: &str) {
@@ -54,7 +59,9 @@ impl SymbolTable {
             false => Scope::Global,
         };
 
-        let symbol = Symbol::new(name.into(), scope, self.current().len());
+        let count = *self.counts.last().unwrap();
+        let symbol = Symbol::new(name.into(), scope, count);
+        *self.counts.last_mut().unwrap() = count + 1;
 
         self.maps
             .last_mut()

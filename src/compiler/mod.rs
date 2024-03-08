@@ -2,6 +2,7 @@ mod symbol_table;
 
 use crate::{
     ast::{ExpressionNode, Node, StatementNode},
+    builtin::BUILTINS,
     code::{make::make, Instructions, Opcode},
     object::Object,
     tokens::token::Token,
@@ -52,12 +53,18 @@ type R = Result<(), String>;
 
 impl Compiler {
     pub fn new() -> Compiler {
-        Compiler {
+        let mut c = Compiler {
             constants: vec![],
             symbol_table: SymbolTable::new(),
 
             scopes: vec![CompilerScope::new()],
+        };
+
+        for (idx, (name, _)) in BUILTINS.iter().enumerate() {
+            c.symbol_table.define_builtin(idx, name);
         }
+
+        c
     }
 
     pub fn new_from(self) -> Compiler {

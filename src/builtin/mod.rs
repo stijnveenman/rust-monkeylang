@@ -23,7 +23,7 @@ impl Debug for BuiltinFunction {
     }
 }
 
-const BUILTINS: &[(&str, BuiltinFunction)] = &[
+pub const BUILTINS: &[(&str, BuiltinFunction)] = &[
     ("len", BuiltinFunction(&builtin_len)),
     ("last", BuiltinFunction(&builtin_last)),
     ("first", BuiltinFunction(&builtin_first)),
