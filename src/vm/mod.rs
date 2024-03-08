@@ -4,6 +4,7 @@ use core::panic;
 use std::collections::HashMap;
 
 use crate::{
+    builtin::BUILTINS,
     code::{
         read_operands::{read_u16, read_u8},
         Opcode,
@@ -304,7 +305,14 @@ impl Vm {
                     let o = self.stack[self.frame().base_poiner + local_index].from_ref();
                     self.push(o)?;
                 }
-                Opcode::OpGetBuiltin => todo!(),
+                Opcode::OpGetBuiltin => {
+                    let builtin_index = read_u8(&instructions[ip + 1..]);
+                    self.frame_mut().ip += 1;
+
+                    let builtin = BUILTINS.get(builtin_index).unwrap();
+
+                    self.push(Object::Builtin(builtin.1))?;
+                }
             };
 
             self.frame_mut().ip += 1;
