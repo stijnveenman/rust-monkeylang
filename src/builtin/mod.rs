@@ -25,11 +25,11 @@ impl Debug for BuiltinFunction {
 
 pub const BUILTINS: &[(&str, BuiltinFunction)] = &[
     ("len", BuiltinFunction(&builtin_len)),
-    ("last", BuiltinFunction(&builtin_last)),
-    ("first", BuiltinFunction(&builtin_first)),
-    ("push", BuiltinFunction(&builtin_push)),
     ("puts", BuiltinFunction(&builtin_puts)),
+    ("first", BuiltinFunction(&builtin_first)),
+    ("last", BuiltinFunction(&builtin_last)),
     ("rest", BuiltinFunction(&builtin_rest)),
+    ("push", BuiltinFunction(&builtin_push)),
 ];
 
 pub fn get_builtin_by_name(name: &str) -> Option<Object> {
