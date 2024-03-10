@@ -58,6 +58,10 @@ impl SymbolTable {
         *self.counts.last().unwrap()
     }
 
+    pub fn free_symbols(&self) -> &Vec<Symbol> {
+        self.free_symbols.last().unwrap()
+    }
+
     pub fn define(&mut self, name: &str) {
         let scope = match self.maps.len() > 1 {
             true => Scope::Local,
@@ -88,6 +92,10 @@ impl SymbolTable {
         None
     }
 
+    // todo now that resolve has Scope::free logic we need to call resolve of outer.
+    // in do_resolve we now loop over the maps themselves, this does not honor free of outer
+    // scopes.
+    // We need a symbol_table that only does symbol table stuff. and a SymbolTableStack
     pub fn resolve(&mut self, name: &str) -> Option<Symbol> {
         let Some(s) = self.do_resolve(name) else {
             return None;
@@ -102,14 +110,15 @@ impl SymbolTable {
         }
 
         let s = s.0.clone();
-        let b = self.define_free(&s);
+        let b = self.define_free(&s).clone();
 
-        Some(b.clone())
+        Some(b)
     }
 
     pub fn define_free(&mut self, original: &Symbol) -> &Symbol {
         let name = original.name.to_string();
         self.free_symbols.last_mut().unwrap().push(original.clone());
+        println!("define {:?}", self.free_symbols().last().unwrap());
 
         let s = Symbol::new(
             name.to_string(),

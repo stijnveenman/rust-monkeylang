@@ -8,7 +8,7 @@ use crate::{
     tokens::token::Token,
 };
 
-use self::symbol_table::SymbolTable;
+use self::symbol_table::{Symbol, SymbolTable};
 
 pub struct CompilerScope {
     pub instructions: Instructions,
@@ -100,6 +100,19 @@ impl Compiler {
         Ok(())
     }
 
+    fn load_symbol(&mut self, symbol: &Symbol)  {
+        match symbol.scope {
+                    symbol_table::Scope::Global => {
+                        self.emit(Opcode::OpGetGlobal, vec![symbol.index])
+                    }
+                    symbol_table::Scope::Local => self.emit(Opcode::OpGetLocal, vec![symbol.index]),
+                    symbol_table::Scope::Builtin => {
+                        self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
+                    }
+                    symbol_table::Scope::Free => todo!(),
+        };
+    }
+
     fn compile_statement(&mut self, statement: &StatementNode) -> R {
         match statement {
             StatementNode::LetStatement(node) => {
@@ -169,7 +182,9 @@ impl Compiler {
                     symbol_table::Scope::Builtin => {
                         self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
                     }
-                    symbol_table::Scope::Free => todo!(),
+                    symbol_table::Scope::Free => {
+                        self.emit(Opcode::OpGetFree, vec![symbol.index])
+                    }
                 };
 
                 Ok(())
@@ -289,15 +304,20 @@ impl Compiler {
                     self.emit(Opcode::OpReturn, vec![]);
                 }
 
+                let free_symbols = self.symbol_table.free_symbols().clone();
                 let num_locals = self.symbol_table.num_locals();
                 let instructions = self.leave_scope();
+
+                for s in &free_symbols {
+                    self.load_symbol(s);
+                }
 
                 let compiled_fn =
                     Object::CompiledFunction(instructions, num_locals, node.parameters.len());
 
                 let operand = self.add_constant(compiled_fn);
 
-                self.emit(Opcode::OpClosure, vec![operand, 0]);
+                self.emit(Opcode::OpClosure, vec![operand, free_symbols.len()]);
 
                 Ok(())
             }
@@ -924,15 +944,15 @@ fn (a) {
         make(Opcode::OpGetLocal, &[0]),
         make(Opcode::OpAdd, &[]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()), 0, 0),
+    ].into_iter().flatten().collect()), 1, 1),
     Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpGetLocal, &[0]),
         make(Opcode::OpClosure, &[0, 1]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()), 0, 0)
+    ].into_iter().flatten().collect()), 1, 1)
     ], 
     vec![
-        make(Opcode::OpClosure, &[0, 0]),
+        make(Opcode::OpClosure, &[1, 0]),
         make(Opcode::OpPop, &[]),
     ])]
     #[case("
@@ -951,21 +971,21 @@ fn(a) {
         make(Opcode::OpGetLocal, &[0]),
         make(Opcode::OpAdd, &[]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()), 0, 0),
+    ].into_iter().flatten().collect()), 1, 1),
     Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpGetFree, &[0]),
         make(Opcode::OpGetLocal, &[0]),
         make(Opcode::OpClosure, &[0, 2]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()), 0, 0),
+    ].into_iter().flatten().collect()), 1, 1),
     Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpGetLocal, &[0]),
         make(Opcode::OpClosure, &[1, 1]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()), 0, 0)
+    ].into_iter().flatten().collect()), 1, 1)
     ], 
     vec![
-        make(Opcode::OpClosure, &[0, 0]),
+        make(Opcode::OpClosure, &[2, 0]),
         make(Opcode::OpPop, &[]),
     ])]
 
