@@ -79,13 +79,46 @@ impl SymbolTable {
         self.maps.last_mut().unwrap().insert(name.into(), symbol);
     }
 
-    pub fn resolve(&self, name: &str) -> Option<&Symbol> {
-        for m in self.maps.iter().rev() {
+    fn do_resolve(&self, name: &str) -> Option<(&Symbol, usize)> {
+        for (idx, m) in self.maps.iter().rev().enumerate() {
             if let Some(s) = m.get(name) {
-                return Some(s);
+                return Some((s, idx));
             }
         }
         None
+    }
+
+    pub fn resolve(&mut self, name: &str) -> Option<Symbol> {
+        let Some(s) = self.do_resolve(name) else {
+            return None;
+        };
+
+        if s.1 == 0 {
+            return Some(s.0.clone());
+        }
+
+        if matches!(s.0.scope, Scope::Global | Scope::Builtin) {
+            return Some(s.0.clone());
+        }
+
+        let s = s.0.clone();
+        let b = self.define_free(&s);
+
+        Some(b.clone())
+    }
+
+    pub fn define_free(&mut self, original: &Symbol) -> &Symbol {
+        let name = original.name.to_string();
+        self.free_symbols.last_mut().unwrap().push(original.clone());
+
+        let s = Symbol::new(
+            name.to_string(),
+            Scope::Free,
+            self.free_symbols.last().unwrap().len() - 1,
+        );
+
+        self.maps.last_mut().unwrap().insert(name.to_string(), s);
+        self.maps.last().unwrap().get(&original.name).unwrap()
     }
 }
 
@@ -151,7 +184,7 @@ fn test_resolve_global() {
     for item in expected {
         let result = global.resolve(item.0);
 
-        assert_eq!(result, Some(&item.1))
+        assert_eq!(result, Some(item.1))
     }
 }
 
@@ -174,7 +207,7 @@ fn test_resolve_local() {
     for item in expected {
         let result = global.resolve(item.0);
 
-        assert_eq!(result, Some(&item.1))
+        assert_eq!(result, Some(item.1))
     }
 }
 
@@ -201,7 +234,7 @@ fn test_resolve_nested_local() {
     for item in expected {
         let result = global.resolve(item.0);
 
-        assert_eq!(result, Some(&item.1))
+        assert_eq!(result, Some(item.1))
     }
 
     global.pop();
@@ -215,7 +248,7 @@ fn test_resolve_nested_local() {
     for item in expected {
         let result = global.resolve(item.0);
 
-        assert_eq!(result, Some(&item.1))
+        assert_eq!(result, Some(item.1))
     }
 }
 
@@ -232,19 +265,19 @@ fn test_builtin_scope() {
 
     assert_eq!(
         global.resolve("a"),
-        Some(&Symbol::new("a".into(), Scope::Builtin, 0))
+        Some(Symbol::new("a".into(), Scope::Builtin, 0))
     );
     assert_eq!(
         global.resolve("b"),
-        Some(&Symbol::new("b".into(), Scope::Builtin, 1))
+        Some(Symbol::new("b".into(), Scope::Builtin, 1))
     );
     assert_eq!(
         global.resolve("c"),
-        Some(&Symbol::new("c".into(), Scope::Builtin, 2))
+        Some(Symbol::new("c".into(), Scope::Builtin, 2))
     );
     assert_eq!(
         global.resolve("d"),
-        Some(&Symbol::new("d".into(), Scope::Builtin, 3))
+        Some(Symbol::new("d".into(), Scope::Builtin, 3))
     );
 }
 
@@ -269,29 +302,29 @@ fn test_resolve_free() {
 
     assert_eq!(
         table.resolve("a").unwrap(),
-        &Symbol::new("a".into(), Scope::Global, 0)
+        Symbol::new("a".into(), Scope::Global, 0)
     );
     assert_eq!(
         table.resolve("b").unwrap(),
-        &Symbol::new("b".into(), Scope::Global, 1)
+        Symbol::new("b".into(), Scope::Global, 1)
     );
 
     assert_eq!(
         table.resolve("c").unwrap(),
-        &Symbol::new("c".into(), Scope::Free, 0)
+        Symbol::new("c".into(), Scope::Free, 0)
     );
     assert_eq!(
         table.resolve("d").unwrap(),
-        &Symbol::new("d".into(), Scope::Free, 1)
+        Symbol::new("d".into(), Scope::Free, 1)
     );
 
     assert_eq!(
         table.resolve("e").unwrap(),
-        &Symbol::new("e".into(), Scope::Local, 0)
+        Symbol::new("e".into(), Scope::Local, 0)
     );
     assert_eq!(
         table.resolve("f").unwrap(),
-        &Symbol::new("f".into(), Scope::Local, 1)
+        Symbol::new("f".into(), Scope::Local, 1)
     );
 
     assert_eq!(
@@ -306,20 +339,20 @@ fn test_resolve_free() {
 
     assert_eq!(
         table.resolve("a").unwrap(),
-        &Symbol::new("a".into(), Scope::Global, 0)
+        Symbol::new("a".into(), Scope::Global, 0)
     );
     assert_eq!(
         table.resolve("b").unwrap(),
-        &Symbol::new("b".into(), Scope::Global, 1)
+        Symbol::new("b".into(), Scope::Global, 1)
     );
 
     assert_eq!(
         table.resolve("c").unwrap(),
-        &Symbol::new("c".into(), Scope::Local, 0)
+        Symbol::new("c".into(), Scope::Local, 0)
     );
     assert_eq!(
         table.resolve("d").unwrap(),
-        &Symbol::new("d".into(), Scope::Local, 1)
+        Symbol::new("d".into(), Scope::Local, 1)
     );
 }
 
@@ -337,19 +370,19 @@ fn test_resolve_unresolved_free() {
 
     assert_eq!(
         table.resolve("a").unwrap(),
-        &Symbol::new("a".into(), Scope::Global, 0)
+        Symbol::new("a".into(), Scope::Global, 0)
     );
     assert_eq!(
         table.resolve("c").unwrap(),
-        &Symbol::new("c".into(), Scope::Free, 0)
+        Symbol::new("c".into(), Scope::Free, 0)
     );
     assert_eq!(
         table.resolve("e").unwrap(),
-        &Symbol::new("e".into(), Scope::Local, 0)
+        Symbol::new("e".into(), Scope::Local, 0)
     );
     assert_eq!(
         table.resolve("f").unwrap(),
-        &Symbol::new("f".into(), Scope::Local, 1)
+        Symbol::new("f".into(), Scope::Local, 1)
     );
 
     assert!(table.resolve("b").is_none());
