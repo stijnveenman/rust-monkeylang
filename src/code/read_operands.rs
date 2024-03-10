@@ -49,6 +49,7 @@ pub fn fmt_instruction(def: &Definition, operands: &[usize]) -> String {
     match count {
         0 => def.name.to_string(),
         1 => format!("{} {}", def.name, operands[0]),
+        2 => format!("{} {} {}", def.name, operands[0], operands[1]),
         _ => format!("ERROR: fmt_instruction unhandled operand count for {count}"),
     }
 }

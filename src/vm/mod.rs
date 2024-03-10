@@ -298,7 +298,7 @@ impl Vm {
 
                     self.push(Object::Builtin(builtin.1))?;
                 }
-                Opcode::Closure => todo!(),
+                Opcode::OpClosure => todo!(),
             };
         }
 

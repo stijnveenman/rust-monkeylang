@@ -43,7 +43,7 @@ pub enum Opcode {
     OpSetLocal,
     OpGetLocal,
 
-    Closure,
+    OpClosure,
 
     OpNoop,
 }
@@ -81,7 +81,7 @@ impl Opcode {
             | Opcode::OpNoop
             | Opcode::OpBang => vec![],
 
-            Opcode::Closure => vec![2, 1],
+            Opcode::OpClosure => vec![2, 1],
         };
 
         Definition {
@@ -180,12 +180,14 @@ pub mod test {
             make(Opcode::OpGetLocal, &[1]),
             make(Opcode::OpConstant, &[2]),
             make(Opcode::OpConstant, &[65535]),
+            make(Opcode::OpClosure, &[65535, 255]),
         ];
 
         let expected = "0000 OpAdd
 0001 OpGetLocal 1
 0003 OpConstant 2
-0006 OpConstant 65535\n";
+0006 OpConstant 65535
+0009 OpClosure 65535 255\n";
 
         let bytecode = Instructions(instructions.into_iter().flatten().collect::<Vec<_>>());
 
