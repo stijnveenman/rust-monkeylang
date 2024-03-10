@@ -43,6 +43,8 @@ pub enum Opcode {
     OpSetLocal,
     OpGetLocal,
 
+    Closure,
+
     OpNoop,
 }
 
@@ -78,6 +80,8 @@ impl Opcode {
             | Opcode::OpReturn
             | Opcode::OpNoop
             | Opcode::OpBang => vec![],
+
+            Opcode::Closure => vec![2, 1],
         };
 
         Definition {

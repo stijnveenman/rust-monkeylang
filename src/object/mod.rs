@@ -22,6 +22,7 @@ pub enum Object {
     Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
     // Instructions, NumLocals, NumParemterers
     CompiledFunction(Instructions, usize, usize),
+    Closure(Instructions, usize, usize),
     String(String),
     Array(Vec<Object>),
     Hash(HashMap<Object, Object>),
@@ -115,6 +116,7 @@ impl Object {
             Object::Array(_) => "ARRAY",
             Object::Hash(_) => "HASH",
             Object::CompiledFunction(_, _, _) => "COMPILED_FUNCTION",
+            Object::Closure(_, _, _) => "CLOSURE",
         }
     }
 
@@ -202,6 +204,9 @@ impl Display for Object {
             }
             Object::CompiledFunction(instructions, _, _) => {
                 write!(f, "CompiledFunction[{}]", instructions)
+            }
+            Object::Closure(instructions, _, _) => {
+                write!(f, "Closure[{}]", instructions)
             }
         }
     }
