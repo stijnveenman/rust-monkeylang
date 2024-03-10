@@ -116,6 +116,7 @@ impl Compiler {
                     symbol_table::Scope::Builtin => {
                         self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
                     }
+                    symbol_table::Scope::Free => todo!(),
                 };
 
                 Ok(())
@@ -168,6 +169,7 @@ impl Compiler {
                     symbol_table::Scope::Builtin => {
                         self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
                     }
+                    symbol_table::Scope::Free => todo!(),
                 };
 
                 Ok(())

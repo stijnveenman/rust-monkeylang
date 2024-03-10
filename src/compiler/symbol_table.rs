@@ -5,6 +5,7 @@ pub enum Scope {
     Global,
     Local,
     Builtin,
+    Free,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -24,6 +25,7 @@ impl Symbol {
 pub struct SymbolTable {
     maps: Vec<HashMap<String, Symbol>>,
     counts: Vec<usize>,
+    free_symbols: Vec<Vec<Symbol>>,
 }
 
 impl SymbolTable {
@@ -31,17 +33,20 @@ impl SymbolTable {
         SymbolTable {
             maps: vec![HashMap::new()],
             counts: vec![0],
+            free_symbols: vec![vec![]],
         }
     }
 
     pub fn enclose(&mut self) {
         self.maps.push(HashMap::new());
         self.counts.push(0);
+        self.free_symbols.push(vec![]);
     }
 
     pub fn pop(&mut self) {
         self.maps.pop();
         self.counts.pop();
+        self.free_symbols.pop();
     }
 
     #[cfg(test)]
@@ -241,4 +246,112 @@ fn test_builtin_scope() {
         global.resolve("d"),
         Some(&Symbol::new("d".into(), Scope::Builtin, 3))
     );
+}
+
+#[test]
+fn test_resolve_free() {
+    let mut table = SymbolTable::new();
+
+    table.define("a");
+    table.define("b");
+
+    table.enclose();
+
+    table.define("c");
+    table.define("d");
+
+    table.enclose();
+
+    table.define("e");
+    table.define("f");
+
+    //begin assert
+
+    assert_eq!(
+        table.resolve("a").unwrap(),
+        &Symbol::new("a".into(), Scope::Global, 0)
+    );
+    assert_eq!(
+        table.resolve("b").unwrap(),
+        &Symbol::new("b".into(), Scope::Global, 1)
+    );
+
+    assert_eq!(
+        table.resolve("c").unwrap(),
+        &Symbol::new("c".into(), Scope::Free, 0)
+    );
+    assert_eq!(
+        table.resolve("d").unwrap(),
+        &Symbol::new("d".into(), Scope::Free, 1)
+    );
+
+    assert_eq!(
+        table.resolve("e").unwrap(),
+        &Symbol::new("e".into(), Scope::Local, 0)
+    );
+    assert_eq!(
+        table.resolve("f").unwrap(),
+        &Symbol::new("f".into(), Scope::Local, 1)
+    );
+
+    assert_eq!(
+        table.free_symbols.last().unwrap(),
+        &vec![
+            Symbol::new("c".into(), Scope::Local, 0),
+            Symbol::new("d".into(), Scope::Local, 1)
+        ]
+    );
+
+    table.pop();
+
+    assert_eq!(
+        table.resolve("a").unwrap(),
+        &Symbol::new("a".into(), Scope::Global, 0)
+    );
+    assert_eq!(
+        table.resolve("b").unwrap(),
+        &Symbol::new("b".into(), Scope::Global, 1)
+    );
+
+    assert_eq!(
+        table.resolve("c").unwrap(),
+        &Symbol::new("c".into(), Scope::Local, 0)
+    );
+    assert_eq!(
+        table.resolve("d").unwrap(),
+        &Symbol::new("d".into(), Scope::Local, 1)
+    );
+}
+
+#[test]
+fn test_resolve_unresolved_free() {
+    let mut table = SymbolTable::new();
+    table.define("a");
+    table.enclose();
+
+    table.define("c");
+    table.enclose();
+
+    table.define("e");
+    table.define("f");
+
+    assert_eq!(
+        table.resolve("a").unwrap(),
+        &Symbol::new("a".into(), Scope::Global, 0)
+    );
+    assert_eq!(
+        table.resolve("c").unwrap(),
+        &Symbol::new("c".into(), Scope::Free, 0)
+    );
+    assert_eq!(
+        table.resolve("e").unwrap(),
+        &Symbol::new("e".into(), Scope::Local, 0)
+    );
+    assert_eq!(
+        table.resolve("f").unwrap(),
+        &Symbol::new("f".into(), Scope::Local, 1)
+    );
+
+    assert!(table.resolve("b").is_none());
+    assert!(table.resolve("d").is_none());
 }
