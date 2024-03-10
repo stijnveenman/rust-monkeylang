@@ -295,7 +295,7 @@ impl Compiler {
 
                 let operand = self.add_constant(compiled_fn);
 
-                self.emit(Opcode::OpConstant, vec![operand]);
+                self.emit(Opcode::OpClosure, vec![operand, 0]);
 
                 Ok(())
             }
@@ -668,7 +668,7 @@ pub mod test {
         make(Opcode::OpAdd, &[]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 0, 0)], vec![
-        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpClosure, &[2, 0]),
         make(Opcode::OpPop, &[]),
     ])]
     #[case("fn() {5+10}", vec![Object::Integer(5),Object::Integer(10), Object::CompiledFunction(Instructions(vec![
@@ -677,7 +677,7 @@ pub mod test {
         make(Opcode::OpAdd, &[]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 0, 0)], vec![
-        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpClosure, &[2, 0]),
         make(Opcode::OpPop, &[]),
     ])]
     #[case("fn() {1;2}", vec![Object::Integer(1),Object::Integer(2), Object::CompiledFunction(Instructions(vec![
@@ -686,13 +686,13 @@ pub mod test {
         make(Opcode::OpConstant, &[1]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 0, 0)], vec![
-        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpClosure, &[2, 0]),
         make(Opcode::OpPop, &[]),
     ])]
     #[case("fn() {}", vec![Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpReturn, &[]),
     ].into_iter().flatten().collect()), 0, 0)], vec![
-        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpClosure, &[0, 0]),
         make(Opcode::OpPop, &[]),
     ])]
     fn test_functions(
@@ -708,7 +708,7 @@ pub mod test {
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 0, 0)], vec![
-        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpClosure, &[1, 0]),
         make(Opcode::OpCall, &[0]),
         make(Opcode::OpPop, &[]),
     ])]
@@ -717,7 +717,7 @@ noArg();", vec![Object::Integer(24), Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 0, 0)], vec![
-        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpClosure, &[1, 0]),
         make(Opcode::OpSetGlobal, &[0]),
         make(Opcode::OpGetGlobal, &[0]),
         make(Opcode::OpCall, &[0]),
@@ -728,7 +728,7 @@ oneArg(24);", vec![Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpGetLocal, &[0]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 1, 1), Object::Integer(24)], vec![
-        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpClosure, &[0, 0]),
         make(Opcode::OpSetGlobal, &[0]),
         make(Opcode::OpGetGlobal, &[0]),
         make(Opcode::OpConstant, &[1]),
@@ -749,7 +749,7 @@ manyArg(24,25,26);", vec![Object::CompiledFunction(Instructions(vec![
          Object::Integer(26),
     ],
     vec![
-        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpClosure, &[0, 0]),
         make(Opcode::OpSetGlobal, &[0]),
         make(Opcode::OpGetGlobal, &[0]),
         make(Opcode::OpConstant, &[1]),
@@ -831,7 +831,7 @@ fn() {num}
     ].into_iter().flatten().collect()), 0, 0)], vec![
         make(Opcode::OpConstant, &[0]),
         make(Opcode::OpSetGlobal, &[0]),
-        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpClosure, &[1, 0]),
         make(Opcode::OpPop, &[]),
     ])]
     #[case("
@@ -845,7 +845,7 @@ fn() {
         make(Opcode::OpGetLocal, &[0]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 1, 0)], vec![
-        make(Opcode::OpConstant, &[1]),
+        make(Opcode::OpClosure, &[1, 0]),
         make(Opcode::OpPop, &[]),
     ])]
     #[case("
@@ -864,7 +864,7 @@ fn() {
         make(Opcode::OpAdd, &[]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 2, 0)], vec![
-        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpClosure, &[2, 0]),
         make(Opcode::OpPop, &[]),
     ])]
     fn test_let_statement_scopes(
@@ -898,7 +898,7 @@ fn() { len([]) }
         make(Opcode::OpCall, &[1]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 0, 0)], vec![
-        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpClosure, &[0, 0]),
         make(Opcode::OpPop, &[]),
     ])]
     fn test_builtins(
