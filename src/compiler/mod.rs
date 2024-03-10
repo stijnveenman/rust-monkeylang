@@ -908,4 +908,70 @@ fn() { len([]) }
     ) {
         test_compiler(input, constants, instructions)
     }
+
+    #[rstest]
+    #[case("
+fn (a) {
+    fn(b) {
+        a + b
+    }
+}
+", vec![
+    Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpGetFree, &[0]),
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpAdd, &[]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 0, 0),
+    Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpClosure, &[0, 1]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 0, 0)
+    ], 
+    vec![
+        make(Opcode::OpClosure, &[0, 0]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("
+fn(a) {
+    fn(b) {
+        fn(c) {
+            a + b + c
+        }
+    }
+}
+", vec![
+    Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpGetFree, &[0]),
+        make(Opcode::OpGetFree, &[1]),
+        make(Opcode::OpAdd, &[]),
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpAdd, &[]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 0, 0),
+    Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpGetFree, &[0]),
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpClosure, &[0, 2]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 0, 0),
+    Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpClosure, &[1, 1]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 0, 0)
+    ], 
+    vec![
+        make(Opcode::OpClosure, &[0, 0]),
+        make(Opcode::OpPop, &[]),
+    ])]
+
+    fn test_closures(
+        #[case] input: &str,
+        #[case] constants: Vec<Object>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
 }

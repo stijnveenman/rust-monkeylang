@@ -44,6 +44,7 @@ pub enum Opcode {
     OpGetLocal,
 
     OpClosure,
+    OpGetFree,
 
     OpNoop,
 }
@@ -65,6 +66,7 @@ impl Opcode {
 
             Opcode::OpPop
             | Opcode::OpNull
+            | Opcode::OpGetFree
             | Opcode::OpAdd
             | Opcode::OpSub
             | Opcode::OpMul

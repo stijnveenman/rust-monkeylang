@@ -305,6 +305,7 @@ impl Vm {
 
                     self.push_closure(cost_index)?;
                 }
+                Opcode::OpGetFree => todo!(),
             };
         }
 
