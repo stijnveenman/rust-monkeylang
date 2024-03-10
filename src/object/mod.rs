@@ -133,6 +133,7 @@ impl Object {
             ),
 
             Object::CompiledFunction(i, b, c) => Object::CompiledFunction(i.clone(), *b, *c),
+            Object::Closure(i, b, c) => Object::Closure(i.clone(), *b, *c),
             Object::Builtin(i) => Object::Builtin(*i),
             Object::Error(i) => Object::Error(i.to_string()),
             Object::Null => Object::Null,

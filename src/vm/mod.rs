@@ -298,9 +298,26 @@ impl Vm {
 
                     self.push(Object::Builtin(builtin.1))?;
                 }
-                Opcode::OpClosure => todo!(),
+                Opcode::OpClosure => {
+                    let cost_index = read_u16(&instructions[ip + 1..]);
+                    let _ = read_u8(&instructions[ip + 3..]);
+                    self.frame_mut().ip += 3;
+
+                    self.push_closure(cost_index)?;
+                }
             };
         }
+
+        Ok(())
+    }
+
+    fn push_closure(&mut self, cost_index: usize) -> R {
+        let Object::CompiledFunction(ins, a, b) = &self.constants[cost_index] else {
+            return Err(format!("Not a function {}", self.constants[cost_index]));
+        };
+
+        let closure = Object::Closure(Instructions(ins.0.to_vec()), *a, *b);
+        self.push(closure)?;
 
         Ok(())
     }
@@ -308,8 +325,8 @@ impl Vm {
     fn exec_call(&mut self, num_args: usize) -> R {
         let item = self.stack[self.sp - 1 - num_args].from_ref();
         match item {
-            Object::CompiledFunction(instructions, num_locals, num_parameters) => {
-                self.call_compiled_function(&instructions, num_locals, num_parameters, num_args)
+            Object::Closure(instructions, num_locals, num_parameters) => {
+                self.call_closure(&instructions, num_locals, num_parameters, num_args)
             }
             Object::Builtin(builtin) => self.exec_builtin(builtin, num_args),
             _ => Err("calling non-function and non-built-in".into()),
@@ -325,7 +342,7 @@ impl Vm {
         self.push(result)
     }
 
-    fn call_compiled_function(
+    fn call_closure(
         &mut self,
         instructions: &Instructions,
         num_locals: usize,
