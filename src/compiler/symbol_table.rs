@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub enum Scope {
@@ -16,118 +19,116 @@ pub struct Symbol {
 }
 
 impl Symbol {
-    fn new(name: String, scope: Scope, index: usize) -> Symbol {
+    pub fn new(name: String, scope: Scope, index: usize) -> Symbol {
         Symbol { name, scope, index }
     }
 }
 
-#[derive(Debug, Clone)]
 pub struct SymbolTable {
-    maps: Vec<HashMap<String, Symbol>>,
-    counts: Vec<usize>,
-    free_symbols: Vec<Vec<Symbol>>,
+    stack: Vec<Arc<Mutex<SymbolScope>>>,
+    pub current: Arc<Mutex<SymbolScope>>,
+}
+
+pub struct SymbolScope {
+    outer: Option<Arc<Mutex<SymbolScope>>>,
+    map: HashMap<String, Symbol>,
+    pub count: usize,
+    pub free_symbols: Vec<Symbol>,
 }
 
 impl SymbolTable {
     pub fn new() -> SymbolTable {
+        let current = SymbolScope::new(None);
         SymbolTable {
-            maps: vec![HashMap::new()],
-            counts: vec![0],
-            free_symbols: vec![vec![]],
+            stack: vec![current.clone()],
+            current,
         }
     }
 
     pub fn enclose(&mut self) {
-        self.maps.push(HashMap::new());
-        self.counts.push(0);
-        self.free_symbols.push(vec![]);
+        let new = SymbolScope::new(Some(self.current.clone()));
+
+        self.stack.push(new.clone());
+        self.current = new
     }
 
     pub fn pop(&mut self) {
-        self.maps.pop();
-        self.counts.pop();
-        self.free_symbols.pop();
-    }
-
-    #[cfg(test)]
-    fn current(&self) -> &HashMap<String, Symbol> {
-        self.maps.last().unwrap()
-    }
-
-    pub fn num_locals(&self) -> usize {
-        *self.counts.last().unwrap()
-    }
-
-    pub fn free_symbols(&self) -> &Vec<Symbol> {
-        self.free_symbols.last().unwrap()
+        let Some(prev) = self.current.lock().unwrap().outer.clone() else {
+            panic!("Current scope does not have outer scope");
+        };
+        self.stack.pop();
+        self.current = prev.clone();
     }
 
     pub fn define(&mut self, name: &str) {
-        let scope = match self.maps.len() > 1 {
-            true => Scope::Local,
-            false => Scope::Global,
+        let mut current = self.current.lock().unwrap();
+        let scope = match current.outer {
+            Some(_) => Scope::Local,
+            None => Scope::Global,
         };
 
-        let count = *self.counts.last().unwrap();
-        let symbol = Symbol::new(name.into(), scope, count);
-        *self.counts.last_mut().unwrap() = count + 1;
+        let symbol = Symbol::new(name.into(), scope, current.count);
+        current.count += 1;
 
-        self.maps
-            .last_mut()
-            .unwrap()
-            .insert(name.to_string(), symbol);
+        current.map.insert(name.into(), symbol);
     }
 
     pub fn define_builtin(&mut self, index: usize, name: &str) {
+        let mut current = self.current.lock().unwrap();
         let symbol = Symbol::new(name.into(), Scope::Builtin, index);
-        self.maps.last_mut().unwrap().insert(name.into(), symbol);
+
+        current.map.insert(name.into(), symbol);
     }
 
-    fn do_resolve(&self, name: &str) -> Option<(&Symbol, usize)> {
-        for (idx, m) in self.maps.iter().rev().enumerate() {
-            if let Some(s) = m.get(name) {
-                return Some((s, idx));
-            }
-        }
-        None
-    }
-
-    // todo now that resolve has Scope::free logic we need to call resolve of outer.
-    // in do_resolve we now loop over the maps themselves, this does not honor free of outer
-    // scopes.
-    // We need a symbol_table that only does symbol table stuff. and a SymbolTableStack
     pub fn resolve(&mut self, name: &str) -> Option<Symbol> {
-        let Some(s) = self.do_resolve(name) else {
+        let mut current = self.current.lock().unwrap();
+        current.resolve(name)
+    }
+}
+
+impl SymbolScope {
+    fn new(outer: Option<Arc<Mutex<SymbolScope>>>) -> Arc<Mutex<SymbolScope>> {
+        Arc::new(Mutex::new(SymbolScope {
+            outer,
+            map: HashMap::new(),
+            count: 0,
+            free_symbols: vec![],
+        }))
+    }
+
+    pub fn resolve(&mut self, name: &str) -> Option<Symbol> {
+        if let Some(s) = self.map.get(name) {
+            return Some(s.clone());
+        }
+
+        let Some(outer) = self.outer.clone() else {
             return None;
         };
 
-        if s.1 == 0 {
-            return Some(s.0.clone());
+        let mut outer = outer.lock().unwrap();
+
+        let Some(symbol) = outer.resolve(name) else {
+            return None;
+        };
+
+        if matches!(symbol.scope, Scope::Global | Scope::Builtin) {
+            return Some(symbol.clone());
         }
 
-        if matches!(s.0.scope, Scope::Global | Scope::Builtin) {
-            return Some(s.0.clone());
-        }
-
-        let s = s.0.clone();
-        let b = self.define_free(&s).clone();
-
-        Some(b)
+        Some(self.define_free(&symbol))
     }
 
-    pub fn define_free(&mut self, original: &Symbol) -> &Symbol {
-        let name = original.name.to_string();
-        self.free_symbols.last_mut().unwrap().push(original.clone());
-        println!("define {:?}", self.free_symbols().last().unwrap());
+    fn define_free(&mut self, original: &Symbol) -> Symbol {
+        self.free_symbols.push(original.clone());
 
-        let s = Symbol::new(
-            name.to_string(),
+        let symbol = Symbol::new(
+            original.name.to_string(),
             Scope::Free,
-            self.free_symbols.last().unwrap().len() - 1,
+            self.free_symbols.len() - 1,
         );
 
-        self.maps.last_mut().unwrap().insert(name.to_string(), s);
-        self.maps.last().unwrap().get(&original.name).unwrap()
+        self.map.insert(original.name.to_string(), symbol);
+        self.map.get(&original.name).unwrap().clone()
     }
 }
 
@@ -144,26 +145,26 @@ fn test_define() {
     let mut global = SymbolTable::new();
 
     global.define("a");
-    assert_eq!(global.current()["a"], expected["a"]);
+    assert_eq!(global.current.lock().unwrap().map["a"], expected["a"]);
 
     global.define("b");
-    assert_eq!(global.current()["b"], expected["b"]);
+    assert_eq!(global.current.lock().unwrap().map["b"], expected["b"]);
 
     global.enclose();
 
     global.define("c");
-    assert_eq!(global.current()["c"], expected["c"]);
+    assert_eq!(global.current.lock().unwrap().map["c"], expected["c"]);
 
     global.define("d");
-    assert_eq!(global.current()["d"], expected["d"]);
+    assert_eq!(global.current.lock().unwrap().map["d"], expected["d"]);
 
     global.enclose();
 
     global.define("e");
-    assert_eq!(global.current()["e"], expected["e"]);
+    assert_eq!(global.current.lock().unwrap().map["e"], expected["e"]);
 
     global.define("f");
-    assert_eq!(global.current()["f"], expected["f"]);
+    assert_eq!(global.current.lock().unwrap().map["f"], expected["f"]);
 }
 
 #[test]
@@ -337,8 +338,8 @@ fn test_resolve_free() {
     );
 
     assert_eq!(
-        table.free_symbols.last().unwrap(),
-        &vec![
+        table.current.lock().unwrap().free_symbols,
+        vec![
             Symbol::new("c".into(), Scope::Local, 0),
             Symbol::new("d".into(), Scope::Local, 1)
         ]

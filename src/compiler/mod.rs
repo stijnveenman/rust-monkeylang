@@ -1,4 +1,5 @@
 mod symbol_table;
+mod symbol_stack;
 
 use crate::{
     ast::{ExpressionNode, Node, StatementNode},
@@ -8,7 +9,7 @@ use crate::{
     tokens::token::Token,
 };
 
-use self::symbol_table::{Symbol, SymbolTable};
+use self::{symbol_stack::SymbolTable as foo, symbol_table::{Symbol, SymbolTable}};
 
 pub struct CompilerScope {
     pub instructions: Instructions,
@@ -29,9 +30,7 @@ impl CompilerScope {
 
 pub struct Compiler {
     constants: Vec<Object>,
-
     symbol_table: SymbolTable,
-
     scopes: Vec<CompilerScope>,
 }
 
@@ -53,10 +52,10 @@ type R = Result<(), String>;
 
 impl Compiler {
     pub fn new() -> Compiler {
+        let _ = foo::new();
         let mut c = Compiler {
             constants: vec![],
             symbol_table: SymbolTable::new(),
-
             scopes: vec![CompilerScope::new()],
         };
 
@@ -71,7 +70,6 @@ impl Compiler {
         Compiler {
             constants: self.constants,
             symbol_table: self.symbol_table,
-
             scopes: vec![CompilerScope::new()],
         }
     }
@@ -304,11 +302,12 @@ impl Compiler {
                     self.emit(Opcode::OpReturn, vec![]);
                 }
 
-                let free_symbols = self.symbol_table.free_symbols().clone();
-                let num_locals = self.symbol_table.num_locals();
+                let scope = self.symbol_table.current.clone();
+                let free_symbols = &scope.lock().unwrap().free_symbols;
+                let num_locals = self.symbol_table.current.lock().unwrap().count;
                 let instructions = self.leave_scope();
 
-                for s in &free_symbols {
+                for s in free_symbols {
                     self.load_symbol(s);
                 }
 
