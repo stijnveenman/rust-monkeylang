@@ -107,7 +107,9 @@ impl Compiler {
                     symbol_table::Scope::Builtin => {
                         self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
                     }
-                    symbol_table::Scope::Free => todo!(),
+                    symbol_table::Scope::Free => {
+                self.emit(Opcode::OpGetFree, vec![symbol.index])
+            },
         };
     }
 
@@ -303,10 +305,10 @@ impl Compiler {
                 }
 
                 let scope = self.symbol_table.current.clone();
-                let free_symbols = &scope.lock().unwrap().free_symbols;
                 let num_locals = self.symbol_table.current.lock().unwrap().count;
                 let instructions = self.leave_scope();
 
+                let free_symbols = &scope.lock().unwrap().free_symbols;
                 for s in free_symbols {
                     self.load_symbol(s);
                 }
