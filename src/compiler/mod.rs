@@ -1,5 +1,4 @@
 mod symbol_table;
-mod symbol_stack;
 
 use crate::{
     ast::{ExpressionNode, Node, StatementNode},
@@ -9,7 +8,7 @@ use crate::{
     tokens::token::Token,
 };
 
-use self::{symbol_stack::SymbolTable as foo, symbol_table::{Symbol, SymbolTable}};
+use self::symbol_table::{Symbol, SymbolTable};
 
 pub struct CompilerScope {
     pub instructions: Instructions,
@@ -52,7 +51,6 @@ type R = Result<(), String>;
 
 impl Compiler {
     pub fn new() -> Compiler {
-        let _ = foo::new();
         let mut c = Compiler {
             constants: vec![],
             symbol_table: SymbolTable::new(),
