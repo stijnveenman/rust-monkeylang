@@ -96,18 +96,12 @@ impl Compiler {
         Ok(())
     }
 
-    fn load_symbol(&mut self, symbol: &Symbol)  {
+    fn load_symbol(&mut self, symbol: &Symbol) {
         match symbol.scope {
-                    symbol_table::Scope::Global => {
-                        self.emit(Opcode::OpGetGlobal, vec![symbol.index])
-                    }
-                    symbol_table::Scope::Local => self.emit(Opcode::OpGetLocal, vec![symbol.index]),
-                    symbol_table::Scope::Builtin => {
-                        self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
-                    }
-                    symbol_table::Scope::Free => {
-                self.emit(Opcode::OpGetFree, vec![symbol.index])
-            },
+            symbol_table::Scope::Global => self.emit(Opcode::OpGetGlobal, vec![symbol.index]),
+            symbol_table::Scope::Local => self.emit(Opcode::OpGetLocal, vec![symbol.index]),
+            symbol_table::Scope::Builtin => self.emit(Opcode::OpGetBuiltin, vec![symbol.index]),
+            symbol_table::Scope::Free => self.emit(Opcode::OpGetFree, vec![symbol.index]),
         };
     }
 
@@ -180,9 +174,7 @@ impl Compiler {
                     symbol_table::Scope::Builtin => {
                         self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
                     }
-                    symbol_table::Scope::Free => {
-                        self.emit(Opcode::OpGetFree, vec![symbol.index])
-                    }
+                    symbol_table::Scope::Free => self.emit(Opcode::OpGetFree, vec![symbol.index]),
                 };
 
                 Ok(())
@@ -949,7 +941,7 @@ fn (a) {
         make(Opcode::OpClosure, &[0, 1]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 1, 1)
-    ], 
+    ],
     vec![
         make(Opcode::OpClosure, &[1, 0]),
         make(Opcode::OpPop, &[]),
@@ -982,7 +974,7 @@ fn(a) {
         make(Opcode::OpClosure, &[1, 1]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 1, 1)
-    ], 
+    ],
     vec![
         make(Opcode::OpClosure, &[2, 0]),
         make(Opcode::OpPop, &[]),
