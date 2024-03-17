@@ -52,7 +52,7 @@ pub enum Opcode {
 impl Opcode {
     pub fn find_definition(op: &Opcode) -> Definition {
         let operand_widths = match op {
-            Opcode::OpSetLocal | Opcode::OpGetLocal | Opcode::OpCall | Opcode::OpGetBuiltin => {
+            Opcode::OpSetLocal | Opcode::OpGetLocal | Opcode::OpCall | Opcode::OpGetBuiltin | Opcode::OpGetFree => {
                 vec![1]
             }
 
@@ -66,7 +66,6 @@ impl Opcode {
 
             Opcode::OpPop
             | Opcode::OpNull
-            | Opcode::OpGetFree
             | Opcode::OpAdd
             | Opcode::OpSub
             | Opcode::OpMul

@@ -61,7 +61,7 @@ impl Vm {
     }
 
     pub fn with_bytecode(&mut self, bytecode: Bytecode) {
-        let frame = Frame::new(bytecode.instructions, 0);
+        let frame = Frame::new(bytecode.instructions, 0, vec![]);
         self.constants = bytecode.constants;
 
         self.stack = std::array::from_fn(|_| Object::Null);
@@ -300,24 +300,35 @@ impl Vm {
                 }
                 Opcode::OpClosure => {
                     let cost_index = read_u16(&instructions[ip + 1..]);
-                    let _ = read_u8(&instructions[ip + 3..]);
+                    let num_free = read_u8(&instructions[ip + 3..]);
                     self.frame_mut().ip += 3;
 
-                    self.push_closure(cost_index)?;
+                    self.push_closure(cost_index, num_free)?;
                 }
-                Opcode::OpGetFree => todo!(),
+                Opcode::OpGetFree => {
+                    let free_index = read_u8(&instructions[ip + 1..]);
+                    self.frame_mut().ip += 1;
+
+                    let object = self.frame().free[free_index].from_ref();
+                    self.push(object)?;
+                }
             };
         }
 
         Ok(())
     }
 
-    fn push_closure(&mut self, cost_index: usize) -> R {
+    fn push_closure(&mut self, cost_index: usize, num_free: usize) -> R {
         let Object::CompiledFunction(ins, a, b) = &self.constants[cost_index] else {
             return Err(format!("Not a function {}", self.constants[cost_index]));
         };
 
-        let closure = Object::Closure(Instructions(ins.0.to_vec()), *a, *b);
+        let free = (0..num_free)
+            .map(|i| self.stack[self.sp - num_free + i].from_ref())
+            .collect::<Vec<_>>();
+        self.sp -= num_free;
+
+        let closure = Object::Closure(Instructions(ins.0.to_vec()), *a, *b, free);
         self.push(closure)?;
 
         Ok(())
@@ -326,8 +337,8 @@ impl Vm {
     fn exec_call(&mut self, num_args: usize) -> R {
         let item = self.stack[self.sp - 1 - num_args].from_ref();
         match item {
-            Object::Closure(instructions, num_locals, num_parameters) => {
-                self.call_closure(&instructions, num_locals, num_parameters, num_args)
+            Object::Closure(instructions, num_locals, num_parameters, free) => {
+                self.call_closure(&instructions, num_locals, num_parameters, num_args, free)
             }
             Object::Builtin(builtin) => self.exec_builtin(builtin, num_args),
             _ => Err("calling non-function and non-built-in".into()),
@@ -349,6 +360,7 @@ impl Vm {
         num_locals: usize,
         num_parameters: usize,
         num_args: usize,
+        free: Vec<Object>,
     ) -> R {
         if num_args != num_parameters {
             return Err(format!(
@@ -357,7 +369,7 @@ impl Vm {
             ));
         }
 
-        let frame = Frame::new(instructions.clone(), self.sp - num_args);
+        let frame = Frame::new(instructions.clone(), self.sp - num_args, free);
 
         self.sp = frame.base_poiner + num_locals;
 
@@ -822,6 +834,43 @@ outer();
     fn test_builtin_function_null(#[case] input: &str) {
         let element = test_vm(input);
         test_null(&element);
+    }
+
+    #[rstest]
+    #[case(
+        "
+let newClosure = fn(a) {
+    fn() { a; };
+};
+let closure = newClosure(99);
+closure();
+",
+        99
+    )]
+    #[case(
+        "
+let newAdder = fn(a, b) {
+    fn(c) { a + b + c };
+};
+let adder = newAdder(1, 2);
+adder(8);
+",
+        11
+    )]
+    #[case(
+        "
+let newAdder = fn(a, b) {
+    let c = a + b;
+    fn(d) { c + d };
+};
+let adder = newAdder(1, 2);
+adder(8);
+",
+        11
+    )]
+    fn test_closure(#[case] input: &str, #[case] expected: i64) {
+        let element = test_vm(input);
+        test_object(&element, &expected);
     }
 
     #[rstest]
