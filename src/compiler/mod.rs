@@ -177,7 +177,7 @@ impl Compiler {
                         self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
                     }
                     symbol_table::Scope::Free => self.emit(Opcode::OpGetFree, vec![symbol.index]),
-                    symbol_table::Scope::Function => todo!(),
+                    symbol_table::Scope::Function => self.emit(Opcode::OpCurrentClosure, vec![]),
                 };
 
                 Ok(())
@@ -283,6 +283,10 @@ impl Compiler {
             }
             ExpressionNode::FunctionExpression(node) => {
                 self.enter_scope();
+
+                if let Some(name) = &node.name {
+                    self.symbol_table.define_function_name(name);
+                }
 
                 for parameter in &node.parameters {
                     self.symbol_table.define(&parameter.value);
@@ -1038,7 +1042,7 @@ wrapper();
         make(Opcode::OpConstant, &[2]),
         make(Opcode::OpCall, &[1]),
         make(Opcode::OpReturnValue, &[]),
-    ].into_iter().flatten().collect()), 1, 1),
+    ].into_iter().flatten().collect()), 1, 0),
     ],
     vec![
         make(Opcode::OpClosure, &[3, 0]),
