@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
+    thread::current,
 };
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -9,6 +10,7 @@ pub enum Scope {
     Local,
     Builtin,
     Free,
+    Function,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -76,6 +78,13 @@ impl SymbolTable {
     pub fn define_builtin(&mut self, index: usize, name: &str) {
         let mut current = self.current.lock().unwrap();
         let symbol = Symbol::new(name.into(), Scope::Builtin, index);
+
+        current.map.insert(name.into(), symbol);
+    }
+
+    pub fn define_function_name(&mut self, name: &str) {
+        let mut current = self.current.lock().unwrap();
+        let symbol = Symbol::new(name.into(), Scope::Function, 0);
 
         current.map.insert(name.into(), symbol);
     }
@@ -397,4 +406,30 @@ fn test_resolve_unresolved_free() {
 
     assert!(table.resolve("b").is_none());
     assert!(table.resolve("d").is_none());
+}
+
+#[test]
+fn test_define_and_resolve_function_name() {
+    let mut table = SymbolTable::new();
+
+    table.define_function_name("a");
+
+    assert_eq!(
+        table.resolve("a"),
+        Some(Symbol::new("a".into(), Scope::Function, 0))
+    );
+}
+
+#[test]
+fn test_shadowing_function_name() {
+    let mut table = SymbolTable::new();
+
+    table.define_function_name("a");
+
+    table.define("a");
+
+    assert_eq!(
+        table.resolve("a"),
+        Some(Symbol::new("a".into(), Scope::Global, 0))
+    );
 }

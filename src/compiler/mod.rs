@@ -102,6 +102,7 @@ impl Compiler {
             symbol_table::Scope::Local => self.emit(Opcode::OpGetLocal, vec![symbol.index]),
             symbol_table::Scope::Builtin => self.emit(Opcode::OpGetBuiltin, vec![symbol.index]),
             symbol_table::Scope::Free => self.emit(Opcode::OpGetFree, vec![symbol.index]),
+            symbol_table::Scope::Function => todo!(),
         };
     }
 
@@ -122,6 +123,7 @@ impl Compiler {
                         self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
                     }
                     symbol_table::Scope::Free => todo!(),
+                    symbol_table::Scope::Function => todo!(),
                 };
 
                 Ok(())
@@ -175,6 +177,7 @@ impl Compiler {
                         self.emit(Opcode::OpGetBuiltin, vec![symbol.index])
                     }
                     symbol_table::Scope::Free => self.emit(Opcode::OpGetFree, vec![symbol.index]),
+                    symbol_table::Scope::Function => todo!(),
                 };
 
                 Ok(())
