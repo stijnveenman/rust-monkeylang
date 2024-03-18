@@ -40,7 +40,11 @@ impl ParseStatement for LetStatement {
 
         parser.next_token();
 
-        let expression = parser.parse_expression(Precedence::LOWEST)?;
+        let mut expression = parser.parse_expression(Precedence::LOWEST)?;
+
+        if let ExpressionNode::FunctionExpression(ref mut fn_expression) = expression {
+            fn_expression.name = Some(ident.clone());
+        }
 
         if parser.peek_token.is(&Token::SEMICOLON) {
             parser.next_token();

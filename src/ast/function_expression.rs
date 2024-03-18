@@ -10,6 +10,7 @@ pub struct FunctionExpression {
     pub token: Token,
     pub parameters: Vec<Identifier>,
     pub body: BlockStatement,
+    pub name: Option<String>,
 }
 
 impl AstNode for FunctionExpression {
@@ -83,6 +84,7 @@ impl ParsePrefix for FunctionExpression {
             token,
             parameters,
             body,
+            name: None,
         }))
     }
 }
@@ -141,5 +143,32 @@ mod test {
         };
 
         test_infix_expression(&expression.expression, "x", Token::PLUS, "y");
+    }
+
+    #[test]
+    fn test_function_with_name() {
+        let input = "let myFunction = fn() { };";
+
+        let mut parser = Parser::new(input.into());
+
+        let (program, errors) = parser.parse_program();
+        let empty: Vec<String> = vec![];
+
+        assert_eq!(errors, empty);
+        assert_eq!(program.statements.len(), 1);
+
+        let node = program.statements.first().unwrap();
+        let StatementNode::LetStatement(expression) = node else {
+            panic!("expected LetStatement for node, got {:?}", node);
+        };
+
+        let ExpressionNode::FunctionExpression(fn_expression) = &expression.value else {
+            panic!(
+                "expected FunctionExpression for node, got {:?}",
+                expression.value
+            );
+        };
+
+        assert_eq!(fn_expression.name, Some("myFunction".into()))
     }
 }
