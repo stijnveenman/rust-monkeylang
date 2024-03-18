@@ -45,6 +45,7 @@ pub enum Opcode {
 
     OpClosure,
     OpGetFree,
+    OpCurrentClosure,
 
     OpNoop,
 }
@@ -52,7 +53,11 @@ pub enum Opcode {
 impl Opcode {
     pub fn find_definition(op: &Opcode) -> Definition {
         let operand_widths = match op {
-            Opcode::OpSetLocal | Opcode::OpGetLocal | Opcode::OpCall | Opcode::OpGetBuiltin | Opcode::OpGetFree => {
+            Opcode::OpSetLocal
+            | Opcode::OpGetLocal
+            | Opcode::OpCall
+            | Opcode::OpGetBuiltin
+            | Opcode::OpGetFree => {
                 vec![1]
             }
 
@@ -65,6 +70,7 @@ impl Opcode {
             | Opcode::OpSetGlobal => vec![2],
 
             Opcode::OpPop
+            | Opcode::OpCurrentClosure
             | Opcode::OpNull
             | Opcode::OpAdd
             | Opcode::OpSub

@@ -312,6 +312,7 @@ impl Vm {
                     let object = self.frame().free[free_index].from_ref();
                     self.push(object)?;
                 }
+                Opcode::OpCurrentClosure => todo!(),
             };
         }
 

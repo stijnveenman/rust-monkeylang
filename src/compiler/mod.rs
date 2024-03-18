@@ -979,8 +979,37 @@ fn(a) {
         make(Opcode::OpClosure, &[2, 0]),
         make(Opcode::OpPop, &[]),
     ])]
-
     fn test_closures(
+        #[case] input: &str,
+        #[case] constants: Vec<Object>,
+        #[case] instructions: Vec<Vec<u8>>,
+    ) {
+        test_compiler(input, constants, instructions)
+    }
+
+    #[rstest]
+    #[case("
+let countDown = fn(x) { countDown(x - 1); }; 
+countDown(1);
+", vec![
+    Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpCurrentClosure, &[]),
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSub, &[]),
+        make(Opcode::OpCall, &[1]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 1, 1),
+    ],
+    vec![
+        make(Opcode::OpClosure, &[1, 0]),
+        make(Opcode::OpSetGlobal, &[0]),
+        make(Opcode::OpGetGlobal, &[0]),
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpCall, &[1]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    fn test_resursive_closures(
         #[case] input: &str,
         #[case] constants: Vec<Object>,
         #[case] instructions: Vec<Vec<u8>>,
