@@ -928,6 +928,39 @@ countDown(1);
 ",
         0
     )]
+    #[case(
+        "
+let countDown = fn(x) {
+    if (x == 0) {
+        return 0;
+    } else {
+        countDown(x - 1);
+    }
+};
+let wrapper = fn() {
+    countDown(1);
+};
+wrapper();
+",
+        0
+    )]
+    #[case(
+        "
+let wrapper = fn() {
+    let countDown = fn(x) {
+        if (x == 0) {
+            return 0;
+        } else {
+            countDown(x - 1);
+        } 
+    };
+    countDown(1);
+};
+wrapper();
+",
+        0
+    )]
+
     fn test_recursive_closure(#[case] input: &str, #[case] expected: i64) {
         let element = test_vm(input);
         test_object(&element, &expected);
