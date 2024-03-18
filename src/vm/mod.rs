@@ -1,7 +1,7 @@
 mod frame;
 
 use core::panic;
-use std::collections::HashMap;
+use std::{collections::HashMap, usize};
 
 use crate::{
     builtin::{BuiltinFunction, BUILTINS},
@@ -61,7 +61,15 @@ impl Vm {
     }
 
     pub fn with_bytecode(&mut self, bytecode: Bytecode) {
-        let frame = Frame::new(bytecode.instructions, 0, vec![]);
+        let frame = Frame {
+            instructions: bytecode.instructions,
+            base_poiner: 0,
+            ip: usize::MAX,
+            free: vec![],
+            num_locals: 0,
+            num_parameters: 0,
+        };
+
         self.constants = bytecode.constants;
 
         self.stack = std::array::from_fn(|_| Object::Null);
@@ -312,7 +320,20 @@ impl Vm {
                     let object = self.frame().free[free_index].from_ref();
                     self.push(object)?;
                 }
-                Opcode::OpCurrentClosure => todo!(),
+                Opcode::OpCurrentClosure => {
+                    let frame = self.frame();
+
+                    // Instructions, NumLocals, NumParemterers, frees
+
+                    let closure = Object::Closure(
+                        frame.instructions.clone(),
+                        frame.num_locals,
+                        frame.num_parameters,
+                        frame.free.clone(),
+                    );
+
+                    self.push(closure)?;
+                }
             };
         }
 
@@ -370,7 +391,15 @@ impl Vm {
             ));
         }
 
-        let frame = Frame::new(instructions.clone(), self.sp - num_args, free);
+        //let frame = Frame::new(instructions.clone(), self.sp - num_args, free);
+        let frame = Frame {
+            instructions: instructions.clone(),
+            base_poiner: self.sp - num_args,
+            ip: usize::MAX,
+            free,
+            num_locals,
+            num_parameters,
+        };
 
         self.sp = frame.base_poiner + num_locals;
 

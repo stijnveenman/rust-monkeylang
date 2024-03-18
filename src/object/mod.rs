@@ -20,7 +20,7 @@ pub enum Object {
     Integer(i64),
     Boolean(bool),
     Function(Vec<Identifier>, BlockStatement, Rc<Mutex<Environment>>),
-    // Instructions, NumLocals, NumParemterers
+    // Instructions, NumLocals, NumParemterers, frees
     CompiledFunction(Instructions, usize, usize),
     Closure(Instructions, usize, usize, Vec<Object>),
     String(String),

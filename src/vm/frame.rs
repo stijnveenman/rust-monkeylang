@@ -6,15 +6,6 @@ pub struct Frame {
     pub ip: usize,
     pub base_poiner: usize,
     pub free: Vec<Object>,
-}
-
-impl Frame {
-    pub fn new(instructions: Instructions, base_poiner: usize, free: Vec<Object>) -> Frame {
-        Frame {
-            instructions,
-            ip: usize::MAX,
-            base_poiner,
-            free,
-        }
-    }
+    pub num_locals: usize,
+    pub num_parameters: usize,
 }

@@ -1,7 +1,6 @@
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
-    thread::current,
 };
 
 #[derive(PartialEq, Eq, Debug, Clone)]
