@@ -827,16 +827,6 @@ outer();
     }
 
     #[rstest]
-    #[case("puts(\"hello\", \"world!\")")]
-    #[case("first([])")]
-    #[case("last([])")]
-    #[case("rest([])")]
-    fn test_builtin_function_null(#[case] input: &str) {
-        let element = test_vm(input);
-        test_null(&element);
-    }
-
-    #[rstest]
     #[case(
         "
 let newClosure = fn(a) {
@@ -910,6 +900,35 @@ closure();
         99
     )]
     fn test_closure(#[case] input: &str, #[case] expected: i64) {
+        let element = test_vm(input);
+        test_object(&element, &expected);
+    }
+
+    #[rstest]
+    #[case("puts(\"hello\", \"world!\")")]
+    #[case("first([])")]
+    #[case("last([])")]
+    #[case("rest([])")]
+    fn test_builtin_function_null(#[case] input: &str) {
+        let element = test_vm(input);
+        test_null(&element);
+    }
+
+    #[rstest]
+    #[case(
+        "
+let countDown = fn(x) {
+    if (x == 0) {
+        return 0;
+    } else {
+        countDown(x - 1);
+    }
+};
+countDown(1);
+",
+        0
+    )]
+    fn test_recursive_closure(#[case] input: &str, #[case] expected: i64) {
         let element = test_vm(input);
         test_object(&element, &expected);
     }

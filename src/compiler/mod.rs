@@ -108,10 +108,10 @@ impl Compiler {
     fn compile_statement(&mut self, statement: &StatementNode) -> R {
         match statement {
             StatementNode::LetStatement(node) => {
-                self.compile_expression(&node.value)?;
-
                 self.symbol_table.define(&node.identifier.value);
                 let symbol = self.symbol_table.resolve(&node.identifier.value).unwrap();
+
+                self.compile_expression(&node.value)?;
 
                 match symbol.scope {
                     symbol_table::Scope::Global => {
