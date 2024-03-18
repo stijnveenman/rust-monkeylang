@@ -992,6 +992,7 @@ fn(a) {
 let countDown = fn(x) { countDown(x - 1); }; 
 countDown(1);
 ", vec![
+    Object::Integer(1),
     Object::CompiledFunction(Instructions(vec![
         make(Opcode::OpCurrentClosure, &[]),
         make(Opcode::OpGetLocal, &[0]),
@@ -1000,6 +1001,7 @@ countDown(1);
         make(Opcode::OpCall, &[1]),
         make(Opcode::OpReturnValue, &[]),
     ].into_iter().flatten().collect()), 1, 1),
+    Object::Integer(1),
     ],
     vec![
         make(Opcode::OpClosure, &[1, 0]),
@@ -1007,6 +1009,39 @@ countDown(1);
         make(Opcode::OpGetGlobal, &[0]),
         make(Opcode::OpConstant, &[2]),
         make(Opcode::OpCall, &[1]),
+        make(Opcode::OpPop, &[]),
+    ])]
+    #[case("
+let wrapper = fn() {
+    let countDown = fn(x) { countDown(x - 1); };
+    countDown(1);
+};
+wrapper();
+", vec![
+    Object::Integer(1),
+    Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpCurrentClosure, &[]),
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpConstant, &[0]),
+        make(Opcode::OpSub, &[]),
+        make(Opcode::OpCall, &[1]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 1, 1),
+    Object::Integer(1),
+    Object::CompiledFunction(Instructions(vec![
+        make(Opcode::OpClosure, &[1, 0]),
+        make(Opcode::OpSetLocal, &[0]),
+        make(Opcode::OpGetLocal, &[0]),
+        make(Opcode::OpConstant, &[2]),
+        make(Opcode::OpCall, &[1]),
+        make(Opcode::OpReturnValue, &[]),
+    ].into_iter().flatten().collect()), 1, 1),
+    ],
+    vec![
+        make(Opcode::OpClosure, &[3, 0]),
+        make(Opcode::OpSetGlobal, &[0]),
+        make(Opcode::OpGetGlobal, &[0]),
+        make(Opcode::OpCall, &[0]),
         make(Opcode::OpPop, &[]),
     ])]
     fn test_resursive_closures(
